@@ -75,3 +75,37 @@ ELSE
 	END;
 go
 
+-- TABLA FACTURA
+
+IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'Com5600G11.psn.Factura') AND type = N'U') 
+	BEGIN
+		CREATE TABLE psn.Factura (
+			cod_factura INT IDENTITY(1,1) PRIMARY KEY,
+			fecha_emision DATE,
+			fecha_vto DATE,
+			fecha_segundo_vto DATE, -- VER SI VA O NO
+			estado VARCHAR(50)	
+		); 
+		PRINT 'Tabla Factura creada correctamente.';
+	END
+ELSE
+	BEGIN
+		PRINT 'La tabla Factura ya existe.';
+	END;
+go
+
+-- TABLA MEDIO DE PAGO
+
+IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'Com5600G11.psn.MediodePago') AND type = N'U') 
+	BEGIN
+		CREATE TABLE psn.MediodePago (
+			cod_mediopago INT IDENTITY(1,1) PRIMARY KEY,
+			descripcion VARCHAR(50)
+		);
+		PRINT 'Tabla Medio de Pago creada correctamente.';
+	END
+ELSE
+	BEGIN
+		PRINT 'La tabla Medio de Pago ya existe.';
+	END;
+go

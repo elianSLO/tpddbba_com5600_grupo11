@@ -41,6 +41,27 @@ ELSE
 	END;
 go
 
+-- TABLA PROFESOR
+
+IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'Com5600G11.psn.Profesor') AND type = N'U') -- 'U' tabla creada por el usuario 'N' es q sea unicode
+	BEGIN
+		CREATE TABLE psn.Profesor (
+			cod_prof INT IDENTITY(1,1) PRIMARY KEY,
+			dni INT UNIQUE, 
+			nombre VARCHAR(50),
+			apellido VARCHAR(50),
+			email VARCHAR(50),
+			telefono VARCHAR(20)
+		);
+		PRINT 'Tabla Profesor creada correctamente.';
+	END
+ELSE
+	BEGIN
+		PRINT 'La tabla Profesor ya existe.';
+	END;
+go
+
+
 -- TABLA CATEGORIA
 
 IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'Com5600G11.psn.Categoria') AND type = N'U') 
@@ -55,6 +76,24 @@ IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'Com5600G1
 ELSE
 	BEGIN
 		PRINT 'La tabla Categoria ya existe.';
+	END;
+go
+
+-- TABLA ACTIVIDAD
+
+IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'Com5600G11.psn.Actividad') AND type = N'U') 
+	BEGIN
+		CREATE TABLE psn.Actividad (
+			cod_actividad INT IDENTITY(1,1) PRIMARY KEY,
+			descripcion VARCHAR(50),
+			costo_mensual DECIMAL(10,2),
+			costo_invitado DECIMAL(10,2)
+		);
+		PRINT 'Tabla Actividad creada correctamente.';
+	END
+ELSE
+	BEGIN
+		PRINT 'La tabla Actividad ya existe.';
 	END;
 go
 

@@ -25,7 +25,7 @@ IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'Com5600G1
 	BEGIN
 		CREATE TABLE psn.Socio (
 			numero INT IDENTITY(1,1) PRIMARY KEY,
-			dni INT UNIQUE, 
+			dni char(8) UNIQUE,
 			nombre VARCHAR(50),
 			apellido VARCHAR(50),
 			fecha_nac DATE,
@@ -47,7 +47,7 @@ IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'Com5600G1
 	BEGIN
 		CREATE TABLE psn.Profesor (
 			cod_prof INT IDENTITY(1,1) PRIMARY KEY,
-			dni INT UNIQUE, 
+			dni char(8) UNIQUE, 
 			nombre VARCHAR(50),
 			apellido VARCHAR(50),
 			email VARCHAR(50),
@@ -60,6 +60,7 @@ ELSE
 		PRINT 'La tabla Profesor ya existe.';
 	END;
 go
+
 
 
 -- TABLA CATEGORIA
@@ -148,3 +149,4 @@ ELSE
 		PRINT 'La tabla Medio de Pago ya existe.';
 	END;
 go
+

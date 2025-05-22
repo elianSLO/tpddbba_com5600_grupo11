@@ -76,6 +76,34 @@ ELSE
 	END;
 go
 
+-- TABLA RESPONSABLE
+
+IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'Com5600G11.psn.Responsable') AND type = N'U')
+	BEGIN
+		CREATE TABLE psn.Responsable (
+			codResponsable INT IDENTITY(1,1) PRIMARY KEY,
+			dni char(8) UNIQUE, 
+			nombre VARCHAR(50),
+			apellido VARCHAR(50),
+			email VARCHAR(100),
+			parentezco VARCHAR(50),
+			fecha_nac DATE,
+			nro_socio INT, --VER
+			tel varchar(15),
+
+			constraint ck_tel check (
+				tel NOT LIKE '%[^0-9]%' and		-- Solo numeros.
+				LEN(tel) between 10 and 14		-- 2 a 4 digitos para prefijo + 6 a 8 para numero / 0800 incluidos
+			)
+		);
+		PRINT 'Tabla Responsable creada correctamente.';
+	END
+ELSE
+	BEGIN
+		PRINT 'La tabla Responsable ya existe.';
+	END;
+go
+
 
 -- TABLA CATEGORIA
 
@@ -122,7 +150,8 @@ IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'Com5600G1
 		CREATE TABLE psn.Pago (
 			cod_pago INT IDENTITY(1,1) PRIMARY KEY,
 			monto DECIMAL(10,2),
-			fecha DATE			
+			fecha_Pago DATE,
+			estado VARCHAR(15)
 		);
 		PRINT 'Tabla Pago creada correctamente.';
 	END
@@ -159,8 +188,8 @@ IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'Com5600G1
 	BEGIN
 		CREATE TABLE psn.Reembolso (
 			codReembolso INT IDENTITY(1,1) PRIMARY KEY,
-			medio_Pago VARCHAR(50),
 			monto DECIMAL(10,2),
+			medio_Pago VARCHAR(50),
 			fecha DATE,
 			motivo VARCHAR(50)
 		);

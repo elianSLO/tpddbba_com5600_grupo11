@@ -137,12 +137,13 @@ go
 IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'Com5600G11.psn.Factura') AND type = N'U') 
 	BEGIN
 		CREATE TABLE psn.Factura (
-			cod_factura INT IDENTITY(1,1) PRIMARY KEY,
+			codFactura INT IDENTITY(1,1) PRIMARY KEY,
+			monto DECIMAL(10,2),
 			fecha_emision DATE,
 			fecha_vto DATE,
-			fecha_segundo_vto DATE, -- VER SI VA O NO
-			tipo_factura CHAR(1) CHECK (tipo_factura IN ('A', 'B', 'C')),
-			estado_factura VARCHAR(10) CHECK (estado_factura IN ('Pendiente', 'Pagada'))	
+			fecha_seg_vto DATE,
+			recargo DECIMAL(10,2),
+			estado VARCHAR(10) CHECK (estado IN ('Pendiente', 'Pagada'))	
 		); 
 		PRINT 'Tabla Factura creada correctamente.';
 	END
@@ -152,19 +153,43 @@ ELSE
 	END;
 go
 
--- TABLA MEDIO DE PAGO
+-- TABLA REEMBOLSO
 
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'Com5600G11.psn.MediodePago') AND type = N'U') 
+IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'Com5600G11.psn.Reembolso') AND type = N'U') 
 	BEGIN
-		CREATE TABLE psn.MediodePago (
-			cod_mediopago INT IDENTITY(1,1) PRIMARY KEY,
-			descripcion VARCHAR(50)
+		CREATE TABLE psn.Reembolso (
+			codReembolso INT IDENTITY(1,1) PRIMARY KEY,
+			medio_Pago VARCHAR(50),
+			monto DECIMAL(10,2),
+			fecha DATE,
+			motivo VARCHAR(50)
 		);
-		PRINT 'Tabla Medio de Pago creada correctamente.';
+		PRINT 'Tabla Reembolso creada correctamente.';
 	END
 ELSE
 	BEGIN
-		PRINT 'La tabla Medio de Pago ya existe.';
+		PRINT 'La tabla Reembolso ya existe.';
 	END;
 go
 
+-- TABLA RESERVA
+
+IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'Com5600G11.psn.Reserva') AND type = N'U') 
+	BEGIN
+		CREATE TABLE psn.Reserva (
+			codReservaSUM INT IDENTITY(1,1) PRIMARY KEY,
+			medio_Pago VARCHAR(50),
+			monto DECIMAL(10,2),
+			fechahoraInicio DATETIME,	
+			fechahoraFin DATETIME,
+			piletaSUMcolonia VARCHAR(50)
+		);
+		PRINT 'Tabla Reserva creada correctamente.';
+	END
+ELSE
+	BEGIN
+		PRINT 'La tabla Reserva ya existe.';
+	END;
+go
+
+-- 

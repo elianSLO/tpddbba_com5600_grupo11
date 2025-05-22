@@ -13,7 +13,7 @@ go
 IF NOT EXISTS (SELECT * FROM sys.schemas WHERE name = 'psn')
 	BEGIN
 		EXEC('CREATE SCHEMA psn');
-		PRINT ' Schema creado exitosamente';
+		PRINT 'Schema creado exitosamente';
 	END;
 go
 
@@ -43,7 +43,7 @@ go
 
 -- TABLA PROFESOR
 
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'Com5600G11.psn.Profesor') AND type = N'U') -- 'U' tabla creada por el usuario 'N' es q sea unicode
+IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'Com5600G11.psn.Profesor') AND type = N'U')
 	BEGIN
 		CREATE TABLE psn.Profesor (
 			cod_prof INT IDENTITY(1,1) PRIMARY KEY,

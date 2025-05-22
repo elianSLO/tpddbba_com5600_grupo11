@@ -9,11 +9,11 @@ go
 USE Com5600G11
 go
 
---Crear el Schema
+--Crear el esquema
 IF NOT EXISTS (SELECT * FROM sys.schemas WHERE name = 'psn')
 	BEGIN
 		EXEC('CREATE SCHEMA psn');
-		PRINT 'Schema creado exitosamente';
+		PRINT 'Esquema creado exitosamente';
 	END;
 go
 
@@ -24,14 +24,24 @@ go
 IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'Com5600G11.psn.Socio') AND type = N'U') -- 'U' tabla creada por el usuario 'N' es q sea unicode
 	BEGIN
 		CREATE TABLE psn.Socio (
-			numero INT IDENTITY(1,1) PRIMARY KEY,
-			dni char(8) UNIQUE,
+			cod_socio INT IDENTITY(1,1) PRIMARY KEY,
+			dni int UNIQUE check (dni > 999999 and dni < 99999999),
 			nombre VARCHAR(50),
 			apellido VARCHAR(50),
 			fecha_nac DATE,
-			email VARCHAR(50),
-			telefono VARCHAR(20),
-			telefono_aux VARCHAR(20)
+			email VARCHAR(100),
+			tel VARCHAR(15),
+			tel_emerg VARCHAR(15),
+			estado BIT, -- 1 - Habilitado, 0 - No habilitado (Pago atrasado o impago)
+			saldo DECIMAL(10,2),
+			nombre_cobertura varchar(50),
+			nro_afiliado varchar(50),
+			tel_cobertura  varchar(15),
+
+			constraint ck_tel check (
+				tel NOT LIKE '%[^0-9]%' and		-- Solo numeros.
+				LEN(tel) between 10 and 14		-- 2 a 4 digitos para prefijo + 6 a 8 para numero / 0800 incluidos
+			)
 		);
 		PRINT 'Tabla Socio creada correctamente.';
 	END
@@ -50,8 +60,13 @@ IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'Com5600G1
 			dni char(8) UNIQUE, 
 			nombre VARCHAR(50),
 			apellido VARCHAR(50),
-			email VARCHAR(50),
-			telefono VARCHAR(20)
+			email VARCHAR(100),
+			tel varchar(15),
+
+			constraint ck_tel check (
+				tel NOT LIKE '%[^0-9]%' and		-- Solo numeros.
+				LEN(tel) between 10 and 14		-- 2 a 4 digitos para prefijo + 6 a 8 para numero / 0800 incluidos
+			)
 		);
 		PRINT 'Tabla Profesor creada correctamente.';
 	END
@@ -67,9 +82,12 @@ go
 IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'Com5600G11.psn.Categoria') AND type = N'U') 
 	BEGIN
 		CREATE TABLE psn.Categoria (
-			cod_categoria INT IDENTITY(1,1) PRIMARY KEY,
+			cod_categoria INT PRIMARY KEY,
 			nombre VARCHAR(50),
-			costo DECIMAL(10,2)
+			valor_mensual DECIMAL(10,2),
+			vig_valor_mens DATE,
+			valor_anual DECIMAL(10,2),
+			vig_valor_anual DATE
 		);
 		PRINT 'Tabla Categoria creada correctamente.';
 	END
@@ -84,10 +102,10 @@ go
 IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'Com5600G11.psn.Actividad') AND type = N'U') 
 	BEGIN
 		CREATE TABLE psn.Actividad (
-			cod_actividad INT IDENTITY(1,1) PRIMARY KEY,
+			cod_actividad INT PRIMARY KEY,
 			descripcion VARCHAR(50),
-			costo_mensual DECIMAL(10,2),
-			costo_invitado DECIMAL(10,2)
+			valor_mensual DECIMAL(10,2),
+			vig_valor DATE
 		);
 		PRINT 'Tabla Actividad creada correctamente.';
 	END

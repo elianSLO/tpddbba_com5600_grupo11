@@ -192,4 +192,68 @@ ELSE
 	END;
 go
 
--- 
+-- TABLA CLASE
+
+IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'Com5600G11.psn.Clase') AND type = N'U') 
+	BEGIN
+		CREATE TABLE psn.Clase (
+		codClase INT IDENTITY (1,1) PRIMARY KEY,
+		categoria VARCHAR(50),
+		-- AGREGAR FKs 
+		);
+		PRINT 'Tabla Clase creada correctamente.';
+	END
+ELSE
+	BEGIN
+		PRINT 'La tabla Clase ya existe.';
+	END;
+go
+
+-- TABLA GRUPO FAMILIAR
+
+IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'Com5600G11.psn.GrupoFamiliar') AND type = N'U') 
+	BEGIN
+		CREATE TABLE psn.GrupoFamiliar (
+		codGrupo INT PRIMARY KEY
+		);
+		PRINT 'Tabla Grupo Familiar creada correctamente.';
+	END
+ELSE
+	BEGIN
+		PRINT 'La tabla Grupo Familiar ya existe.';
+	END;
+go
+
+-- TABLA INSCRIPTO
+
+IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'Com5600G11.psn.Inscripto') AND type = N'U') 
+	BEGIN
+		CREATE TABLE psn.Inscripto (
+		fecha_inscripcion DATE PRIMARY KEY,
+		estado VARCHAR(50),
+		--AGREGAR PKS DE SOCIO Y CLASE
+		);
+		PRINT 'Tabla Inscripto creada correctamente.';
+	END
+ELSE
+	BEGIN
+		PRINT 'La tabla Inscripto ya existe.';
+	END;
+go
+
+-- TABLA SUSCRIPTO
+
+IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'Com5600G11.psn.Suscripto') AND type = N'U') 
+	BEGIN
+		CREATE TABLE psn.Suscripto (
+		fecha_suscripcion DATE PRIMARY KEY,
+		fecha_vto DATE
+		--AGREGAR PKs de SOCIO y CATEGORIA
+		);
+		PRINT 'Tabla Suscripto creada correctamente.';
+	END
+ELSE
+	BEGIN
+		PRINT 'La tabla Suscripto ya existe.';
+	END;
+go

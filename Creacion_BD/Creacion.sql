@@ -21,11 +21,11 @@ go
 
 -- TABLA SOCIO
 
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'Com5600G11.psn.Socio') AND type = N'U') -- 'U' tabla creada por el usuario 'N' es q sea unicode
+IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'Com5600G11.psn.Socio') AND type = N'U') -- 'U' tabla creada por el usuario 'N' es que sea unicode
 	BEGIN
 		CREATE TABLE psn.Socio (
 			cod_socio INT IDENTITY(1,1) PRIMARY KEY,
-			dni int UNIQUE check (dni > 999999 and dni < 99999999),
+			dni char(8) UNIQUE,
 			nombre VARCHAR(50),
 			apellido VARCHAR(50),
 			fecha_nac DATE,
@@ -81,7 +81,7 @@ go
 IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'Com5600G11.psn.Responsable') AND type = N'U')
 	BEGIN
 		CREATE TABLE psn.Responsable (
-			codResponsable INT IDENTITY(1,1) PRIMARY KEY,
+			cod_responsable INT IDENTITY(1,1) PRIMARY KEY,
 			dni char(8) UNIQUE, 
 			nombre VARCHAR(50),
 			apellido VARCHAR(50),
@@ -111,7 +111,7 @@ IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'Com5600G1
 	BEGIN
 		CREATE TABLE psn.Categoria (
 			cod_categoria INT PRIMARY KEY,
-			nombre VARCHAR(50),
+			descripcion VARCHAR(50),
 			valor_mensual DECIMAL(10,2),
 			vig_valor_mens DATE,
 			valor_anual DECIMAL(10,2),
@@ -140,6 +140,23 @@ IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'Com5600G1
 ELSE
 	BEGIN
 		PRINT 'La tabla Actividad ya existe.';
+	END;
+go
+
+-- TABLA SUSCRIPCION
+
+IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'Com5600G11.psn.Suscripcion') AND type = N'U') 
+	BEGIN
+		CREATE TABLE psn.Suscripcion (
+		fecha_suscripcion DATE PRIMARY KEY,
+		fecha_vto DATE
+		--RELACION N-N ENTRE SOCIO Y CATEGORIA. FALTA AGREGAR PKs
+		);
+		PRINT 'Tabla Suscripcion creada correctamente.';
+	END
+ELSE
+	BEGIN
+		PRINT 'La tabla Suscripcion ya existe.';
 	END;
 go
 
@@ -206,8 +223,7 @@ go
 IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'Com5600G11.psn.Reserva') AND type = N'U') 
 	BEGIN
 		CREATE TABLE psn.Reserva (
-			codReservaSUM INT IDENTITY(1,1) PRIMARY KEY,
-			medio_Pago VARCHAR(50),
+			codReserva INT IDENTITY(1,1) PRIMARY KEY,
 			monto DECIMAL(10,2),
 			fechahoraInicio DATETIME,	
 			fechahoraFin DATETIME,
@@ -238,21 +254,6 @@ ELSE
 	END;
 go
 
--- TABLA GRUPO FAMILIAR
-
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'Com5600G11.psn.GrupoFamiliar') AND type = N'U') 
-	BEGIN
-		CREATE TABLE psn.GrupoFamiliar (
-		codGrupo INT PRIMARY KEY
-		);
-		PRINT 'Tabla Grupo Familiar creada correctamente.';
-	END
-ELSE
-	BEGIN
-		PRINT 'La tabla Grupo Familiar ya existe.';
-	END;
-go
-
 -- TABLA INSCRIPTO
 
 IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'Com5600G11.psn.Inscripto') AND type = N'U') 
@@ -270,22 +271,7 @@ ELSE
 	END;
 go
 
--- TABLA SUSCRIPTO
 
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'Com5600G11.psn.Suscripto') AND type = N'U') 
-	BEGIN
-		CREATE TABLE psn.Suscripto (
-		fecha_suscripcion DATE PRIMARY KEY,
-		fecha_vto DATE
-		--RELACION N-N ENTRE SOCIO Y CATEGORIA. FALTA AGREGAR PKs
-		);
-		PRINT 'Tabla Suscripto creada correctamente.';
-	END
-ELSE
-	BEGIN
-		PRINT 'La tabla Suscripto ya existe.';
-	END;
-go
 
 -- TABLA ASISTE
 

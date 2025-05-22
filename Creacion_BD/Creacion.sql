@@ -62,7 +62,6 @@ ELSE
 go
 
 
-
 -- TABLA CATEGORIA
 
 IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'Com5600G11.psn.Categoria') AND type = N'U') 
@@ -124,7 +123,8 @@ IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'Com5600G1
 			fecha_emision DATE,
 			fecha_vto DATE,
 			fecha_segundo_vto DATE, -- VER SI VA O NO
-			estado VARCHAR(50)	
+			tipo_factura CHAR(1) CHECK (tipo_factura IN ('A', 'B', 'C')),
+			estado_factura VARCHAR(10) CHECK (estado_factura IN ('Pendiente', 'Pagada'))	
 		); 
 		PRINT 'Tabla Factura creada correctamente.';
 	END

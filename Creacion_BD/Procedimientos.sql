@@ -100,14 +100,6 @@ BEGIN
 END
 
 
--- SP PARA TABLA SOCIO
-IF  EXISTS (SELECT * FROM sys.procedures WHERE name = 'insertarSocio')
-BEGIN
-    DROP PROCEDURE stp.insertarSocio;
-END;
-GO
-
-
 ---------- STORED PROCEDURES PARA TABLA SOCIO
 
 -- SP PARA INSERTAR SOCIO
@@ -117,8 +109,7 @@ BEGIN
     DROP PROCEDURE stp.insertarSocio;
 END;
 GO
-CREATE PROCEDURE OR ALTER stp.insertarSocio
-	@cod_socio			INT,
+CREATE OR ALTER PROCEDURE stp.insertarSocio 
 	@dni				CHAR(8),
 	@nombre				VARCHAR(50),
 	@apellido			VARCHAR(50),
@@ -136,19 +127,12 @@ AS
 BEGIN
 	SET NOCOUNT ON;
     -- Validación de que ningún campo sea NULL
-    IF @cod_socio IS NULL OR @dni IS NULL OR @nombre IS NULL OR @apellido IS NULL OR 
+    IF @dni IS NULL OR @nombre IS NULL OR @apellido IS NULL OR 
        @fecha_nac IS NULL OR @email IS NULL OR @tel IS NULL OR @tel_emerg IS NULL OR
 	   @estado IS NULL OR @saldo IS NULL OR @nombre_cobertura IS NULL OR @nro_afiliado IS NULL 
 	   OR @tel_cobertura IS NULL OR @cod_responsable IS NULL
     BEGIN
         PRINT 'Error: Ningún campo puede ser NULL';
-        RETURN;
-    END;
-
-    -- Validación de que el socio no se haya insertado
-    IF EXISTS (SELECT 1 FROM psn.Socio WHERE cod_socio = @cod_socio)
-    BEGIN
-        PRINT 'Socio ya existente';
         RETURN;
     END;
 
@@ -162,7 +146,7 @@ BEGIN
 	-- Validación de que el DNI no esté insertado
 	IF EXISTS (SELECT 1 FROM psn.Socio WHERE dni = @dni)
     BEGIN
-        PRINT 'Error: Ya existe un profesor con ese DNI';
+        PRINT 'Error: Ya existe un socio con ese DNI';
         RETURN;
     END;
 

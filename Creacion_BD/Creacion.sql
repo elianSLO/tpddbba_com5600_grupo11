@@ -231,7 +231,7 @@ IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'Com5600G1
 		CREATE TABLE psn.Inscripto (
 		fecha_inscripcion DATE PRIMARY KEY,
 		estado VARCHAR(50),
-		--AGREGAR PKS DE SOCIO Y CLASE
+		--RELACION N-N ENTRE SOCIO Y CLASE. FALTA AGREGAR PKs
 		);
 		PRINT 'Tabla Inscripto creada correctamente.';
 	END
@@ -248,12 +248,28 @@ IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'Com5600G1
 		CREATE TABLE psn.Suscripto (
 		fecha_suscripcion DATE PRIMARY KEY,
 		fecha_vto DATE
-		--AGREGAR PKs de SOCIO y CATEGORIA
+		--RELACION N-N ENTRE SOCIO Y CATEGORIA. FALTA AGREGAR PKs
 		);
 		PRINT 'Tabla Suscripto creada correctamente.';
 	END
 ELSE
 	BEGIN
 		PRINT 'La tabla Suscripto ya existe.';
+	END;
+go
+
+-- TABLA ASISTE
+
+IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'Com5600G11.psn.Asiste') AND type = N'U') 
+	BEGIN
+		CREATE TABLE psn.Asiste (
+		fecha DATE PRIMARY KEY,
+		--RELACION N-N ENTRE SOCIO Y CLASE. FALTA AGREGAR PKs
+		);
+		PRINT 'Tabla Asiste creada correctamente.';
+	END
+ELSE
+	BEGIN
+		PRINT 'La tabla Asiste ya existe.';
 	END;
 go

@@ -43,7 +43,7 @@ IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'Com5600G1
 			cod_responsable		INT
 		);
 		PRINT 'Tabla Socio creada correctamente.';
-	END
+	END 
 ELSE
 	BEGIN
 		PRINT 'La tabla Socio ya existe.';
@@ -131,7 +131,7 @@ go
 IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'Com5600G11.psn.Categoria') AND type = N'U') 
 	BEGIN
 		CREATE TABLE psn.Categoria (
-			cod_categoria		INT PRIMARY KEY,
+			cod_categoria		INT IDENTITY(1,1) PRIMARY KEY,
 			descripcion			VARCHAR(50),
 			valor_mensual		DECIMAL(10,2),
 			vig_valor_mens		DATE,
@@ -172,7 +172,7 @@ go
 IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'Com5600G11.psn.Actividad') AND type = N'U') 
 	BEGIN
 		CREATE TABLE psn.Actividad (
-			cod_actividad INT PRIMARY KEY,
+			cod_actividad INT IDENTITY(1,1) PRIMARY KEY,
 			descripcion VARCHAR(50),
 			valor_mensual DECIMAL(10,2),
 			vig_valor DATE

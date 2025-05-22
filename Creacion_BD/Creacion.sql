@@ -150,3 +150,21 @@ ELSE
 	END;
 go
 
+-- TABLA REEMBOLSO
+
+IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'Com5600G11.psn.Reembolso') AND type = N'U') 
+	BEGIN
+		CREATE TABLE psn.Reembolso (
+			codReembolso INT IDENTITY(1,1) PRIMARY KEY,
+			medio_Pago VARCHAR(50),
+			monto DECIMAL(10,2),
+			fecha DATE,
+			motivo VARCHAR(50)
+		);
+		PRINT 'Tabla Reembolso creada correctamente.';
+	END
+ELSE
+	BEGIN
+		PRINT 'La tabla Reembolso ya existe.';
+	END;
+go

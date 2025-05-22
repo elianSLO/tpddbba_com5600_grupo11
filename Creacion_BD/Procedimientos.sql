@@ -357,7 +357,6 @@ BEGIN
 END;
 GO
 CREATE OR ALTER PROCEDURE stp.insertarProfesor
-	@cod_prof			INT,
 	@dni				CHAR(8),
 	@nombre				VARCHAR(50),
 	@apellido			VARCHAR(50),
@@ -367,17 +366,10 @@ AS
 BEGIN
 	SET NOCOUNT ON;
     -- Validación de que ningún campo sea NULL
-    IF @cod_prof IS NULL OR @dni IS NULL OR @nombre IS NULL OR @apellido IS NULL OR 
+    IF @dni IS NULL OR @nombre IS NULL OR @apellido IS NULL OR 
        @email IS NULL OR @tel IS NULL
     BEGIN
         PRINT 'Error: Ningún campo puede ser NULL';
-        RETURN;
-    END;
-
-    -- Validación de que el profesor no se haya insertado
-    IF EXISTS (SELECT 1 FROM psn.Profesor WHERE cod_prof = @cod_prof)
-    BEGIN
-        PRINT 'Socio ya existente';
         RETURN;
     END;
 
@@ -522,7 +514,6 @@ BEGIN
 END;
 GO
 CREATE OR ALTER PROCEDURE stp.insertarInvitado
-    @cod_invitado       INT,
     @dni                CHAR(8),
     @nombre             VARCHAR(50),
     @apellido           VARCHAR(50),
@@ -540,18 +531,12 @@ AS
 BEGIN
     SET NOCOUNT ON;
 
-    IF @cod_invitado IS NULL OR @dni IS NULL OR @nombre IS NULL OR @apellido IS NULL OR 
+    IF @dni IS NULL OR @nombre IS NULL OR @apellido IS NULL OR 
        @fecha_nac IS NULL OR @email IS NULL OR @tel IS NULL OR @tel_emerg IS NULL OR
        @estado IS NULL OR @saldo IS NULL OR @nombre_cobertura IS NULL OR @nro_afiliado IS NULL 
        OR @tel_cobertura IS NULL OR @cod_responsable IS NULL
     BEGIN
         PRINT 'Error: Ningún campo puede ser NULL';
-        RETURN;
-    END;
-
-    IF EXISTS (SELECT 1 FROM psn.Invitado WHERE cod_invitado = @cod_invitado)
-    BEGIN
-        PRINT 'Invitado ya existente';
         RETURN;
     END;
 

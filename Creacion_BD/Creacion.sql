@@ -40,7 +40,7 @@ IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'Com5600G1
 			nro_afiliado		VARCHAR(50),
 			tel_cobertura		VARCHAR(15) check (tel_cobertura NOT LIKE '%[^0-9]%' and		
 													LEN(tel_cobertura) between 10 and 14),
-			cod_responsable		INT,
+			cod_responsable		INT
 		);
 		PRINT 'Tabla Socio creada correctamente.';
 	END

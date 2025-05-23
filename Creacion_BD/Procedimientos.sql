@@ -59,6 +59,11 @@ GO
 ---------------------------------------------------------------------------------------------------------------
 -- MODIFICAR
 
+IF  EXISTS (SELECT * FROM sys.procedures WHERE name = 'modificarCategoria')
+BEGIN
+    DROP PROCEDURE stp.modificarCategoria;
+END;
+GO
 CREATE OR ALTER PROCEDURE stp.modificarCategoria
 	@cod_categoria		INT,
 	@descripcion		VARCHAR(50),
@@ -102,6 +107,7 @@ BEGIN
 		where cod_categoria = @cod_categoria;
 		PRINT 'Categoria actualizada correctamente'
 END
+GO
 ----------------------------------------------------------------------------------------------------------------
 --	STORED PROCEDURES PARA TABLA ACTIVIDAD
 
@@ -112,7 +118,7 @@ CREATE OR ALTER PROCEDURE stp.insertarActividad
 AS
 BEGIN
 	--	Validar que no exista la misma descripción para otra actividad.
-	IF (EXISTS (SELECT 1 FROM psn.Actividad WHERE @descripcion = descripcion)
+	IF (EXISTS (SELECT 1 FROM psn.Actividad WHERE @descripcion = descripcion))
 		BEGIN
 			PRINT 'Ya existe esa actividad.'
 			RETURN;
@@ -126,6 +132,8 @@ BEGIN
 	IF @vig_valor < GETDATE()
 		BEGIN
 			PRINT 'Fecha de vigencia invalida.'
+			RETURN
+		END
 
 	INSERT INTO psn.Actividad (descripcion,valor_mensual,vig_valor)
 		VALUES(@descripcion,@valor_mensual,@vig_valor)
@@ -1087,8 +1095,9 @@ GO
 IF EXISTS (SELECT * FROM sys.procedures WHERE name = 'suscribirSocio')
 BEGIN
     DROP PROCEDURE stp.suscribirSocio;
-END;
+END
 GO
+
 CREATE OR ALTER PROCEDURE stp.suscribirSocio
 	@cod_socio INT,
 	@tipoSuscripcion CHAR(1), --Si es anual A, si es mensual M
@@ -1134,11 +1143,13 @@ END
 -----------------------------------------------------------------------------------------
 --	SP PARA FACTURAS
 
-IF NOT EXISTS (SELECT * FROM sys.procedures WHERE (object_id = OBJECT_ID('emitirFactura') AND type = N'U')
+IF NOT EXISTS (SELECT * FROM sys.procedures WHERE (object_id = OBJECT_ID('emitirFactura') AND type = N'U'))
 BEGIN
-    DROP PROCEDURE stp.modificarInvitado;
+    DROP PROCEDURE stp.emitirFactura;
 END;
 GO
+
+
 CREATE OR ALTER PROCEDURE stp.emitirFactura
 	@cod_socio		INT
 AS
@@ -1149,11 +1160,95 @@ BEGIN
 		RETURN
 	END
 	DECLARE @categoria	INT,
-			@monto		DECIMAL(10,2)
-	SET @categoria = (SELECT cod_categoria from psn.Suscripcion WHERE @cod_socio = cod_socio)
-	--SET @monto = (SELECT valor_mensual)
+			@monto		DECIMAL(10,2),
+			@fecha_emision	DATE,
+			@fecha_vto		DATE,
+			@fecha_seg_vto	DATE,
+			@estado			VARCHAR(10),
+			@tipoSuscripc	CHAR(1),
+			@recargo		INT
+	SET @categoria = (SELECT cod_categoria FROM psn.Suscripcion WHERE @cod_socio = cod_socio)
+	SET @tipoSuscripc = (SELECT tiempoSuscr FROM psn.Suscripcion WHERE @cod_socio = cod_socio)
+	SET @monto = (SELECT valor_mensual from psn.Categoria WHERE cod_categoria = @categoria)
+	SET @fecha_emision = GETDATE();
+	SET @fecha_vto = DATEADD(DAY,5,@fecha_emision)
+	SET @fecha_seg_vto = DATEADD(DAY,5,@fecha_vto)
+	SET @estado = 'Pendiente'
+	SET @recargo = 0
+
+	INSERT INTO psn.Factura (monto,fecha_emision,fecha_vto,fecha_seg_vto,recargo,estado,cod_socio)
+	VALUES (@monto,@fecha_emision,@fecha_vto,@fecha_seg_vto, @recargo,@estado,@cod_socio)
 	
 END
+GO
+
+IF EXISTS (SELECT * FROM sys.procedures WHERE (object_id = OBJECT_ID('modificarFactura') AND type = N'U'))
+BEGIN
+    DROP PROCEDURE stp.modificarFactura;
+END;
+GO
+
+
+CREATE OR ALTER PROCEDURE stp.modificarFactura
+	@cod_socio		INT,
+	@cod_Factura	INT
+AS
+BEGIN
+	IF NOT EXISTS (SELECT 1 FROM psn.Factura WHERE @cod_socio = cod_socio)
+		BEGIN
+			PRINT 'No existe factura'
+			RETURN
+		END
+	IF NOT EXISTS (SELECT 1 FROM psn.Factura WHERE @cod_Factura = cod_Factura)
+		BEGIN
+			PRINT 'No existe factura'
+			RETURN
+		END
+	DECLARE @monto			DECIMAL(10,2),
+			@estado			VARCHAR(10),
+			@tipoSuscripc	CHAR(1),
+			@fecha_vto		DATE,
+			@fecha_seg_vto	DATE
+	SET @fecha_vto = (SELECT fecha_vto from psn.Factura WHERE cod_Factura = @cod_Factura)
+	SET @fecha_seg_vto = (SELECT fecha_seg_vto from psn.Factura WHERE cod_Factura = @cod_Factura)
+	SET @monto = (SELECT monto FROM psn.Factura WHERE cod_Factura = @cod_Factura)
+	IF GETDATE() > @fecha_seg_vto
+		SET @monto = @monto * 1.10
+	SET @estado = 'VENCIDA'
+
+	UPDATE psn.Factura
+		SET
+			monto = ISNULL(monto, @monto),
+			estado = ISNULL(estado, @estado)
+		where cod_Factura = @cod_Factura;
+		PRINT 'Factura actualizada correctamente'
+END
+GO
+
+IF EXISTS (SELECT * FROM sys.procedures WHERE name = 'borrarFactura')
+BEGIN
+    DROP PROCEDURE stp.borrarFactura;
+END;
+GO
+
+CREATE OR ALTER PROCEDURE stp.borrarFactura
+    @cod_Factura INT
+AS
+BEGIN
+    SET NOCOUNT ON;
+    -- Validación: verificar que exista el código
+    IF NOT EXISTS (SELECT 1 FROM psn.Factura WHERE cod_Factura = @cod_Factura)
+    BEGIN
+        PRINT 'Error: No existe factura.';
+        RETURN;
+    END
+
+    -- Eliminación del registro
+    DELETE FROM psn.Factura
+    WHERE cod_Factura = @cod_Factura;
+
+    PRINT 'Factura eliminada correctamente.';
+END;
 GO
 
 ----------------------------------------------------------------------------------------------------------------------------------------------------

@@ -340,7 +340,7 @@ ELSE
 	BEGIN
 		PRINT 'La tabla Item_Factura ya existe.';
 	END;
-go
+GO
 
 -- Una vez creadas todas las tablas, defino claves.
 

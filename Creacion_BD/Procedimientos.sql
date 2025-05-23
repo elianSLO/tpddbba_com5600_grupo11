@@ -1282,7 +1282,7 @@ GO
 
 IF EXISTS (SELECT * FROM sys.procedures WHERE name = 'borrarReembolso')
 BEGIN
-    DROP PROCEDURE stp.borarReembolso;
+    DROP PROCEDURE stp.borrarReembolso;
 END;
 GO
 
@@ -1309,4 +1309,229 @@ GO
 
 -----------------------------------------------------------------------------------------------------------------------------------------------------------
 
----
+--- STORED PROCEDURES PARA TABLA RESPONSABLE
+
+
+---- INSERCION RESPONSABLE
+
+IF EXISTS (SELECT * FROM sys.procedures WHERE name = 'insertarResponsable')
+BEGIN
+    DROP PROCEDURE stp.insertarResponsable;
+END;
+GO
+
+CREATE PROCEDURE stp.insertarResponsable
+    @dni         CHAR(8),
+    @nombre      VARCHAR(50),
+    @apellido    VARCHAR(50),
+    @email       VARCHAR(100),
+    @parentezco  VARCHAR(50),
+    @fecha_nac   DATE,
+    @nro_socio   INT,
+    @tel         VARCHAR(15)
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    -- Validaciones
+    IF @dni IS NULL OR LEN(@dni) != 8 OR @dni NOT LIKE '%[0-9]%'
+    BEGIN
+        PRINT 'Error: El DNI debe contener exactamente 8 dígitos numéricos.';
+        RETURN;
+    END
+
+    IF EXISTS (SELECT 1 FROM psn.Responsable WHERE dni = @dni)
+    BEGIN
+        PRINT 'Error: Ya existe un responsable con ese DNI.';
+        RETURN;
+    END
+
+  -- Validación de que el nombre sólo contenga letras y espacios
+	IF @nombre LIKE '%[^a-zA-Z ]%'
+	BEGIN
+    PRINT 'Error: El nombre solo puede contener letras y espacios.';
+    RETURN;
+	END
+
+	-- Validación de que el apellido sólo contenga letras y espacios
+	IF @apellido LIKE '%[^a-zA-Z ]%'
+	BEGIN
+    PRINT 'Error: El apellido solo puede contener letras y espacios.';
+    RETURN;
+	END
+
+	-- Validación de email
+	IF @email NOT LIKE '_%@_%._%'
+	BEGIN
+		PRINT 'Error: Email inválido. Debe tener formato ejemplo@dominio.com.';
+		RETURN;
+	END
+
+    IF @parentezco IS NULL OR LTRIM(RTRIM(@parentezco)) = ''
+    BEGIN
+        PRINT 'Error: El parentezco no puede estar vacío.';
+        RETURN;
+    END
+
+    IF @fecha_nac IS NULL OR @fecha_nac > GETDATE()
+    BEGIN
+        PRINT 'Error: La fecha de nacimiento no puede ser nula ni futura.';
+        RETURN;
+    END
+
+    IF @nro_socio IS NULL OR @nro_socio <= 0
+    BEGIN
+        PRINT 'Error: El número de socio debe ser un número positivo.';
+        RETURN;
+    END
+
+    IF @tel IS NULL OR @tel LIKE '%[^0-9]%' OR LEN(@tel) < 10 OR LEN(@tel) > 14
+    BEGIN
+        PRINT 'Error: El teléfono debe contener solo números y tener entre 10 y 14 dígitos.';
+        RETURN;
+    END
+
+    -- Inserción
+    INSERT INTO psn.Responsable (dni, nombre, apellido, email, parentezco, fecha_nac, nro_socio, tel)
+    VALUES (@dni, @nombre, @apellido, @email, @parentezco, @fecha_nac, @nro_socio, @tel);
+
+    PRINT 'Responsable insertado correctamente.';
+END;
+GO
+
+---- MODIFICACION RESPONSABLE
+
+IF EXISTS (SELECT * FROM sys.procedures WHERE name = 'modificarResponsable')
+BEGIN
+    DROP PROCEDURE stp.modificarResponsable;
+END;
+GO
+
+CREATE PROCEDURE stp.modificarResponsable
+    @cod_responsable INT,
+    @dni             CHAR(8),
+    @nombre          VARCHAR(50),
+    @apellido        VARCHAR(50),
+    @email           VARCHAR(100),
+    @parentezco      VARCHAR(50),
+    @fecha_nac       DATE,
+    @nro_socio       INT,
+    @tel             VARCHAR(15)
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    -- Validar existencia
+    IF NOT EXISTS (SELECT 1 FROM psn.Responsable WHERE cod_responsable = @cod_responsable)
+    BEGIN
+        PRINT 'Error: No existe un responsable con ese código.';
+        RETURN;
+    END
+
+    -- Validaciones (igual que en el insert)
+    IF @dni IS NULL OR LEN(@dni) != 8 OR @dni NOT LIKE '%[0-9]%'
+    BEGIN
+        PRINT 'Error: El DNI debe contener exactamente 8 dígitos numéricos.';
+        RETURN;
+    END
+
+    IF EXISTS (
+        SELECT 1 FROM psn.Responsable 
+        WHERE dni = @dni AND cod_responsable != @cod_responsable
+    )
+    BEGIN
+        PRINT 'Error: Otro responsable ya tiene ese DNI.';
+        RETURN;
+    END
+
+	IF @nombre LIKE '%[^a-zA-Z ]%'
+	BEGIN
+    PRINT 'Error: El nombre solo puede contener letras y espacios.';
+    RETURN;
+	END
+
+	IF @apellido LIKE '%[^a-zA-Z ]%'
+	BEGIN
+    PRINT 'Error: El apellido solo puede contener letras y espacios.';
+    RETURN;
+	END
+
+	-- Validación de email
+	IF @email NOT LIKE '_%@_%._%'
+	BEGIN
+		PRINT 'Error: Email inválido. Debe tener formato ejemplo@dominio.com.';
+		RETURN;
+	END
+
+    IF @parentezco IS NULL OR LTRIM(RTRIM(@parentezco)) = ''
+    BEGIN
+        PRINT 'Error: El parentezco no puede estar vacío.';
+        RETURN;
+    END
+
+    IF @fecha_nac IS NULL OR @fecha_nac > GETDATE()
+    BEGIN
+        PRINT 'Error: La fecha de nacimiento no puede ser nula ni futura.';
+        RETURN;
+    END
+
+    IF @nro_socio IS NULL OR @nro_socio <= 0
+    BEGIN
+        PRINT 'Error: El número de socio debe ser un número positivo.';
+        RETURN;
+    END
+
+    IF @tel IS NULL OR @tel LIKE '%[^0-9]%' OR LEN(@tel) < 10 OR LEN(@tel) > 14
+    BEGIN
+        PRINT 'Error: El teléfono debe contener solo números y tener entre 10 y 14 dígitos.';
+        RETURN;
+    END
+
+    -- Actualización
+    UPDATE psn.Responsable
+    SET dni = @dni,
+        nombre = @nombre,
+        apellido = @apellido,
+        email = @email,
+        parentezco = @parentezco,
+        fecha_nac = @fecha_nac,
+        nro_socio = @nro_socio,
+        tel = @tel
+    WHERE cod_responsable = @cod_responsable;
+
+    PRINT 'Responsable modificado correctamente.';
+END;
+GO
+
+---- BORRADO RESPONSABLE
+IF EXISTS (SELECT * FROM sys.procedures WHERE name = 'borrarResponsable')
+BEGIN
+    DROP PROCEDURE stp.borrarResponsable;
+END;
+GO
+
+CREATE PROCEDURE stp.borrarResponsable
+    @cod_responsable INT
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    -- Validar existencia
+    IF NOT EXISTS (SELECT 1 FROM psn.Responsable WHERE cod_responsable = @cod_responsable)
+    BEGIN
+        PRINT 'Error: No existe un responsable con ese código.';
+        RETURN;
+    END
+
+    -- Eliminación
+    DELETE FROM psn.Responsable
+    WHERE cod_responsable = @cod_responsable;
+
+    PRINT 'Responsable eliminado correctamente.';
+END;
+GO
+
+
+--------------------------------------------------------
+
+

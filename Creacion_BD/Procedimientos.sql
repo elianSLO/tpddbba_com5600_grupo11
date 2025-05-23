@@ -1745,3 +1745,29 @@ BEGIN
 END;
 GO
 
+-- SP PARA BORRAR RESERVA
+
+IF EXISTS (SELECT * FROM sys.procedures WHERE name = 'borrarReserva')
+BEGIN
+    DROP PROCEDURE stp.borrarReserva;
+END;
+GO
+
+CREATE OR ALTER PROCEDURE stp.borrarReserva
+    @cod_reserva INT
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    IF NOT EXISTS (SELECT 1 FROM psn.Reserva WHERE cod_reserva = @cod_reserva)
+    BEGIN
+        PRINT 'Error: El codigo de reserva especificado no existe.';
+        RETURN;
+    END;
+
+    DELETE FROM psn.Reserva
+    WHERE cod_reserva = @cod_reserva;
+
+    PRINT 'Reserva borrada correctamente.';
+END;
+GO

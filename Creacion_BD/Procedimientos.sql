@@ -1136,9 +1136,11 @@ END
 
 IF NOT EXISTS (SELECT * FROM sys.procedures WHERE (object_id = OBJECT_ID('emitirFactura') AND type = N'U')
 BEGIN
-    DROP PROCEDURE stp.modificarInvitado;
+    DROP PROCEDURE stp.emitirFactura;
 END;
 GO
+
+
 CREATE OR ALTER PROCEDURE stp.emitirFactura
 	@cod_socio		INT
 AS
@@ -1149,9 +1151,24 @@ BEGIN
 		RETURN
 	END
 	DECLARE @categoria	INT,
-			@monto		DECIMAL(10,2)
-	SET @categoria = (SELECT cod_categoria from psn.Suscripcion WHERE @cod_socio = cod_socio)
-	--SET @monto = (SELECT valor_mensual)
+			@monto		DECIMAL(10,2),
+			@fecha_emision	DATE,
+			@fecha_vto		DATE,
+			@fecha_seg_vto	DATE,
+			@estado			VARCHAR(10),
+			@tipoSuscripc	CHAR(1),
+			@recargo		INT
+	SET @categoria = (SELECT cod_categoria FROM psn.Suscripcion WHERE @cod_socio = cod_socio)
+	SET @tipoSuscripc = (SELECT tiempoSuscr FROM psn.Suscripcion WHERE @cod_socio = cod_socio)
+	SET @monto = (SELECT valor_mensual from psn.Categoria WHERE cod_categoria = @categoria)
+	SET @fecha_emision = GETDATE();
+	SET @fecha_vto = DATEADD(DAY,5,@fecha_emision)
+	SET @fecha_seg_vto = DATEADD(DAY,5,@fecha_vto)
+	SET @estado = 'Pendiente'
+	SET @recargo = 0
+
+	INSERT INTO psn.Factura (monto,fecha_emision,fecha_vto,fecha_seg_vto,recargo,estado,cod_socio)
+	VALUES (@monto,@fecha_emision,@fecha_vto,@fecha_seg_vto, @recargo,@estado,@cod_socio)
 	
 END
 GO

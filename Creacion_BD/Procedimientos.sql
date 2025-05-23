@@ -1533,6 +1533,103 @@ GO
 
 
 ------------------------------------------------------------------------------------------------------------------------------------------------------------
+--- STORED PROCEDURES PARA ITEM_FACTURA
+
+-- INSERCION ITEM_FACTURA
+
+IF EXISTS (SELECT * FROM sys.procedures WHERE name = 'insertarItem_factura')
+BEGIN
+    DROP PROCEDURE stp.insertarItem_factura;
+END;
+GO
+
+CREATE PROCEDURE stp.insertarItem_factura
+    @cod_Factura INT
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    -- Validación: cod_Factura debe ser mayor a 0
+    IF @cod_Factura IS NULL OR @cod_Factura <= 0
+    BEGIN
+        PRINT 'Error: El código de factura debe ser un número positivo.';
+        RETURN;
+    END
+
+    -- Inserción
+    INSERT INTO psn.Item_Factura (cod_Factura)
+    VALUES (@cod_Factura);
+
+    PRINT 'Item de factura insertado correctamente.';
+END;
+GO
+
+
+-- MODIFICACION ITEM_FACTURA
+
+IF EXISTS (SELECT * FROM sys.procedures WHERE name = 'modificarItem_factura')
+BEGIN
+    DROP PROCEDURE stp.modificarItem_factura;
+END;
+GO
+
+CREATE PROCEDURE stp.modificarItem_factura
+    @cod_item     INT,
+    @cod_Factura  INT
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    -- Validar existencia de cod_item
+    IF NOT EXISTS (SELECT 1 FROM psn.Item_Factura WHERE cod_item = @cod_item)
+    BEGIN
+        PRINT 'Error: No existe un ítem de factura con ese código.';
+        RETURN;
+    END
+
+    -- Validación: cod_Factura debe ser mayor a 0
+    IF @cod_Factura IS NULL OR @cod_Factura <= 0
+    BEGIN
+        PRINT 'Error: El código de factura debe ser un número positivo.';
+        RETURN;
+    END
+
+    -- Actualización
+    UPDATE psn.Item_Factura
+    SET cod_Factura = @cod_Factura
+    WHERE cod_item = @cod_item;
+
+    PRINT 'Item de factura modificado correctamente.';
+END;
+GO
+
+-- BORRADO ITEM_FACTURA
+IF EXISTS (SELECT * FROM sys.procedures WHERE name = 'borrarItem_factura')
+BEGIN
+    DROP PROCEDURE stp.borrarItem_factura;
+END;
+GO
+
+CREATE PROCEDURE stp.borrarItem_factura
+    @cod_item INT
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    -- Validar existencia
+    IF NOT EXISTS (SELECT 1 FROM psn.Item_Factura WHERE cod_item = @cod_item)
+    BEGIN
+        PRINT 'Error: No existe un ítem de factura con ese código.';
+        RETURN;
+    END
+
+    -- Eliminación
+    DELETE FROM psn.Item_Factura
+    WHERE cod_item = @cod_item;
+
+    PRINT 'Item de factura eliminado correctamente.';
+END;
+GO
 
 
 

@@ -133,6 +133,7 @@ IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'Com5600G1
 		CREATE TABLE psn.Categoria (
 			cod_categoria		INT IDENTITY(1,1) PRIMARY KEY,
 			descripcion			VARCHAR(50),
+			edad_max			INT,
 			valor_mensual		DECIMAL(10,2),
 			vig_valor_mens		DATE,
 			valor_anual			DECIMAL(10,2),
@@ -146,6 +147,7 @@ ELSE
 	END;
 go
 
+--ALTER TABLE psn.Categoria add edad_max int
 
 -- TABLA SUSCRIPCION
 

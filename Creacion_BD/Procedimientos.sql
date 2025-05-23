@@ -1167,7 +1167,7 @@ BEGIN
 END;
 GO
 
-CREATE PROCEDURE stp.insertarReembolso
+CREATE OR ALTER PROCEDURE stp.insertarReembolso
     @monto       DECIMAL(10,2),
     @medio_Pago  VARCHAR(50),
     @fecha       DATE,
@@ -1220,7 +1220,7 @@ BEGIN
 END;
 GO
 
-CREATE PROCEDURE stp.modificarReembolso
+CREATE OR ALTER PROCEDURE stp.modificarReembolso
     @codReembolso INT,
     @monto        DECIMAL(10,2),
     @medio_Pago   VARCHAR(50),
@@ -1286,7 +1286,7 @@ BEGIN
 END;
 GO
 
-CREATE PROCEDURE stp.borrarReembolso
+CREATE OR ALTER PROCEDURE stp.borrarReembolso
     @codReembolso INT
 AS
 BEGIN
@@ -1320,7 +1320,7 @@ BEGIN
 END;
 GO
 
-CREATE PROCEDURE stp.insertarResponsable
+CREATE OR ALTER PROCEDURE stp.insertarResponsable
     @dni         CHAR(8),
     @nombre      VARCHAR(50),
     @apellido    VARCHAR(50),
@@ -1407,7 +1407,7 @@ BEGIN
 END;
 GO
 
-CREATE PROCEDURE stp.modificarResponsable
+CREATE OR ALTER PROCEDURE stp.modificarResponsable
     @cod_responsable INT,
     @dni             CHAR(8),
     @nombre          VARCHAR(50),
@@ -1510,7 +1510,7 @@ BEGIN
 END;
 GO
 
-CREATE PROCEDURE stp.borrarResponsable
+CREATE OR ALTER PROCEDURE stp.borrarResponsable
     @cod_responsable INT
 AS
 BEGIN
@@ -1532,6 +1532,7 @@ END;
 GO
 
 
---------------------------------------------------------
+------------------------------------------------------------------------------------------------------------------------------------------------------------
+
 
 

@@ -1298,6 +1298,7 @@ BEGIN
 			@fecha_seg_vto	DATE
 	SET @fecha_vto = (SELECT fecha_vto from psn.Factura WHERE cod_Factura = @cod_Factura)
 	SET @fecha_seg_vto = (SELECT fecha_seg_vto from psn.Factura WHERE cod_Factura = @cod_Factura)
+	SET @monto = (SELECT monto FROM psn.Factura WHERE cod_Factura = @cod_Factura)
 	IF GETDATE() > @fecha_seg_vto
 		SET @monto = @monto * 1.10
 	SET @estado = 'VENCIDA'

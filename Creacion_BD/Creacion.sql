@@ -329,6 +329,10 @@ IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'Com5600G1
 		CREATE TABLE psn.Item_Factura (
 			cod_item	INT IDENTITY(1,1) PRIMARY KEY,
 			cod_Factura	INT,
+		
+      CONSTRAINT FK_ItemFactura_Factura FOREIGN KEY (cod_Factura)
+      REFERENCES psn.Factura (cod_Factura)
+      ON DELETE CASCADE
 		);
 		PRINT 'Tabla Item_Factura creada correctamente.';
 	END
@@ -336,6 +340,7 @@ ELSE
 	BEGIN
 		PRINT 'La tabla Item_Factura ya existe.';
 	END;
+GO
 
 -- Una vez creadas todas las tablas, defino claves.
 

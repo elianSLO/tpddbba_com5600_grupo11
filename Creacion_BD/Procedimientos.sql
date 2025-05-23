@@ -108,6 +108,30 @@ BEGIN
 		PRINT 'Categoria actualizada correctamente'
 END
 GO
+
+-- SP PARA BORRAR CATE
+IF EXISTS (SELECT * FROM sys.procedures WHERE name = 'borrarCategoria')
+BEGIN
+    DROP PROCEDURE stp.borrarCategoria;
+END;
+GO
+CREATE OR ALTER PROCEDURE stp.borrarCategoria
+        @cod_categoria INT
+    AS
+    BEGIN
+        SET NOCOUNT ON;
+        IF EXISTS (SELECT 1 FROM psn.Categoria WHERE cod_categoria = @cod_categoria)
+        BEGIN
+            DELETE FROM psn.Categoria WHERE cod_categoria = @cod_categoria;
+            PRINT 'Categoria eliminada.';
+        END
+        ELSE
+        BEGIN
+            PRINT 'No existe categoria.';
+        END
+    END
+GO
+
 ----------------------------------------------------------------------------------------------------------------
 --	STORED PROCEDURES PARA TABLA ACTIVIDAD
 
@@ -1137,8 +1161,71 @@ BEGIN
 	VALUES(@cod_socio,@cod_categoria,@fecha_inscripcion,@fecha_venc)
 END
 
+IF EXISTS (SELECT * FROM sys.procedures WHERE name = 'modificarSuscripcion')
+BEGIN
+    DROP PROCEDURE stp.modificarSuscripcion;
+END
+GO
 
+CREATE OR ALTER PROCEDURE stp.modificarSuscripcion
+	@cod_socio INT,
+	@nueva_cat INT,
+	@tiempo CHAR(1)
+AS
+BEGIN
+	IF NOT EXISTS (SELECT 1 FROM psn.Suscripcion WHERE cod_socio = @cod_socio)
+		BEGIN
+			PRINT 'No existe suscripcion'
+			RETURN
+		END
+	IF NOT EXISTS (SELECT 1 FROM psn.Suscripcion WHERE cod_categoria = @nueva_cat)
+		BEGIN
+			PRINT 'No existe categoria'
+			RETURN
+		END
+	DECLARE @edadLimite INT, @edadSocio INT, @fnac DATE
+	SET @edadLimite = (SELECT edad_max from psn.Categoria WHERE cod_categoria = @nueva_cat)
+	SET @fnac = ( SELECT fecha_nac from psn.Socio WHERE cod_socio = @cod_socio)
+	SET @edadSocio = (SELECT DATEDIFF(YEAR,@fnac,GETDATE()))
 
+	IF (@edadSocio > @edadLimite)
+	BEGIN
+		PRINT 'Categoria incorrecta'
+		RETURN
+	END
+
+	UPDATE psn.Suscripcion
+	SET 
+		cod_categoria = ISNULL(cod_categoria,@nueva_cat),
+		tiempoSuscr = ISNULL(tiempoSuscr, @tiempo)
+	WHERE cod_socio = @cod_socio
+END
+
+IF EXISTS (SELECT * FROM sys.procedures WHERE name = 'borrarSuscripcion')
+BEGIN
+    DROP PROCEDURE stp.borrarSuscripcion;
+END;
+GO
+
+CREATE OR ALTER PROCEDURE stp.borrarSuscripcion
+    @cod_socio INT
+AS
+BEGIN
+    SET NOCOUNT ON;
+    -- Validación: verificar que exista el código
+    IF NOT EXISTS (SELECT 1 FROM psn.Suscripcion WHERE cod_socio = @cod_socio)
+    BEGIN
+        PRINT 'Error: No existe suscripcion.';
+        RETURN;
+    END
+
+    -- Eliminación del registro
+    DELETE FROM psn.Suscripcion
+    WHERE cod_socio = @cod_socio
+
+    PRINT 'Suscripcion eliminada';
+END;
+GO
 
 -----------------------------------------------------------------------------------------
 --	SP PARA FACTURAS

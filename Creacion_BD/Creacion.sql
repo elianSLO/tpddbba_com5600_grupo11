@@ -255,7 +255,7 @@ go
 IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'Com5600G11.psn.Reserva') AND type = N'U') 
 	BEGIN
 		CREATE TABLE psn.Reserva (
-			codReserva			INT IDENTITY(1,1) PRIMARY KEY,
+			cod_reserva			INT IDENTITY(1,1) PRIMARY KEY,
 			monto				DECIMAL(10,2),
 			fechahoraInicio		DATETIME,	
 			fechahoraFin		DATETIME,

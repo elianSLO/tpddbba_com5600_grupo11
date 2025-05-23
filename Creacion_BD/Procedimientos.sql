@@ -1638,3 +1638,110 @@ BEGIN
     PRINT 'Reserva insertada correctamente.';
 END;
 GO
+
+-- SP PARA MODIFICAR RESERVA
+
+IF EXISTS (SELECT * FROM sys.procedures WHERE name = 'modificarReserva')
+BEGIN
+    DROP PROCEDURE stp.modificarReserva;
+END;
+GO
+
+CREATE OR ALTER PROCEDURE stp.modificarReserva
+    @cod_reserva        INT,
+    @cod_socio          INT = NULL,
+    @cod_invitado       INT = NULL,
+    @monto              DECIMAL(10,2),
+    @fechahoraInicio    DATETIME,
+    @fechahoraFin       DATETIME,
+    @piletaSUMColonia   VARCHAR(50)
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    IF NOT EXISTS (SELECT 1 FROM psn.Reserva WHERE cod_reserva = @cod_reserva)
+    BEGIN
+        PRINT 'Error: El codigo de reserva especificado no existe.';
+        RETURN;
+    END;
+
+    IF @cod_socio IS NULL AND @cod_invitado IS NULL
+    BEGIN
+        PRINT 'Error: Debe especificar un codigo de socio o de invitado para la reserva.';
+        RETURN;
+    END;
+
+    IF @cod_socio IS NOT NULL AND @cod_invitado IS NOT NULL
+    BEGIN
+        PRINT 'Error: Solo se debe especificar cod_socio o cod_invitado, no ambos.';
+        RETURN;
+    END;
+
+    IF @cod_socio IS NOT NULL AND NOT EXISTS (SELECT 1 FROM psn.Socio WHERE cod_socio = @cod_socio)
+    BEGIN
+        PRINT 'Error: El codigo de socio especificado no existe.';
+        RETURN;
+    END;
+
+    IF @cod_invitado IS NOT NULL AND NOT EXISTS (SELECT 1 FROM psn.Invitado WHERE cod_invitado = @cod_invitado)
+    BEGIN
+        PRINT 'Error: El codigo de invitado especificado no existe.';
+        RETURN;
+    END;
+
+    IF @monto IS NULL OR @fechahoraInicio IS NULL OR @fechahoraFin IS NULL OR @piletaSUMColonia IS NULL
+    BEGIN
+        PRINT 'Error: Campos criticos (monto, fecha/hora, recurso) no pueden ser NULL.';
+        RETURN;
+    END;
+    
+    IF @fechahoraInicio < GETDATE()
+    BEGIN
+        PRINT 'Error: La fecha y hora de inicio de la reserva no puede ser en el pasado.';
+        RETURN;
+    END;
+
+    IF @fechahoraInicio >= @fechahoraFin
+    BEGIN
+        PRINT 'Error: La fecha y hora de inicio debe ser anterior a la fecha y hora de fin.';
+        RETURN;
+    END;
+
+    IF DATEDIFF(minute, @fechahoraInicio, @fechahoraFin) < 60
+    BEGIN
+        PRINT 'Error: La duracion de la reserva debe ser al menos de 60 minutos.';
+        RETURN;
+    END;
+
+    IF @monto <= 0
+    BEGIN
+        PRINT 'Error: El monto de la reserva debe ser mayor a cero.';
+        RETURN;
+    END;
+
+    IF EXISTS (SELECT 1 FROM psn.Reserva
+               WHERE cod_reserva <> @cod_reserva -- Excluir la reserva que se esta modificando
+                 AND piletaSUMColonia = @piletaSUMColonia
+                 AND (
+                        (@fechahoraInicio < fechahoraFin AND @fechahoraFin > fechahoraInicio) -- Solapamiento
+                     )
+              )
+    BEGIN
+       PRINT 'Error: El recurso "' + @piletaSUMColonia + '" ya esta reservado en el horario solicitado por otra reserva.';
+       RETURN;
+    END;
+
+    UPDATE psn.Reserva
+    SET
+        cod_socio = @cod_socio,
+        cod_invitado = @cod_invitado,
+        monto = @monto,
+        fechahoraInicio = @fechahoraInicio,
+        fechahoraFin = @fechahoraFin,
+        piletaSUMColonia = @piletaSUMColonia
+    WHERE cod_reserva = @cod_reserva;
+
+    PRINT 'Reserva modificada correctamente.';
+END;
+GO
+

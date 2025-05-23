@@ -1632,4 +1632,168 @@ END;
 GO
 
 
+----------------------- SPs ASISTE
 
+-- INSERCION ASISTE
+
+IF EXISTS (SELECT * FROM sys.procedures WHERE name = 'insertarAsiste')
+BEGIN
+    DROP PROCEDURE stp.insertarAsiste;
+END;
+GO
+
+CREATE PROCEDURE stp.insertarAsiste
+    @fecha      DATE,
+    @cod_socio  INT,
+    @cod_clase  INT
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    -- Validaciones
+    IF @fecha IS NULL OR @fecha > GETDATE()
+    BEGIN
+        PRINT 'Error: La fecha no puede ser nula ni futura.';
+        RETURN;
+    END
+
+    IF @cod_socio IS NULL OR @cod_socio <= 0
+    BEGIN
+        PRINT 'Error: El código de socio debe ser un número positivo.';
+        RETURN;
+    END
+
+    IF @cod_clase IS NULL OR @cod_clase <= 0
+    BEGIN
+        PRINT 'Error: El código de clase debe ser un número positivo.';
+        RETURN;
+    END
+
+    -- Validar si ya existe ese registro
+    IF EXISTS (
+        SELECT 1 FROM psn.Asiste
+        WHERE fecha = @fecha AND cod_socio = @cod_socio AND cod_clase = @cod_clase
+    )
+    BEGIN
+        PRINT 'Error: Ya existe un registro con esa combinación de fecha, socio y clase.';
+        RETURN;
+    END
+
+    -- Inserción
+    INSERT INTO psn.Asiste (fecha, cod_socio, cod_clase)
+    VALUES (@fecha, @cod_socio, @cod_clase);
+
+    PRINT 'Asistencia registrada correctamente.';
+END;
+GO
+
+-- MODIFICACION ASISTE
+
+IF EXISTS (SELECT * FROM sys.procedures WHERE name = 'modificarAsiste')
+BEGIN
+    DROP PROCEDURE stp.modificarAsiste;
+END;
+GO
+
+CREATE PROCEDURE stp.modificarAsiste
+    @fecha_original     DATE,
+    @cod_socio_original INT,
+    @cod_clase_original INT,
+    @nueva_fecha        DATE,
+    @nuevo_cod_socio    INT,
+    @nuevo_cod_clase    INT
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    -- Validar existencia del registro original
+    IF NOT EXISTS (
+        SELECT 1 FROM psn.Asiste
+        WHERE fecha = @fecha_original AND cod_socio = @cod_socio_original AND cod_clase = @cod_clase_original
+    )
+    BEGIN
+        PRINT 'Error: No se encontró el registro original de asistencia.';
+        RETURN;
+    END
+
+    -- Validaciones para nuevos datos
+    IF @nueva_fecha IS NULL OR @nueva_fecha > GETDATE()
+    BEGIN
+        PRINT 'Error: La nueva fecha no puede ser nula ni futura.';
+        RETURN;
+    END
+
+    IF @nuevo_cod_socio IS NULL OR @nuevo_cod_socio <= 0
+    BEGIN
+        PRINT 'Error: El nuevo código de socio debe ser un número positivo.';
+        RETURN;
+    END
+
+    IF @nuevo_cod_clase IS NULL OR @nuevo_cod_clase <= 0
+    BEGIN
+        PRINT 'Error: El nuevo código de clase debe ser un número positivo.';
+        RETURN;
+    END
+
+    -- Validar duplicado en nuevos valores
+    IF EXISTS (
+        SELECT 1 FROM psn.Asiste
+        WHERE fecha = @nueva_fecha AND cod_socio = @nuevo_cod_socio AND cod_clase = @nuevo_cod_clase
+          AND NOT (
+              fecha = @fecha_original AND
+              cod_socio = @cod_socio_original AND
+              cod_clase = @cod_clase_original
+          )
+    )
+    BEGIN
+        PRINT 'Error: Ya existe otro registro con los nuevos valores.';
+        RETURN;
+    END
+
+    -- Actualización
+    UPDATE psn.Asiste
+    SET fecha = @nueva_fecha,
+        cod_socio = @nuevo_cod_socio,
+        cod_clase = @nuevo_cod_clase
+    WHERE fecha = @fecha_original AND cod_socio = @cod_socio_original AND cod_clase = @cod_clase_original;
+
+    PRINT 'Registro de asistencia modificado correctamente.';
+END;
+GO
+
+-- BORRADO ASISTE
+
+IF EXISTS (SELECT * FROM sys.procedures WHERE name = 'borrarAsiste')
+BEGIN
+    DROP PROCEDURE stp.borrarAsiste;
+END;
+GO
+
+CREATE PROCEDURE stp.borrarAsiste
+    @fecha      DATE,
+    @cod_socio  INT,
+    @cod_clase  INT
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    -- Validar existencia del registro
+    IF NOT EXISTS (
+        SELECT 1 FROM psn.Asiste
+        WHERE fecha = @fecha AND cod_socio = @cod_socio AND cod_clase = @cod_clase
+    )
+    BEGIN
+        PRINT 'Error: No se encontró un registro con esos datos.';
+        RETURN;
+    END
+
+    -- Eliminación
+    DELETE FROM psn.Asiste
+    WHERE fecha = @fecha AND cod_socio = @cod_socio AND cod_clase = @cod_clase;
+
+    PRINT 'Asistencia eliminada correctamente.';
+END;
+GO
+
+
+------------------------------------------

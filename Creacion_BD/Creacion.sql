@@ -305,8 +305,6 @@ ELSE
 	END;
 go
 
-
-
 -- TABLA ASISTE
 
 IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'Com5600G11.psn.Asiste') AND type = N'U') 
@@ -323,6 +321,21 @@ ELSE
 		PRINT 'La tabla Asiste ya existe.';
 	END;
 go
+
+-- TABLA ITEM_FACTURA
+
+IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'Com5600G11.psn.Item_Factura') AND type = N'U') 
+	BEGIN
+		CREATE TABLE psn.Item_Factura (
+			cod_item	INT IDENTITY(1,1) PRIMARY KEY,
+			cod_Factura	INT,
+		);
+		PRINT 'Tabla Item_Factura creada correctamente.';
+	END
+ELSE
+	BEGIN
+		PRINT 'La tabla Item_Factura ya existe.';
+	END;
 
 -- Una vez creadas todas las tablas, defino claves.
 

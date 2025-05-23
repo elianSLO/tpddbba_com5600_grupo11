@@ -111,7 +111,7 @@ CREATE OR ALTER PROCEDURE stp.insertarActividad
 	@vig_valor			DATE
 AS
 BEGIN
-	--	Validar que no exista la misma descripci�n para otra actividad.
+	--	Validar que no exista la misma descripción para otra actividad.
 	IF (EXISTS (SELECT 1 FROM psn.Actividad WHERE @descripcion = descripcion)
 		BEGIN
 			PRINT 'Ya existe esa actividad.'
@@ -139,7 +139,7 @@ CREATE OR ALTER PROCEDURE stp.modificarActividad
 	@vig_valor			DATE
 AS
 BEGIN
-	-- Validar que exista la descripci�n de la actividad
+	-- Validar que exista la descripción de la actividad
 	IF NOT EXISTS (SELECT 1 FROM psn.Actividad WHERE descripcion = @descripcion)
 	BEGIN
 		PRINT 'No existe esa actividad.'
@@ -153,10 +153,10 @@ BEGIN
 		RETURN;
 	END
 
-	-- Validar que la fecha no est� en el pasado
+	-- Validar que la fecha no está en el pasado
 	IF @vig_valor < GETDATE()
 	BEGIN
-		PRINT 'Fecha de vigencia inv�lida.'
+		PRINT 'Fecha de vigencia inválida.'
 		RETURN;
 	END
 
@@ -175,7 +175,7 @@ CREATE OR ALTER PROCEDURE stp.eliminarActividad
 	@descripcion VARCHAR(50)
 AS
 BEGIN
-	-- Validar que exista la descripci�n de la actividad
+	-- Validar que exista la descripción de la actividad
 	IF NOT EXISTS (SELECT 1 FROM psn.Actividad WHERE descripcion = @descripcion)
 	BEGIN
 		PRINT 'No existe esa actividad.'
@@ -216,76 +216,76 @@ CREATE OR ALTER PROCEDURE stp.insertarSocio
 AS
 BEGIN
 	SET NOCOUNT ON;
-    -- Validaci�n de que ning�n campo sea NULL
+    -- Validación de que ningún campo sea NULL
     IF @dni IS NULL OR @nombre IS NULL OR @apellido IS NULL OR 
        @fecha_nac IS NULL OR @email IS NULL OR @tel IS NULL OR @tel_emerg IS NULL OR
 	   @estado IS NULL OR @saldo IS NULL OR @nombre_cobertura IS NULL OR @nro_afiliado IS NULL 
 	   OR @tel_cobertura IS NULL OR @cod_responsable IS NULL
     BEGIN
-        PRINT 'Error: Ning�n campo puede ser NULL';
+        PRINT 'Error: Ningún campo puede ser NULL';
         RETURN;
     END;
 
-    -- Validaci�n de que el DNI tenga 8 d�gitos
+    -- Validación de que el DNI tenga 8 dígitos
     IF LEN(@dni) < 8 or LEN(@dni) > 8
     BEGIN
-        PRINT 'Error: El DNI debe ser de 8 d�gitos';
+        PRINT 'Error: El DNI debe ser de 8 dígitos';
         RETURN;
 	END;
 
-	-- Validaci�n de que el DNI no est� insertado
+	-- Validación de que el DNI no está insertado
 	IF EXISTS (SELECT 1 FROM psn.Socio WHERE dni = @dni)
     BEGIN
         PRINT 'Error: Ya existe un socio con ese DNI';
         RETURN;
     END;
 
-	-- Validaci�n de que el nombre s�lo contenga letras y espacios
+	-- Validación de que el nombre sólo contenga letras y espacios
 	IF @nombre LIKE '%[^a-zA-Z ]%'
 	BEGIN
     PRINT 'Error: El nombre solo puede contener letras y espacios.';
     RETURN;
 	END
 
-	-- Validaci�n de que el apellido s�lo contenga letras y espacios
+	-- Validación de que el apellido sólo contenga letras y espacios
 	IF @apellido LIKE '%[^a-zA-Z ]%'
 	BEGIN
     PRINT 'Error: El apellido solo puede contener letras y espacios.';
     RETURN;
 	END
 
-    -- Validaci�n de que la fecha de nacimiento no sea futura
+    -- Validación de que la fecha de nacimiento no sea futura
     IF @fecha_nac > GETDATE()
     BEGIN
         PRINT 'Error: La fecha de nacimiento no puede ser futura';
         RETURN;
     END;
 
-	-- Validaci�n de email
+	-- Validación de email
 	IF @email NOT LIKE '_%@_%._%'
 	BEGIN
-		PRINT 'Error: Email inv�lido. Debe tener formato ejemplo@dominio.com.';
+		PRINT 'Error: Email inválido. Debe tener formato ejemplo@dominio.com.';
 		RETURN;
 	END
 
 	-- Validacion de saldo
 	IF @saldo < 0
 	BEGIN
-		PRINT 'Saldo inv�lido. No puede ser negativo.';
+		PRINT 'Saldo inválido. No puede ser negativo.';
 		RETURN;
 	END
 
-	-- Validaci�n del telefono
+	-- Validación del telefono
 	IF (LEN(@tel) < 8 OR LEN(@tel) > 14 OR @tel LIKE '%[^0-9]%')
 	BEGIN
-    PRINT 'Error: Tel�fono inv�lido. Debe contener entre 8 y 14 d�gitos num�ricos.';
+    PRINT 'Error: Teléfono inválido. Debe contener entre 8 y 14 dígitos numéricos.';
     RETURN;
 	END
 
 	-- Validacion del telefono de emergencia
 	IF (LEN(@tel_emerg) < 8 OR LEN(@tel_emerg) > 14 OR @tel_emerg LIKE '%[^0-9]%')
 	BEGIN
-    PRINT 'Error: Tel�fono de emergencia inv�lido. Debe contener entre 8 y 14 d�gitos num�ricos.';
+    PRINT 'Error: Teléfono de emergencia inválido. Debe contener entre 8 y 14 dígitos numéricos.';
     RETURN;
 	END
 
@@ -293,7 +293,7 @@ BEGIN
 
 	IF (LEN(@tel_cobertura) < 8 OR LEN(@tel_cobertura) > 14 OR @tel_cobertura LIKE '%[^0-9]%')
 	BEGIN
-    PRINT 'Error: Tel�fono de cobertura inv�lido. Debe contener entre 8 y 14 d�gitos num�ricos.';
+    PRINT 'Error: Teléfono de cobertura inválido. Debe contener entre 8 y 14 dígitos numéricos.';
     RETURN;
 	END
 
@@ -339,76 +339,76 @@ CREATE OR ALTER PROCEDURE stp.modificarSocio
 AS
 BEGIN
 	SET NOCOUNT ON;
-    -- Validaci�n de que ning�n campo sea NULL
+    -- Validación de que ningún campo sea NULL
     IF @cod_socio IS NULL OR @dni IS NULL OR @nombre IS NULL OR @apellido IS NULL OR 
        @fecha_nac IS NULL OR @email IS NULL OR @tel IS NULL OR @tel_emerg IS NULL OR
 	   @estado IS NULL OR @saldo IS NULL OR @nombre_cobertura IS NULL OR @nro_afiliado IS NULL 
 	   OR @tel_cobertura IS NULL OR @cod_responsable IS NULL
     BEGIN
-        PRINT 'Error: Ning�n campo puede ser NULL';
+        PRINT 'Error: Ningún campo puede ser NULL';
         RETURN;
     END;
 
-    -- Validaci�n de que el socio se haya insertado
+    -- Validación de que el socio se haya insertado
     IF NOT EXISTS (SELECT 1 FROM psn.Socio WHERE cod_socio = @cod_socio)
     BEGIN
         PRINT 'Error: Socio no encontrado.';
         RETURN;
     END;
 
-    -- Validaci�n de que el DNI tenga 8 d�gitos
+    -- Validación de que el DNI tenga 8 dígitos
     IF LEN(@dni) < 8 or LEN(@dni) > 8
     BEGIN
-        PRINT 'Error: El DNI debe ser de 8 d�gitos';
+        PRINT 'Error: El DNI debe ser de 8 dígitos';
         RETURN;
 	END;
 
-		-- Validaci�n de que el nombre s�lo contenga letras y espacios
+		-- Validación de que el nombre sólo contenga letras y espacios
 	IF @nombre LIKE '%[^a-zA-Z ]%'
 	BEGIN
     PRINT 'Error: El nombre solo puede contener letras y espacios.';
     RETURN;
 	END
 
-	-- Validaci�n de que el apellido s�lo contenga letras y espacios
+	-- Validación de que el apellido sólo contenga letras y espacios
 	IF @apellido LIKE '%[^a-zA-Z ]%'
 	BEGIN
     PRINT 'Error: El apellido solo puede contener letras y espacios.';
     RETURN;
 	END
 
-    -- Validaci�n de que la fecha de nacimiento no sea futura
+    -- Validación de que la fecha de nacimiento no sea futura
     IF @fecha_nac > GETDATE()
     BEGIN
         PRINT 'Error: La fecha de nacimiento no puede ser futura';
         RETURN;
     END;
 
-	-- Validaci�n de email
+	-- Validación de email
 	IF @email NOT LIKE '_%@_%._%'
 	BEGIN
-		PRINT 'Error: Email inv�lido. Debe tener formato ejemplo@dominio.com.';
+		PRINT 'Error: Email inválido. Debe tener formato ejemplo@dominio.com.';
 		RETURN;
 	END
 
 	-- Validacion de saldo
 	IF @saldo < 0
 	BEGIN
-		PRINT 'Saldo inv�lido. No puede ser negativo.';
+		PRINT 'Saldo inválido. No puede ser negativo.';
 		RETURN;
 	END
 
-	-- Validaci�n del telefono
+	-- Validación del telefono
 	IF (LEN(@tel) < 8 OR LEN(@tel) > 14 OR @tel LIKE '%[^0-9]%')
 	BEGIN
-    PRINT 'Error: Tel�fono inv�lido. Debe contener entre 8 y 14 d�gitos num�ricos.';
+    PRINT 'Error: Teléfono inválido. Debe contener entre 8 y 14 dígitos numéricos.';
     RETURN;
 	END
 
 	-- Validacion del telefono de emergencia
 	IF (LEN(@tel_emerg) < 8 OR LEN(@tel_emerg) > 14 OR @tel_emerg LIKE '%[^0-9]%')
 	BEGIN
-    PRINT 'Error: Tel�fono de emergencia inv�lido. Debe contener entre 8 y 14 d�gitos num�ricos.';
+    PRINT 'Error: Teléfono de emergencia inválido. Debe contener entre 8 y 14 dígitos numéricos.';
     RETURN;
 	END
 
@@ -416,7 +416,7 @@ BEGIN
 
 	IF (LEN(@tel_cobertura) < 8 OR LEN(@tel_cobertura) > 14 OR @tel_cobertura LIKE '%[^0-9]%')
 	BEGIN
-    PRINT 'Error: Tel�fono de cobertura inv�lido. Debe contener entre 8 y 14 d�gitos num�ricos.';
+    PRINT 'Error: Teléfono de cobertura inválido. Debe contener entre 8 y 14 dígitos numéricos.';
     RETURN;
 	END
 
@@ -459,7 +459,7 @@ CREATE OR ALTER PROCEDURE stp.borrarSocio
         END
         ELSE
         BEGIN
-            PRINT 'El socio con el c�digo especificado no existe.';
+            PRINT 'El socio con el código especificado no existe.';
         END
     END
 GO
@@ -483,53 +483,53 @@ CREATE OR ALTER PROCEDURE stp.insertarProfesor
 AS
 BEGIN
 	
-    -- Validaci�n de que ning�n campo sea NULL
+    -- Validación de que ningún campo sea NULL
     IF @dni IS NULL OR @nombre IS NULL OR @apellido IS NULL OR 
        @email IS NULL OR @tel IS NULL
     BEGIN
-        PRINT 'Error: Ning�n campo puede ser NULL';
+        PRINT 'Error: Ningún campo puede ser NULL';
         RETURN;
     END;
 
-    -- Validaci�n de que el DNI tenga 8 d�gitos
+    -- Validación de que el DNI tenga 8 dígitos
     IF LEN(@dni) < 8 or LEN(@dni) > 8
     BEGIN
-        PRINT 'Error: El DNI debe ser de 8 d�gitos';
+        PRINT 'Error: El DNI debe ser de 8 dígitos';
         RETURN;
 	END;
 
-	-- Validaci�n de que el DNI no est� insertado
+	-- Validación de que el DNI no está insertado
 	IF EXISTS (SELECT 1 FROM psn.Profesor WHERE dni = @dni)
     BEGIN
         PRINT 'Error: Ya existe un profesor con ese DNI';
         RETURN;
     END;
 
-		-- Validaci�n de que el nombre s�lo contenga letras y espacios
+		-- Validación de que el nombre sólo contenga letras y espacios
 	IF @nombre LIKE '%[^a-zA-Z ]%'
 	BEGIN
     PRINT 'Error: El nombre solo puede contener letras y espacios.';
     RETURN;
 	END
 
-	-- Validaci�n de que el apellido s�lo contenga letras y espacios
+	-- Validación de que el apellido sólo contenga letras y espacios
 	IF @apellido LIKE '%[^a-zA-Z ]%'
 	BEGIN
     PRINT 'Error: El apellido solo puede contener letras y espacios.';
     RETURN;
 	END
 
-	-- Validaci�n de email
+	-- Validación de email
 	IF @email NOT LIKE '_%@_%._%'
 	BEGIN
-		PRINT 'Error: Email inv�lido. Debe tener formato ejemplo@dominio.com.';
+		PRINT 'Error: Email inválido. Debe tener formato ejemplo@dominio.com.';
 		RETURN;
 	END
 
-	-- Validaci�n del telefono
+	-- Validación del telefono
 	IF (LEN(@tel) < 8 OR LEN(@tel) > 14 OR @tel LIKE '%[^0-9]%')
 	BEGIN
-    PRINT 'Error: Tel�fono inv�lido. Debe contener entre 8 y 14 d�gitos num�ricos.';
+    PRINT 'Error: Teléfono inválido. Debe contener entre 8 y 14 dígitos numéricos.';
     RETURN;
 	END
 
@@ -562,52 +562,52 @@ AS
 BEGIN
     SET NOCOUNT ON;
 
-    -- Validaci�n de que ning�n campo sea NULL
+    -- Validación de que ningún campo sea NULL
     IF @cod_prof IS NULL OR @dni IS NULL OR @nombre IS NULL OR @apellido IS NULL OR @email IS NULL OR @tel IS NULL
     BEGIN
-        PRINT 'Error: Ning�n campo puede ser NULL';
+        PRINT 'Error: Ningún campo puede ser NULL';
         RETURN;
     END;
 
-    -- Validaci�n de existencia del profesor
+    -- Validación de existencia del profesor
     IF NOT EXISTS (SELECT 1 FROM psn.Profesor WHERE cod_prof = @cod_prof)
     BEGIN
         PRINT 'Error: Profesor no encontrado';
         RETURN;
     END;
 
-    -- Validaci�n de DNI
+    -- Validación de DNI
     IF LEN(@dni) <> 8
     BEGIN
-        PRINT 'Error: El DNI debe tener exactamente 8 d�gitos';
+        PRINT 'Error: El DNI debe tener exactamente 8 dígitos';
         RETURN;
     END;
 
-	-- Validaci�n de que el nombre s�lo contenga letras y espacios
+	-- Validación de que el nombre sólo contenga letras y espacios
 	IF @nombre LIKE '%[^a-zA-Z ]%'
 	BEGIN
     PRINT 'Error: El nombre solo puede contener letras y espacios.';
     RETURN;
 	END
 
-	-- Validaci�n de que el apellido s�lo contenga letras y espacios
+	-- Validación de que el apellido sólo contenga letras y espacios
 	IF @apellido LIKE '%[^a-zA-Z ]%'
 	BEGIN
     PRINT 'Error: El apellido solo puede contener letras y espacios.';
     RETURN;
 	END
 
-    -- Validaci�n de email
+    -- Validación de email
     IF @email NOT LIKE '_%@_%._%'
     BEGIN
-        PRINT 'Error: Email inv�lido. Debe tener formato ejemplo@dominio.com';
+        PRINT 'Error: Email inválido. Debe tener formato ejemplo@dominio.com';
         RETURN;
     END;
 
-    -- Validaci�n de tel�fono
+    -- Validación de teléfono
     IF (LEN(@tel) < 10 OR LEN(@tel) > 14 OR @tel LIKE '%[^0-9]%')
     BEGIN
-        PRINT 'Error: Tel�fono inv�lido. Debe contener entre 10 y 14 d�gitos num�ricos';
+        PRINT 'Error: Teléfono inválido. Debe contener entre 10 y 14 dígitos numéricos';
         RETURN;
     END;
 
@@ -644,7 +644,7 @@ CREATE OR ALTER PROCEDURE stp.borrarProfesor
         END
         ELSE
         BEGIN
-            PRINT 'El profesor con el c�digo especificado no existe.';
+            PRINT 'El profesor con el código especificado no existe.';
         END
     END
 GO
@@ -682,13 +682,13 @@ BEGIN
        @estado IS NULL OR @saldo IS NULL OR @nombre_cobertura IS NULL OR @nro_afiliado IS NULL 
        OR @tel_cobertura IS NULL OR @cod_responsable IS NULL
     BEGIN
-        PRINT 'Error: Ning�n campo puede ser NULL';
+        PRINT 'Error: Ningún campo puede ser NULL';
         RETURN;
     END;
 
     IF LEN(@dni) <> 8
     BEGIN
-        PRINT 'Error: El DNI debe ser de 8 d�gitos';
+        PRINT 'Error: El DNI debe ser de 8 dígitos';
         RETURN;
     END;
 
@@ -698,14 +698,14 @@ BEGIN
         RETURN;
     END;
 
-	-- Validaci�n de que el nombre s�lo contenga letras y espacios
+	-- Validación de que el nombre sólo contenga letras y espacios
 	IF @nombre LIKE '%[^a-zA-Z ]%'
 	BEGIN
     PRINT 'Error: El nombre solo puede contener letras y espacios.';
     RETURN;
 	END
 
-	-- Validaci�n de que el apellido s�lo contenga letras y espacios
+	-- Validación de que el apellido sólo contenga letras y espacios
 	IF @apellido LIKE '%[^a-zA-Z ]%'
 	BEGIN
     PRINT 'Error: El apellido solo puede contener letras y espacios.';
@@ -720,31 +720,31 @@ BEGIN
 
     IF @email NOT LIKE '_%@_%._%'
     BEGIN
-        PRINT 'Error: Email inv�lido. Debe tener formato ejemplo@dominio.com.';
+        PRINT 'Error: Email inválido. Debe tener formato ejemplo@dominio.com.';
         RETURN;
     END;
 
     IF @saldo < 0
     BEGIN
-        PRINT 'Saldo inv�lido. No puede ser negativo.';
+        PRINT 'Saldo inválido. No puede ser negativo.';
         RETURN;
     END;
 
     IF (LEN(@tel) < 8 OR LEN(@tel) > 14 OR @tel LIKE '%[^0-9]%')
     BEGIN
-        PRINT 'Error: Tel�fono inv�lido.';
+        PRINT 'Error: Teléfono inválido.';
         RETURN;
     END;
 
     IF (LEN(@tel_emerg) < 8 OR LEN(@tel_emerg) > 14 OR @tel_emerg LIKE '%[^0-9]%')
     BEGIN
-        PRINT 'Error: Tel�fono de emergencia inv�lido.';
+        PRINT 'Error: Teléfono de emergencia inválido.';
         RETURN;
     END;
 
     IF (LEN(@tel_cobertura) < 8 OR LEN(@tel_cobertura) > 14 OR @tel_cobertura LIKE '%[^0-9]%')
     BEGIN
-        PRINT 'Error: Tel�fono de cobertura inv�lido.';
+        PRINT 'Error: Teléfono de cobertura inválido.';
         RETURN;
     END;
 
@@ -797,7 +797,7 @@ BEGIN
        @estado IS NULL OR @saldo IS NULL OR @nombre_cobertura IS NULL OR @nro_afiliado IS NULL 
        OR @tel_cobertura IS NULL OR @cod_responsable IS NULL
     BEGIN
-        PRINT 'Error: Ning�n campo puede ser NULL';
+        PRINT 'Error: Ningún campo puede ser NULL';
         RETURN;
     END;
 
@@ -809,18 +809,18 @@ BEGIN
 
     IF LEN(@dni) <> 8
     BEGIN
-        PRINT 'Error: El DNI debe ser de 8 d�gitos';
+        PRINT 'Error: El DNI debe ser de 8 dígitos';
         RETURN;
     END;
 
-	-- Validaci�n de que el nombre s�lo contenga letras y espacios
+	-- Validación de que el nombre sólo contenga letras y espacios
 	IF @nombre LIKE '%[^a-zA-Z ]%'
 	BEGIN
     PRINT 'Error: El nombre solo puede contener letras y espacios.';
     RETURN;
 	END
 
-	-- Validaci�n de que el apellido s�lo contenga letras y espacios
+	-- Validación de que el apellido sólo contenga letras y espacios
 	IF @apellido LIKE '%[^a-zA-Z ]%'
 	BEGIN
     PRINT 'Error: El apellido solo puede contener letras y espacios.';
@@ -835,31 +835,31 @@ BEGIN
 
     IF @email NOT LIKE '_%@_%._%'
     BEGIN
-        PRINT 'Error: Email inv�lido.';
+        PRINT 'Error: Email inválido.';
         RETURN;
     END;
 
     IF @saldo < 0
     BEGIN
-        PRINT 'Saldo inv�lido. No puede ser negativo.';
+        PRINT 'Saldo inválido. No puede ser negativo.';
         RETURN;
     END;
 
     IF (LEN(@tel) < 8 OR LEN(@tel) > 14 OR @tel LIKE '%[^0-9]%')
     BEGIN
-        PRINT 'Error: Tel�fono inv�lido.';
+        PRINT 'Error: Teléfono inválido.';
         RETURN;
     END;
 
     IF (LEN(@tel_emerg) < 8 OR LEN(@tel_emerg) > 14 OR @tel_emerg LIKE '%[^0-9]%')
     BEGIN
-        PRINT 'Error: Tel�fono de emergencia inv�lido.';
+        PRINT 'Error: Teléfono de emergencia inválido.';
         RETURN;
     END;
 
     IF (LEN(@tel_cobertura) < 8 OR LEN(@tel_cobertura) > 14 OR @tel_cobertura LIKE '%[^0-9]%')
     BEGIN
-        PRINT 'Error: Tel�fono de cobertura inv�lido.';
+        PRINT 'Error: Teléfono de cobertura inválido.';
         RETURN;
     END;
 
@@ -905,7 +905,7 @@ BEGIN
     END
     ELSE
     BEGIN
-        PRINT 'El invitado con el c�digo especificado no existe.';
+        PRINT 'El invitado con el código especificado no existe.';
     END
 END;
 GO
@@ -930,42 +930,42 @@ AS
 BEGIN
 	SET NOCOUNT ON;
 
-	-- Validaci�n: monto > 0
+	-- Validación: monto > 0
 	IF @monto <= 0
 	BEGIN
 		PRINT 'ERROR: El monto debe ser mayor a cero.';
 		RETURN;
 	END
 
-	-- Validaci�n: fecha de pago no puede ser futura
+	-- Validación: fecha de pago no puede ser futura
 	IF @fecha_pago > GETDATE()
 	BEGIN
 		PRINT 'ERROR: La fecha de pago no puede ser futura.';
 		RETURN;
 	END
 
-	-- Validaci�n: estado permitido
+	-- Validación: estado permitido
 	IF @estado NOT IN ('Pendiente', 'Pagado', 'Anulado')
 	BEGIN
 		PRINT 'Error: El estado debe ser: Pendiente, Pagado o Anulado.';
 		RETURN;
 	END
 
-	-- Validaci�n: al menos uno de los c�digos debe estar presente
+	-- Validación: al menos uno de los códigos debe estar presente
 	IF @cod_socio IS NULL AND @cod_invitado IS NULL
 	BEGIN
-		PRINT 'Error: Debe especificar un c�digo de socio o de invitado.';
+		PRINT 'Error: Debe especificar un código de socio o de invitado.';
 		RETURN;
 	END
 
-	-- Validaci�n: no ambos c�digos a la vez 
+	-- Validación: no ambos códigos a la vez 
 	IF @cod_socio IS NOT NULL AND @cod_invitado IS NOT NULL
 	BEGIN
 		PRINT 'ERROR: Solo se debe especificar cod_socio o cod_invitado, no ambos.';
 		RETURN;
 	END
 
-	-- Inserci�n
+	-- Inserción
 	INSERT INTO psn.Pago (monto, fecha_pago, estado, cod_socio, cod_invitado)
 	VALUES (@monto, @fecha_pago, @estado, @cod_socio, @cod_invitado);
 
@@ -992,49 +992,49 @@ AS
 BEGIN
 	SET NOCOUNT ON;
 
-	-- Validaci�n: existencia del pago
+	-- Validación: existencia del pago
 	IF NOT EXISTS (SELECT 1 FROM psn.Pago WHERE cod_pago = @cod_pago)
 	BEGIN
-		PRINT 'ERROR: No existe un pago con ese c�digo.';
+		PRINT 'ERROR: No existe un pago con ese código.';
 		RETURN;
 	END
 
-	-- Validaci�n: monto > 0
+	-- Validación: monto > 0
 	IF @monto <= 0
 	BEGIN
 		PRINT 'ERROR: El monto debe ser mayor a cero.';
 		RETURN;
 	END
 
-	-- Validaci�n: fecha de pago no puede ser futura
+	-- Validación: fecha de pago no puede ser futura
 	IF @fecha_pago > GETDATE()
 	BEGIN
 		PRINT 'ERROR: La fecha de pago no puede ser futura.';
 		RETURN;
 	END
 
-	-- Validaci�n: estado permitido
+	-- Validación: estado permitido
 	IF @estado NOT IN ('Pendiente', 'Pagado', 'Anulado')
 	BEGIN
 		PRINT 'ERROR: El estado debe ser: Pendiente, Pagado o Anulado.';
 		RETURN;
 	END
 
-	-- Validaci�n: al menos uno de los c�digos debe estar presente
+	-- Validación: al menos uno de los códigos debe estar presente
 	IF @cod_socio IS NULL AND @cod_invitado IS NULL
 	BEGIN
-		PRINT 'ERROR: Debe especificar un c�digo de socio o de invitado.';
+		PRINT 'ERROR: Debe especificar un código de socio o de invitado.';
 		RETURN;
 	END
 
-	-- Validaci�n: no ambos c�digos a la vez
+	-- Validación: no ambos códigos a la vez
 	IF @cod_socio IS NOT NULL AND @cod_invitado IS NOT NULL
 	BEGIN
 		PRINT 'ERROR: Solo se debe especificar cod_socio o cod_invitado, no ambos.';
 		RETURN;
 	END
 
-	-- Actualizaci�n
+	-- Actualización
 	UPDATE Com5600G11.psn.Pago
 	SET
 		monto = @monto,
@@ -1063,14 +1063,14 @@ AS
 BEGIN
 	SET NOCOUNT ON;
 
-	-- Validaci�n: existencia del pago
+	-- Validación: existencia del pago
 	IF NOT EXISTS (SELECT 1 FROM psn.Pago WHERE cod_pago = @cod_pago)
 	BEGIN
-		PRINT 'ERROR: No existe un pago con ese c�digo.';
+		PRINT 'ERROR: No existe un pago con ese código.';
 		RETURN;
 	END
 
-	-- Eliminaci�n
+	-- Eliminación
 	DELETE FROM psn.Pago
 	WHERE cod_pago = @cod_pago;
 
@@ -1176,35 +1176,35 @@ AS
 BEGIN
     SET NOCOUNT ON;
 
-    -- Validaci�n: monto debe ser mayor a 0
+    -- Validación: monto debe ser mayor a 0
     IF @monto <= 0
     BEGIN
         PRINT 'Error: El monto debe ser mayor a cero.';
         RETURN;
     END
 
-    -- Validaci�n: medio_Pago no debe ser NULL ni vac�o
+    -- Validación: medio_Pago no debe ser NULL ni vacío
     IF @medio_Pago IS NULL OR LTRIM(RTRIM(@medio_Pago)) = ''
     BEGIN
-        PRINT 'Error: El medio de pago no puede estar vac�o.';
+        PRINT 'Error: El medio de pago no puede estar vacío.';
         RETURN;
     END
 
-    -- Validaci�n: fecha no puede ser futura
+    -- Validación: fecha no puede ser futura
     IF @fecha > GETDATE()
     BEGIN
         PRINT 'Error: La fecha no puede ser futura.';
         RETURN;
     END
 
-    -- Validaci�n: motivo no debe ser NULL ni vac�o
+    -- Validación: motivo no debe ser NULL ni vacío
     IF @motivo IS NULL OR LTRIM(RTRIM(@motivo)) = ''
     BEGIN
-        PRINT 'Error: El motivo no puede estar vac�o.';
+        PRINT 'Error: El motivo no puede estar vacío.';
         RETURN;
     END
 
-    -- Inserci�n de datos
+    -- Inserción de datos
     INSERT INTO psn.Reembolso (monto, medio_Pago, fecha, motivo)
     VALUES (@monto, @medio_Pago, @fecha, @motivo);
 
@@ -1230,42 +1230,42 @@ AS
 BEGIN
     SET NOCOUNT ON;
 
-    -- Validaci�n: c�digo debe existir
+    -- Validación: código debe existir
     IF NOT EXISTS (SELECT 1 FROM psn.Reembolso WHERE codReembolso = @codReembolso)
     BEGIN
-        PRINT 'Error: No existe un reembolso con el c�digo especificado.';
+        PRINT 'Error: No existe un reembolso con el código especificado.';
         RETURN;
     END
 
-    -- Validaci�n: monto debe ser mayor a 0
+    -- Validación: monto debe ser mayor a 0
     IF @monto <= 0
     BEGIN
         PRINT 'Error: El monto debe ser mayor a cero.';
         RETURN;
     END
 
-    -- Validaci�n: medio_Pago no debe ser NULL ni vac�o
+    -- Validación: medio_Pago no debe ser NULL ni vacío
     IF @medio_Pago IS NULL OR LTRIM(RTRIM(@medio_Pago)) = ''
     BEGIN
-        PRINT 'Error: El medio de pago no puede estar vac�o.';
+        PRINT 'Error: El medio de pago no puede estar vacío.';
         RETURN;
     END
 
-    -- Validaci�n: fecha no puede ser futura
+    -- Validación: fecha no puede ser futura
     IF @fecha > GETDATE()
     BEGIN
         PRINT 'Error: La fecha no puede ser futura.';
         RETURN;
     END
 
-    -- Validaci�n: motivo no debe ser NULL ni vac�o
+    -- Validación: motivo no debe ser NULL ni vacío
     IF @motivo IS NULL OR LTRIM(RTRIM(@motivo)) = ''
     BEGIN
-        PRINT 'Error: El motivo no puede estar vac�o.';
+        PRINT 'Error: El motivo no puede estar vacío.';
         RETURN;
     END
 
-    -- Actualizaci�n de datos
+    -- Actualización de datos
     UPDATE psn.Reembolso
     SET
         monto = @monto,
@@ -1292,14 +1292,14 @@ AS
 BEGIN
     SET NOCOUNT ON;
 
-    -- Validaci�n: verificar que exista el c�digo
+    -- Validación: verificar que exista el código
     IF NOT EXISTS (SELECT 1 FROM psn.Reembolso WHERE codReembolso = @codReembolso)
     BEGIN
-        PRINT 'Error: No existe un reembolso con el c�digo especificado.';
+        PRINT 'Error: No existe un reembolso con el código especificado.';
         RETURN;
     END
 
-    -- Eliminaci�n del registro
+    -- Eliminación del registro
     DELETE FROM psn.Reembolso
     WHERE codReembolso = @codReembolso;
 
@@ -1336,7 +1336,7 @@ BEGIN
     -- Validaciones
     IF @dni IS NULL OR LEN(@dni) != 8 OR @dni NOT LIKE '%[0-9]%'
     BEGIN
-        PRINT 'Error: El DNI debe contener exactamente 8 d�gitos num�ricos.';
+        PRINT 'Error: El DNI debe contener exactamente 8 dígitos numéricos.';
         RETURN;
     END
 
@@ -1346,30 +1346,30 @@ BEGIN
         RETURN;
     END
 
-  -- Validaci�n de que el nombre s�lo contenga letras y espacios
+  -- Validación de que el nombre sólo contenga letras y espacios
 	IF @nombre LIKE '%[^a-zA-Z ]%'
 	BEGIN
     PRINT 'Error: El nombre solo puede contener letras y espacios.';
     RETURN;
 	END
 
-	-- Validaci�n de que el apellido s�lo contenga letras y espacios
+	-- Validación de que el apellido sólo contenga letras y espacios
 	IF @apellido LIKE '%[^a-zA-Z ]%'
 	BEGIN
     PRINT 'Error: El apellido solo puede contener letras y espacios.';
     RETURN;
 	END
 
-	-- Validaci�n de email
+	-- Validación de email
 	IF @email NOT LIKE '_%@_%._%'
 	BEGIN
-		PRINT 'Error: Email inv�lido. Debe tener formato ejemplo@dominio.com.';
+		PRINT 'Error: Email inválido. Debe tener formato ejemplo@dominio.com.';
 		RETURN;
 	END
 
     IF @parentezco IS NULL OR LTRIM(RTRIM(@parentezco)) = ''
     BEGIN
-        PRINT 'Error: El parentezco no puede estar vac�o.';
+        PRINT 'Error: El parentezco no puede estar vacío.';
         RETURN;
     END
 
@@ -1381,17 +1381,17 @@ BEGIN
 
     IF @nro_socio IS NULL OR @nro_socio <= 0
     BEGIN
-        PRINT 'Error: El n�mero de socio debe ser un n�mero positivo.';
+        PRINT 'Error: El número de socio debe ser un número positivo.';
         RETURN;
     END
 
     IF @tel IS NULL OR @tel LIKE '%[^0-9]%' OR LEN(@tel) < 10 OR LEN(@tel) > 14
     BEGIN
-        PRINT 'Error: El tel�fono debe contener solo n�meros y tener entre 10 y 14 d�gitos.';
+        PRINT 'Error: El teléfono debe contener solo números y tener entre 10 y 14 dígitos.';
         RETURN;
     END
 
-    -- Inserci�n
+    -- Inserción
     INSERT INTO psn.Responsable (dni, nombre, apellido, email, parentezco, fecha_nac, nro_socio, tel)
     VALUES (@dni, @nombre, @apellido, @email, @parentezco, @fecha_nac, @nro_socio, @tel);
 
@@ -1424,14 +1424,14 @@ BEGIN
     -- Validar existencia
     IF NOT EXISTS (SELECT 1 FROM psn.Responsable WHERE cod_responsable = @cod_responsable)
     BEGIN
-        PRINT 'Error: No existe un responsable con ese c�digo.';
+        PRINT 'Error: No existe un responsable con ese código.';
         RETURN;
     END
 
     -- Validaciones (igual que en el insert)
     IF @dni IS NULL OR LEN(@dni) != 8 OR @dni NOT LIKE '%[0-9]%'
     BEGIN
-        PRINT 'Error: El DNI debe contener exactamente 8 d�gitos num�ricos.';
+        PRINT 'Error: El DNI debe contener exactamente 8 dígitos numéricos.';
         RETURN;
     END
 
@@ -1456,16 +1456,16 @@ BEGIN
     RETURN;
 	END
 
-	-- Validaci�n de email
+	-- Validación de email
 	IF @email NOT LIKE '_%@_%._%'
 	BEGIN
-		PRINT 'Error: Email inv�lido. Debe tener formato ejemplo@dominio.com.';
+		PRINT 'Error: Email inválido. Debe tener formato ejemplo@dominio.com.';
 		RETURN;
 	END
 
     IF @parentezco IS NULL OR LTRIM(RTRIM(@parentezco)) = ''
     BEGIN
-        PRINT 'Error: El parentezco no puede estar vac�o.';
+        PRINT 'Error: El parentezco no puede estar vacío.';
         RETURN;
     END
 
@@ -1477,17 +1477,17 @@ BEGIN
 
     IF @nro_socio IS NULL OR @nro_socio <= 0
     BEGIN
-        PRINT 'Error: El n�mero de socio debe ser un n�mero positivo.';
+        PRINT 'Error: El número de socio debe ser un número positivo.';
         RETURN;
     END
 
     IF @tel IS NULL OR @tel LIKE '%[^0-9]%' OR LEN(@tel) < 10 OR LEN(@tel) > 14
     BEGIN
-        PRINT 'Error: El tel�fono debe contener solo n�meros y tener entre 10 y 14 d�gitos.';
+        PRINT 'Error: El teléfono debe contener solo números y tener entre 10 y 14 dígitos.';
         RETURN;
     END
 
-    -- Actualizaci�n
+    -- Actualización
     UPDATE psn.Responsable
     SET dni = @dni,
         nombre = @nombre,
@@ -1519,11 +1519,11 @@ BEGIN
     -- Validar existencia
     IF NOT EXISTS (SELECT 1 FROM psn.Responsable WHERE cod_responsable = @cod_responsable)
     BEGIN
-        PRINT 'Error: No existe un responsable con ese c�digo.';
+        PRINT 'Error: No existe un responsable con ese código.';
         RETURN;
     END
 
-    -- Eliminaci�n
+    -- Eliminación
     DELETE FROM psn.Responsable
     WHERE cod_responsable = @cod_responsable;
 

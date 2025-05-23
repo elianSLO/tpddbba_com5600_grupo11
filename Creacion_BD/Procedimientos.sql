@@ -153,7 +153,7 @@ BEGIN
 		RETURN;
 	END
 
-	-- Validar que la fecha no está en el pasado
+	-- Validar que la fecha no esté en el pasado
 	IF @vig_valor < GETDATE()
 	BEGIN
 		PRINT 'Fecha de vigencia inválida.'
@@ -233,7 +233,7 @@ BEGIN
         RETURN;
 	END;
 
-	-- Validación de que el DNI no está insertado
+	-- Validación de que el DNI no esté insertado
 	IF EXISTS (SELECT 1 FROM psn.Socio WHERE dni = @dni)
     BEGIN
         PRINT 'Error: Ya existe un socio con ese DNI';
@@ -498,7 +498,7 @@ BEGIN
         RETURN;
 	END;
 
-	-- Validación de que el DNI no está insertado
+	-- Validación de que el DNI no esté insertado
 	IF EXISTS (SELECT 1 FROM psn.Profesor WHERE dni = @dni)
     BEGIN
         PRINT 'Error: Ya existe un profesor con ese DNI';

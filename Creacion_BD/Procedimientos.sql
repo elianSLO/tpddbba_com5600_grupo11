@@ -1820,3 +1820,64 @@ BEGIN
     PRINT 'Clase insertada correctamente.';
 END;
 GO
+
+-- SP PARA MODIFICAR CLASE
+IF EXISTS (SELECT * FROM sys.procedures WHERE name = 'modificarClase')
+BEGIN
+    DROP PROCEDURE stp.modificarClase;
+END;
+GO
+
+CREATE OR ALTER PROCEDURE stp.modificarClase
+    @cod_clase     INT,
+    @categoria     INT,
+    @cod_actividad   INT
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    IF @cod_clase IS NULL
+    BEGIN
+        PRINT 'Error: El código de clase no puede ser NULL.';
+        RETURN;
+    END;
+
+    IF NOT EXISTS (SELECT 1 FROM psn.Clase WHERE cod_clase = @cod_clase)
+    BEGIN
+        PRINT 'Error: La clase con el código especificado no existe.';
+        RETURN;
+    END;
+
+    IF @categoria IS NULL OR @cod_actividad IS NULL
+    BEGIN
+        PRINT 'Error: Los campos categoría y código de actividad no pueden ser NULL para la modificación.';
+        RETURN;
+    END;
+
+    IF NOT EXISTS (SELECT 1 FROM psn.Categoria WHERE cod_categoria = @categoria)
+    BEGIN
+        PRINT 'Error: La nueva categoría especificada no existe.';
+        RETURN;
+    END;
+
+    IF NOT EXISTS (SELECT 1 FROM psn.Actividad WHERE cod_actividad = @cod_actividad)
+    BEGIN
+        PRINT 'Error: La nueva actividad especificada no existe.';
+        RETURN;
+    END;
+
+    IF EXISTS (SELECT 1 FROM psn.Clase WHERE categoria = @categoria AND cod_actividad = @cod_actividad AND cod_clase <> @cod_clase)
+    BEGIN
+        PRINT 'Error: La modificación resultaría en una clase duplicada con esta combinación de categoría y actividad.';
+        RETURN;
+    END;
+
+    UPDATE psn.Clase
+    SET
+        categoria = @categoria,
+        cod_actividad = @cod_actividad
+    WHERE cod_clase = @cod_clase;
+
+    PRINT 'Clase modificada correctamente.';
+END;
+GO

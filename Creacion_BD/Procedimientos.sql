@@ -1881,3 +1881,41 @@ BEGIN
     PRINT 'Clase modificada correctamente.';
 END;
 GO
+
+-- SP PARA BORRAR CLASE
+IF EXISTS (SELECT * FROM sys.procedures WHERE name = 'borrarClase')
+BEGIN
+    DROP PROCEDURE stp.borrarClase;
+END;
+GO
+
+CREATE OR ALTER PROCEDURE stp.borrarClase
+    @cod_clase INT
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    IF @cod_clase IS NULL
+    BEGIN
+        PRINT 'Error: El código de clase no puede ser NULL.';
+        RETURN;
+    END;
+
+    IF NOT EXISTS (SELECT 1 FROM psn.Clase WHERE cod_clase = @cod_clase)
+    BEGIN
+        PRINT 'Error: La clase con el código especificado no existe.';
+        RETURN;
+    END;
+
+    IF EXISTS (SELECT 1 FROM psn.HorarioClase WHERE cod_clase = @cod_clase)
+    BEGIN
+         PRINT 'Error: No se puede eliminar la clase porque tiene horarios asociados.';
+         RETURN;
+     END;
+
+    DELETE FROM psn.Clase
+    WHERE cod_clase = @cod_clase;
+
+    PRINT 'Clase eliminada correctamente.';
+END;
+GO

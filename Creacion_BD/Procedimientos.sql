@@ -54,8 +54,11 @@ BEGIN
         VALUES (@cod_categoria,@descripcion,@valor_mensual,@vig_valor_mens,@valor_anual,@vig_valor_anual);
 		PRINT 'Categoria insertada correctamente'
 END
-----------------------------------------------------------------------------------------------------------------
+GO
+
+---------------------------------------------------------------------------------------------------------------
 -- MODIFICAR
+
 CREATE OR ALTER PROCEDURE stp.modificarCategoria
 	@cod_categoria		INT,
 	@descripcion		VARCHAR(50),
@@ -128,6 +131,7 @@ BEGIN
 		VALUES(@descripcion,@valor_mensual,@vig_valor)
 	PRINT 'Actividad agregada correctamente.'
 END
+GO
 
 CREATE OR ALTER PROCEDURE stp.modificarActividad
 	@descripcion		VARCHAR(50),
@@ -166,7 +170,6 @@ BEGIN
 	PRINT 'Actividad modificada correctamente.';
 END
 GO
-
 
 CREATE OR ALTER PROCEDURE stp.eliminarActividad
 	@descripcion VARCHAR(50)
@@ -461,7 +464,7 @@ CREATE OR ALTER PROCEDURE stp.borrarSocio
     END
 GO
 
----------------
+---------------------------------------------------------------------------------------------------------------------------------------------------
 -- STORED PROCEDURES PARA TABLA PROFESOR
 
 -- SP PARA INSERTAR PROFESOR
@@ -646,7 +649,7 @@ CREATE OR ALTER PROCEDURE stp.borrarProfesor
     END
 GO
 
---------------------------- 
+---------------------------------------------------------------------------------------------------------------------------------------------------------
 -- STORED PROCEDURES PARA TABLA INVITADO
 
 -- SP PARA INSERTAR INVITADO
@@ -907,8 +910,6 @@ BEGIN
 END;
 GO
 
-<<<<<<< HEAD
-
 ------------------------------------------- SP PARA TABLA PAGO
 
 ----------- STORED PROCEDURE PARA INSERCION DE PAGO
@@ -1081,11 +1082,8 @@ GO
 ----------------------------------------------------------------------
 
 
+--------- SPs SUSCRIBIR 
 
-
-
-
-=======
 IF EXISTS (SELECT * FROM sys.procedures WHERE name = 'suscribirSocio')
 BEGIN
     DROP PROCEDURE stp.suscribirSocio;
@@ -1158,5 +1156,157 @@ BEGIN
 END
 GO
 
-		
->>>>>>> 456596df233ab1cfe174f39f43b490fdc8a43efd
+----------------------------------------------------------------------------------------------------------------------------------------------------
+----- SP PARA REEMBOLSO
+
+--- INSERCION REEMBOLSO
+
+IF EXISTS (SELECT * FROM sys.procedures WHERE name = 'insertarReembolso')
+BEGIN
+    DROP PROCEDURE stp.insertarReembolso;
+END;
+GO
+
+CREATE PROCEDURE stp.insertarReembolso
+    @monto       DECIMAL(10,2),
+    @medio_Pago  VARCHAR(50),
+    @fecha       DATE,
+    @motivo      VARCHAR(50)
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    -- Validación: monto debe ser mayor a 0
+    IF @monto <= 0
+    BEGIN
+        PRINT 'Error: El monto debe ser mayor a cero.';
+        RETURN;
+    END
+
+    -- Validación: medio_Pago no debe ser NULL ni vacío
+    IF @medio_Pago IS NULL OR LTRIM(RTRIM(@medio_Pago)) = ''
+    BEGIN
+        PRINT 'Error: El medio de pago no puede estar vacío.';
+        RETURN;
+    END
+
+    -- Validación: fecha no puede ser futura
+    IF @fecha > GETDATE()
+    BEGIN
+        PRINT 'Error: La fecha no puede ser futura.';
+        RETURN;
+    END
+
+    -- Validación: motivo no debe ser NULL ni vacío
+    IF @motivo IS NULL OR LTRIM(RTRIM(@motivo)) = ''
+    BEGIN
+        PRINT 'Error: El motivo no puede estar vacío.';
+        RETURN;
+    END
+
+    -- Inserción de datos
+    INSERT INTO psn.Reembolso (monto, medio_Pago, fecha, motivo)
+    VALUES (@monto, @medio_Pago, @fecha, @motivo);
+
+    PRINT 'Reembolso insertado correctamente.';
+END;
+GO
+
+--- MODIFICACION REEMBOLSO
+
+IF EXISTS (SELECT * FROM sys.procedures WHERE name = 'modificarReembolso')
+BEGIN
+    DROP PROCEDURE stp.modificarReembolso;
+END;
+GO
+
+CREATE PROCEDURE stp.modificarReembolso
+    @codReembolso INT,
+    @monto        DECIMAL(10,2),
+    @medio_Pago   VARCHAR(50),
+    @fecha        DATE,
+    @motivo       VARCHAR(50)
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    -- Validación: código debe existir
+    IF NOT EXISTS (SELECT 1 FROM psn.Reembolso WHERE codReembolso = @codReembolso)
+    BEGIN
+        PRINT 'Error: No existe un reembolso con el código especificado.';
+        RETURN;
+    END
+
+    -- Validación: monto debe ser mayor a 0
+    IF @monto <= 0
+    BEGIN
+        PRINT 'Error: El monto debe ser mayor a cero.';
+        RETURN;
+    END
+
+    -- Validación: medio_Pago no debe ser NULL ni vacío
+    IF @medio_Pago IS NULL OR LTRIM(RTRIM(@medio_Pago)) = ''
+    BEGIN
+        PRINT 'Error: El medio de pago no puede estar vacío.';
+        RETURN;
+    END
+
+    -- Validación: fecha no puede ser futura
+    IF @fecha > GETDATE()
+    BEGIN
+        PRINT 'Error: La fecha no puede ser futura.';
+        RETURN;
+    END
+
+    -- Validación: motivo no debe ser NULL ni vacío
+    IF @motivo IS NULL OR LTRIM(RTRIM(@motivo)) = ''
+    BEGIN
+        PRINT 'Error: El motivo no puede estar vacío.';
+        RETURN;
+    END
+
+    -- Actualización de datos
+    UPDATE psn.Reembolso
+    SET
+        monto = @monto,
+        medio_Pago = @medio_Pago,
+        fecha = @fecha,
+        motivo = @motivo
+    WHERE codReembolso = @codReembolso;
+
+    PRINT 'Reembolso modificado correctamente.';
+END;
+GO
+
+--- BORRADO REEMBOLSO
+
+IF EXISTS (SELECT * FROM sys.procedures WHERE name = 'borrarReembolso')
+BEGIN
+    DROP PROCEDURE stp.borarReembolso;
+END;
+GO
+
+CREATE PROCEDURE stp.borrarReembolso
+    @codReembolso INT
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    -- Validación: verificar que exista el código
+    IF NOT EXISTS (SELECT 1 FROM psn.Reembolso WHERE codReembolso = @codReembolso)
+    BEGIN
+        PRINT 'Error: No existe un reembolso con el código especificado.';
+        RETURN;
+    END
+
+    -- Eliminación del registro
+    DELETE FROM psn.Reembolso
+    WHERE codReembolso = @codReembolso;
+
+    PRINT 'Reembolso eliminado correctamente.';
+END;
+GO
+
+-----------------------------------------------------------------------------------------------------------------------------------------------------------
+
+---

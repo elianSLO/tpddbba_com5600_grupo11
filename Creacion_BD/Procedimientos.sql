@@ -189,7 +189,6 @@ GO
 ----------------------------------------------------------------------------------------------------------------
 
 --	STORED PROCEDURES PARA TABLA SOCIO
-
 -- SP PARA INSERTAR SOCIO
 
 IF  EXISTS (SELECT * FROM sys.procedures WHERE name = 'insertarSocio')
@@ -237,6 +236,20 @@ BEGIN
         PRINT 'Error: Ya existe un socio con ese DNI';
         RETURN;
     END;
+
+	-- Validación de que el nombre sólo contenga letras y espacios
+	IF @nombre LIKE '%[^a-zA-Z ]%'
+	BEGIN
+    PRINT 'Error: El nombre solo puede contener letras y espacios.';
+    RETURN;
+	END
+
+	-- Validación de que el apellido sólo contenga letras y espacios
+	IF @apellido LIKE '%[^a-zA-Z ]%'
+	BEGIN
+    PRINT 'Error: El apellido solo puede contener letras y espacios.';
+    RETURN;
+	END
 
     -- Validación de que la fecha de nacimiento no sea futura
     IF @fecha_nac > GETDATE()
@@ -347,6 +360,20 @@ BEGIN
         RETURN;
 	END;
 
+		-- Validación de que el nombre sólo contenga letras y espacios
+	IF @nombre LIKE '%[^a-zA-Z ]%'
+	BEGIN
+    PRINT 'Error: El nombre solo puede contener letras y espacios.';
+    RETURN;
+	END
+
+	-- Validación de que el apellido sólo contenga letras y espacios
+	IF @apellido LIKE '%[^a-zA-Z ]%'
+	BEGIN
+    PRINT 'Error: El apellido solo puede contener letras y espacios.';
+    RETURN;
+	END
+
     -- Validación de que la fecha de nacimiento no sea futura
     IF @fecha_nac > GETDATE()
     BEGIN
@@ -452,7 +479,7 @@ CREATE OR ALTER PROCEDURE stp.insertarProfesor
 	@tel				VARCHAR(15)
 AS
 BEGIN
-	SET NOCOUNT ON;
+	
     -- Validación de que ningún campo sea NULL
     IF @dni IS NULL OR @nombre IS NULL OR @apellido IS NULL OR 
        @email IS NULL OR @tel IS NULL
@@ -474,6 +501,20 @@ BEGIN
         PRINT 'Error: Ya existe un profesor con ese DNI';
         RETURN;
     END;
+
+		-- Validación de que el nombre sólo contenga letras y espacios
+	IF @nombre LIKE '%[^a-zA-Z ]%'
+	BEGIN
+    PRINT 'Error: El nombre solo puede contener letras y espacios.';
+    RETURN;
+	END
+
+	-- Validación de que el apellido sólo contenga letras y espacios
+	IF @apellido LIKE '%[^a-zA-Z ]%'
+	BEGIN
+    PRINT 'Error: El apellido solo puede contener letras y espacios.';
+    RETURN;
+	END
 
 	-- Validación de email
 	IF @email NOT LIKE '_%@_%._%'
@@ -538,6 +579,20 @@ BEGIN
         PRINT 'Error: El DNI debe tener exactamente 8 dígitos';
         RETURN;
     END;
+
+	-- Validación de que el nombre sólo contenga letras y espacios
+	IF @nombre LIKE '%[^a-zA-Z ]%'
+	BEGIN
+    PRINT 'Error: El nombre solo puede contener letras y espacios.';
+    RETURN;
+	END
+
+	-- Validación de que el apellido sólo contenga letras y espacios
+	IF @apellido LIKE '%[^a-zA-Z ]%'
+	BEGIN
+    PRINT 'Error: El apellido solo puede contener letras y espacios.';
+    RETURN;
+	END
 
     -- Validación de email
     IF @email NOT LIKE '_%@_%._%'
@@ -640,6 +695,20 @@ BEGIN
         RETURN;
     END;
 
+	-- Validación de que el nombre sólo contenga letras y espacios
+	IF @nombre LIKE '%[^a-zA-Z ]%'
+	BEGIN
+    PRINT 'Error: El nombre solo puede contener letras y espacios.';
+    RETURN;
+	END
+
+	-- Validación de que el apellido sólo contenga letras y espacios
+	IF @apellido LIKE '%[^a-zA-Z ]%'
+	BEGIN
+    PRINT 'Error: El apellido solo puede contener letras y espacios.';
+    RETURN;
+	END
+
     IF @fecha_nac > GETDATE()
     BEGIN
         PRINT 'Error: La fecha de nacimiento no puede ser futura';
@@ -740,6 +809,20 @@ BEGIN
         PRINT 'Error: El DNI debe ser de 8 dígitos';
         RETURN;
     END;
+
+	-- Validación de que el nombre sólo contenga letras y espacios
+	IF @nombre LIKE '%[^a-zA-Z ]%'
+	BEGIN
+    PRINT 'Error: El nombre solo puede contener letras y espacios.';
+    RETURN;
+	END
+
+	-- Validación de que el apellido sólo contenga letras y espacios
+	IF @apellido LIKE '%[^a-zA-Z ]%'
+	BEGIN
+    PRINT 'Error: El apellido solo puede contener letras y espacios.';
+    RETURN;
+	END
 
     IF @fecha_nac > GETDATE()
     BEGIN

@@ -861,11 +861,11 @@ EXEC stp.borrarProfesor @cod_prof = 1;
 
 -- Verificar que se borró
 
-SELECT * FROM psn.Socio WHERE cod_socio = 1;
+SELECT * FROM psn.Profesor WHERE cod_prof = 1;
 
 -- CASO 3.3.2: Borrado de socio inexistente
 
-EXEC stp.borrarSocio @cod_socio = 9999;
+EXEC stp.borrarProfesor @cod_prof = 9999;
 
 
 

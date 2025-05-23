@@ -1771,3 +1771,52 @@ BEGIN
     PRINT 'Reserva borrada correctamente.';
 END;
 GO
+
+---------------
+-- STORED PROCEDURES PARA TABLA CLASE
+
+-- SP PARA INSERTAR CLASE
+
+IF EXISTS (SELECT * FROM sys.procedures WHERE name = 'insertarClase')
+BEGIN
+    DROP PROCEDURE stp.insertarClase;
+END;
+GO
+
+CREATE OR ALTER PROCEDURE stp.insertarClase
+    @categoria     INT,
+    @cod_actividad INT
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    IF @categoria IS NULL OR @cod_actividad IS NULL
+    BEGIN
+        PRINT 'Error: Los campos categoría y código de actividad no pueden ser NULL.';
+        RETURN;
+    END;
+
+    IF NOT EXISTS (SELECT 1 FROM psn.Categoria WHERE cod_categoria = @categoria)
+    BEGIN
+        PRINT 'Error: La categoría especificada no existe.';
+        RETURN;
+    END;
+
+    IF NOT EXISTS (SELECT 1 FROM psn.Actividad WHERE cod_actividad = @cod_actividad)
+    BEGIN
+        PRINT 'Error: La actividad especificada no existe.';
+        RETURN;
+    END;
+
+    IF EXISTS (SELECT 1 FROM psn.Clase WHERE categoria = @categoria AND cod_actividad = @cod_actividad)
+    BEGIN
+        PRINT 'Error: Ya existe una clase con esta combinación de categoría y actividad.';
+        RETURN;
+    END;
+
+    INSERT INTO psn.Clase (categoria, cod_actividad)
+    VALUES (@categoria, @cod_actividad);
+
+    PRINT 'Clase insertada correctamente.';
+END;
+GO

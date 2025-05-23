@@ -1230,7 +1230,7 @@ GO
 -----------------------------------------------------------------------------------------
 --	SP PARA FACTURAS
 
-IF NOT EXISTS (SELECT * FROM sys.procedures WHERE (object_id = OBJECT_ID('emitirFactura') AND type = N'U'))
+IF EXISTS (SELECT * FROM sys.procedures WHERE (object_id = OBJECT_ID('emitirFactura') AND type = N'U'))
 BEGIN
     DROP PROCEDURE stp.emitirFactura;
 END;

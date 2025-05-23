@@ -54,7 +54,8 @@ BEGIN
         VALUES (@cod_categoria,@descripcion,@valor_mensual,@vig_valor_mens,@valor_anual,@vig_valor_anual);
 		PRINT 'Categoria insertada correctamente'
 END
-
+----------------------------------------------------------------------------------------------------------------
+-- MODIFICAR
 CREATE OR ALTER PROCEDURE stp.modificarCategoria
 	@cod_categoria		INT,
 	@descripcion		VARCHAR(50),
@@ -98,12 +99,96 @@ BEGIN
 		where cod_categoria = @cod_categoria;
 		PRINT 'Categoria actualizada correctamente'
 END
+----------------------------------------------------------------------------------------------------------------
+--	STORED PROCEDURES PARA TABLA ACTIVIDAD
+
+CREATE OR ALTER PROCEDURE stp.insertarActividad
+	@descripcion		VARCHAR(50),
+	@valor_mensual		DECIMAL(10,2),
+	@vig_valor			DATE
+AS
+BEGIN
+	--	Validar que no exista la misma descripción para otra actividad.
+	IF (EXISTS (SELECT 1 FROM psn.Actividad WHERE @descripcion = descripcion)
+		BEGIN
+			PRINT 'Ya existe esa actividad.'
+			RETURN;
+		END
+	--	Validar que el valor mensual sea coherente
+	IF @valor_mensual <= 0
+		BEGIN
+			PRINT 'Error en el valor mensual.'
+			RETURN
+		END
+	IF @vig_valor < GETDATE()
+		BEGIN
+			PRINT 'Fecha de vigencia invalida.'
+
+	INSERT INTO psn.Actividad (descripcion,valor_mensual,vig_valor)
+		VALUES(@descripcion,@valor_mensual,@vig_valor)
+	PRINT 'Actividad agregada correctamente.'
+END
+
+CREATE OR ALTER PROCEDURE stp.modificarActividad
+	@descripcion		VARCHAR(50),
+	@valor_mensual		DECIMAL(10,2),
+	@vig_valor			DATE
+AS
+BEGIN
+	-- Validar que exista la descripción de la actividad
+	IF NOT EXISTS (SELECT 1 FROM psn.Actividad WHERE descripcion = @descripcion)
+	BEGIN
+		PRINT 'No existe esa actividad.'
+		RETURN;
+	END
+
+	-- Validar que el valor mensual sea coherente
+	IF @valor_mensual <= 0
+	BEGIN
+		PRINT 'Error en el valor mensual.'
+		RETURN;
+	END
+
+	-- Validar que la fecha no esté en el pasado
+	IF @vig_valor < GETDATE()
+	BEGIN
+		PRINT 'Fecha de vigencia inválida.'
+		RETURN;
+	END
+
+	-- Actualizar la actividad
+	UPDATE psn.Actividad
+	SET
+		valor_mensual = @valor_mensual,
+		vig_valor = @vig_valor
+	WHERE descripcion = @descripcion;
+
+	PRINT 'Actividad modificada correctamente.';
+END
+GO
 
 
+CREATE OR ALTER PROCEDURE stp.eliminarActividad
+	@descripcion VARCHAR(50)
+AS
+BEGIN
+	-- Validar que exista la descripción de la actividad
+	IF NOT EXISTS (SELECT 1 FROM psn.Actividad WHERE descripcion = @descripcion)
+	BEGIN
+		PRINT 'No existe esa actividad.'
+		RETURN;
+	END
+	DELETE FROM psn.Actividad
+	WHERE descripcion = @descripcion;
+
+	PRINT 'Actividad elimnada correctamente.';
+END
+GO
 
 
----------- STORED PROCEDURES PARA TABLA SOCIO
+----------------------------------------------------------------------------------------------------------------
 
+--	STORED PROCEDURES PARA TABLA SOCIO
 -- SP PARA INSERTAR SOCIO
 
 IF  EXISTS (SELECT * FROM sys.procedures WHERE name = 'insertarSocio')
@@ -822,6 +907,7 @@ BEGIN
 END;
 GO
 
+<<<<<<< HEAD
 
 ------------------------------------------- SP PARA TABLA PAGO
 
@@ -999,3 +1085,78 @@ GO
 
 
 
+=======
+IF EXISTS (SELECT * FROM sys.procedures WHERE name = 'suscribirSocio')
+BEGIN
+    DROP PROCEDURE stp.suscribirSocio;
+END;
+GO
+CREATE OR ALTER PROCEDURE stp.suscribirSocio
+	@cod_socio INT,
+	@tipoSuscripcion CHAR(1), --Si es anual A, si es mensual M
+	@cod_categoria INT
+AS
+BEGIN
+	IF NOT EXISTS (SELECT 1 FROM psn.Socio WHERE cod_socio = @cod_socio)
+	BEGIN
+		PRINT 'No existe socio'
+		RETURN
+	END
+
+	IF (UPPER(@tipoSuscripcion) NOT IN ('A','M'))
+	BEGIN
+		PRINT 'Tipo de suscripcion erronea'
+		RETURN
+	END
+	DECLARE @edadLimite INT, @edadSocio INT, @fnac DATE
+	SET @edadLimite = (SELECT edad_max from psn.Categoria WHERE cod_categoria = @cod_categoria)
+	SET @fnac = ( SELECT fecha_nac from psn.Socio WHERE cod_socio = @cod_socio)
+	SET @edadSocio = (SELECT DATEDIFF(YEAR,@fnac,GETDATE()))
+
+	IF (@edadSocio > @edadLimite)
+	BEGIN
+		PRINT 'Categoria incorrecta'
+		RETURN
+	END
+	DECLARE @fecha_inscripcion DATE, @fecha_venc DATE;
+	SET @fecha_inscripcion = GETDATE()
+	
+	IF(UPPER(@tipoSuscripcion) = 'A')
+		SET	@fecha_venc = DATEADD(MONTH, 12, @fecha_inscripcion)
+	ELSE
+		SET	@fecha_venc = DATEADD(MONTH, 1, @fecha_inscripcion)
+
+	INSERT INTO psn.Suscripcion (cod_socio,cod_categoria,fecha_suscripcion,fecha_vto)
+	VALUES(@cod_socio,@cod_categoria,@fecha_inscripcion,@fecha_venc)
+END
+
+
+
+
+-----------------------------------------------------------------------------------------
+--	SP PARA FACTURAS
+
+IF NOT EXISTS (SELECT * FROM sys.procedures WHERE (object_id = OBJECT_ID('emitirFactura') AND type = N'U')
+BEGIN
+    DROP PROCEDURE stp.modificarInvitado;
+END;
+GO
+CREATE OR ALTER PROCEDURE stp.emitirFactura
+	@cod_socio		INT
+AS
+BEGIN
+	IF NOT EXISTS (SELECT 1 FROM psn.Socio WHERE cod_socio = @cod_socio)
+	BEGIN
+		PRINT 'No existe el socio'
+		RETURN
+	END
+	DECLARE @categoria	INT,
+			@monto		DECIMAL(10,2)
+	SET @categoria = (SELECT cod_categoria from psn.Suscripcion WHERE @cod_socio = cod_socio)
+	--SET @monto = (SELECT valor_mensual)
+	
+END
+GO
+
+		
+>>>>>>> 456596df233ab1cfe174f39f43b490fdc8a43efd

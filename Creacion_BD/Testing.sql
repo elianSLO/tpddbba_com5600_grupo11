@@ -870,7 +870,84 @@ EXEC stp.borrarProfesor @cod_prof = 9999;
 
 
 ------------------------------------------------------------------------------------
---CONTINUAR
+
+-- TABLA ACTIVIDAD 
+
+-- CASO 4.1  --INSERCION
+
+-- CASO 4.1.1: Inserción válida
+EXEC stp.insertarActividad 
+    @descripcion = 'Ajedrez',
+    @valor_mensual = 1500.00,
+    @vig_valor = GETDATE()  
+
+-- CASO 4.1.2: Duplicación de descripción
+EXEC stp.insertarActividad 
+    @descripcion = 'Yoga',  -- ya existe
+    @valor_mensual = 1600.00,
+    @vig_valor = DATEADD(DAY, 5, GETDATE())
+
+-- CASO 4.1.3: Valor mensual inválido
+EXEC stp.insertarActividad 
+    @descripcion = 'Pilates',
+    @valor_mensual = -500.00,  -- inválido
+    @vig_valor = DATEADD(DAY, 1, GETDATE());
+
+-- CASO 4.1.4: Fecha de vigencia en el pasado
+EXEC stp.insertarActividad 
+    @descripcion = 'Zumba',
+    @valor_mensual = 1800.00,
+    @vig_valor = DATEADD(DAY, -2, GETDATE());
+
+
+-- CASO 4.2 - MODIFICACION 
+
+-- CASO 4.2.1: Modificación válida
+EXEC stp.modificarActividad 
+    @descripcion = 'Yoga',
+    @valor_mensual = 2000.00,
+    @vig_valor = DATEADD(DAY, 3, GETDATE());
+
+-- CASO 4.2.2: Actividad no existente
+EXEC stp.modificarActividad 
+    @descripcion = 'Crossfit',  -- no existe
+    @valor_mensual = 2500.00,
+    @vig_valor = DATEADD(DAY, 3, GETDATE());
+
+-- CASO 4.2.3: Valor mensual inválido
+EXEC stp.modificarActividad 
+    @descripcion = 'Yoga',
+    @valor_mensual = 0.00,  -- inválido
+    @vig_valor = DATEADD(DAY, 5, GETDATE());
+
+-- CASO 4.2.4: Fecha de vigencia inválida
+EXEC stp.modificarActividad 
+    @descripcion = 'Yoga',
+    @valor_mensual = 1800.00,
+    @vig_valor = DATEADD(DAY, -1, GETDATE());  -- pasada
+
+-- 4.3 
+
+-- Crear actividad de prueba
+INSERT INTO psn.Actividad (descripcion)
+VALUES ('Actividad de prueba');
+
+-- Verificar que se haya insertado
+PRINT 'Antes de borrar:';
+SELECT * FROM psn.Actividad WHERE descripcion = 'Actividad de prueba';
+
+-- Ejecutar el SP para borrar la actividad
+EXEC stp.borrarActividad @descripcion = 'Actividad de prueba';
+
+-- Verificar que se haya eliminado
+PRINT 'Después de borrar:';
+SELECT * FROM psn.Actividad WHERE descripcion = 'Actividad de prueba';
+
+-- Intentar borrar una actividad que no existe
+EXEC stp.borrarActividad @descripcion = 'No existe esta actividad';
+
+
+
 
 
 

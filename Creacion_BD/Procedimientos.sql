@@ -59,6 +59,11 @@ GO
 ---------------------------------------------------------------------------------------------------------------
 -- MODIFICAR
 
+IF  EXISTS (SELECT * FROM sys.procedures WHERE name = 'modificarCategoria')
+BEGIN
+    DROP PROCEDURE stp.modificarCategoria;
+END;
+GO
 CREATE OR ALTER PROCEDURE stp.modificarCategoria
 	@cod_categoria		INT,
 	@descripcion		VARCHAR(50),
@@ -102,8 +107,39 @@ BEGIN
 		where cod_categoria = @cod_categoria;
 		PRINT 'Categoria actualizada correctamente'
 END
+GO
+
+-- SP PARA BORRAR CATE
+IF EXISTS (SELECT * FROM sys.procedures WHERE name = 'borrarCategoria')
+BEGIN
+    DROP PROCEDURE stp.borrarCategoria;
+END;
+GO
+CREATE OR ALTER PROCEDURE stp.borrarCategoria
+        @cod_categoria INT
+    AS
+    BEGIN
+        SET NOCOUNT ON;
+        IF EXISTS (SELECT 1 FROM psn.Categoria WHERE cod_categoria = @cod_categoria)
+        BEGIN
+            DELETE FROM psn.Categoria WHERE cod_categoria = @cod_categoria;
+            PRINT 'Categoria eliminada.';
+        END
+        ELSE
+        BEGIN
+            PRINT 'No existe categoria.';
+        END
+    END
+GO
+
 ----------------------------------------------------------------------------------------------------------------
 --	STORED PROCEDURES PARA TABLA ACTIVIDAD
+
+IF EXISTS (SELECT * FROM sys.procedures WHERE name = 'insertarActividad')
+BEGIN
+    DROP PROCEDURE stp.insertarActividad;
+END;
+GO
 
 CREATE OR ALTER PROCEDURE stp.insertarActividad
 	@descripcion		VARCHAR(50),
@@ -111,8 +147,14 @@ CREATE OR ALTER PROCEDURE stp.insertarActividad
 	@vig_valor			DATE
 AS
 BEGIN
+	IF @descripcion COLLATE Modern_Spanish_CI_AI NOT IN (
+    'Futsal', 'Voley', 'Taekwondo', 'Baile artistico', 'Natacion', 'Ajedrez')
+	BEGIN
+		PRINT 'Actividad no permitida.'
+		RETURN;
+	END
 	--	Validar que no exista la misma descripci√≥n para otra actividad.
-	IF (EXISTS (SELECT 1 FROM psn.Actividad WHERE @descripcion = descripcion)
+	IF (EXISTS (SELECT 1 FROM psn.Actividad WHERE @descripcion = descripcion))
 		BEGIN
 			PRINT 'Ya existe esa actividad.'
 			RETURN;
@@ -126,11 +168,19 @@ BEGIN
 	IF @vig_valor < GETDATE()
 		BEGIN
 			PRINT 'Fecha de vigencia invalida.'
+			RETURN
+		END
 
 	INSERT INTO psn.Actividad (descripcion,valor_mensual,vig_valor)
 		VALUES(@descripcion,@valor_mensual,@vig_valor)
 	PRINT 'Actividad agregada correctamente.'
 END
+GO
+
+IF EXISTS (SELECT * FROM sys.procedures WHERE name = 'modificarActividad')
+BEGIN
+    DROP PROCEDURE stp.modificarActividad;
+END;
 GO
 
 CREATE OR ALTER PROCEDURE stp.modificarActividad
@@ -171,7 +221,13 @@ BEGIN
 END
 GO
 
-CREATE OR ALTER PROCEDURE stp.eliminarActividad
+IF EXISTS (SELECT * FROM sys.procedures WHERE name = 'borrarActividad')
+BEGIN
+    DROP PROCEDURE stp.borrarActividad;
+END;
+GO
+
+CREATE OR ALTER PROCEDURE stp.borrarActividad
 	@descripcion VARCHAR(50)
 AS
 BEGIN
@@ -1087,8 +1143,9 @@ GO
 IF EXISTS (SELECT * FROM sys.procedures WHERE name = 'suscribirSocio')
 BEGIN
     DROP PROCEDURE stp.suscribirSocio;
-END;
+END
 GO
+
 CREATE OR ALTER PROCEDURE stp.suscribirSocio
 	@cod_socio INT,
 	@tipoSuscripcion CHAR(1), --Si es anual A, si es mensual M
@@ -1128,17 +1185,82 @@ BEGIN
 	VALUES(@cod_socio,@cod_categoria,@fecha_inscripcion,@fecha_venc)
 END
 
+IF EXISTS (SELECT * FROM sys.procedures WHERE name = 'modificarSuscripcion')
+BEGIN
+    DROP PROCEDURE stp.modificarSuscripcion;
+END
+GO
 
+CREATE OR ALTER PROCEDURE stp.modificarSuscripcion
+	@cod_socio INT,
+	@nueva_cat INT,
+	@tiempo CHAR(1)
+AS
+BEGIN
+	IF NOT EXISTS (SELECT 1 FROM psn.Suscripcion WHERE cod_socio = @cod_socio)
+		BEGIN
+			PRINT 'No existe suscripcion'
+			RETURN
+		END
+	IF NOT EXISTS (SELECT 1 FROM psn.Suscripcion WHERE cod_categoria = @nueva_cat)
+		BEGIN
+			PRINT 'No existe categoria'
+			RETURN
+		END
+	DECLARE @edadLimite INT, @edadSocio INT, @fnac DATE
+	SET @edadLimite = (SELECT edad_max from psn.Categoria WHERE cod_categoria = @nueva_cat)
+	SET @fnac = ( SELECT fecha_nac from psn.Socio WHERE cod_socio = @cod_socio)
+	SET @edadSocio = (SELECT DATEDIFF(YEAR,@fnac,GETDATE()))
 
+	IF (@edadSocio > @edadLimite)
+	BEGIN
+		PRINT 'Categoria incorrecta'
+		RETURN
+	END
+
+	UPDATE psn.Suscripcion
+	SET 
+		cod_categoria = ISNULL(cod_categoria,@nueva_cat),
+		tiempoSuscr = ISNULL(tiempoSuscr, @tiempo)
+	WHERE cod_socio = @cod_socio
+END
+
+IF EXISTS (SELECT * FROM sys.procedures WHERE name = 'borrarSuscripcion')
+BEGIN
+    DROP PROCEDURE stp.borrarSuscripcion;
+END;
+GO
+
+CREATE OR ALTER PROCEDURE stp.borrarSuscripcion
+    @cod_socio INT
+AS
+BEGIN
+    SET NOCOUNT ON;
+    -- Validaci√≥n: verificar que exista el c√≥digo
+    IF NOT EXISTS (SELECT 1 FROM psn.Suscripcion WHERE cod_socio = @cod_socio)
+    BEGIN
+        PRINT 'Error: No existe suscripcion.';
+        RETURN;
+    END
+
+    -- Eliminaci√≥n del registro
+    DELETE FROM psn.Suscripcion
+    WHERE cod_socio = @cod_socio
+
+    PRINT 'Suscripcion eliminada';
+END;
+GO
 
 -----------------------------------------------------------------------------------------
 --	SP PARA FACTURAS
 
-IF NOT EXISTS (SELECT * FROM sys.procedures WHERE (object_id = OBJECT_ID('emitirFactura') AND type = N'U')
+IF EXISTS (SELECT * FROM sys.procedures WHERE (object_id = OBJECT_ID('emitirFactura') AND type = N'U'))
 BEGIN
-    DROP PROCEDURE stp.modificarInvitado;
+    DROP PROCEDURE stp.emitirFactura;
 END;
 GO
+
+
 CREATE OR ALTER PROCEDURE stp.emitirFactura
 	@cod_socio		INT
 AS
@@ -1149,11 +1271,95 @@ BEGIN
 		RETURN
 	END
 	DECLARE @categoria	INT,
-			@monto		DECIMAL(10,2)
-	SET @categoria = (SELECT cod_categoria from psn.Suscripcion WHERE @cod_socio = cod_socio)
-	--SET @monto = (SELECT valor_mensual)
+			@monto		DECIMAL(10,2),
+			@fecha_emision	DATE,
+			@fecha_vto		DATE,
+			@fecha_seg_vto	DATE,
+			@estado			VARCHAR(10),
+			@tipoSuscripc	CHAR(1),
+			@recargo		INT
+	SET @categoria = (SELECT cod_categoria FROM psn.Suscripcion WHERE @cod_socio = cod_socio)
+	SET @tipoSuscripc = (SELECT tiempoSuscr FROM psn.Suscripcion WHERE @cod_socio = cod_socio)
+	SET @monto = (SELECT valor_mensual from psn.Categoria WHERE cod_categoria = @categoria)
+	SET @fecha_emision = GETDATE();
+	SET @fecha_vto = DATEADD(DAY,5,@fecha_emision)
+	SET @fecha_seg_vto = DATEADD(DAY,5,@fecha_vto)
+	SET @estado = 'Pendiente'
+	SET @recargo = 0
+
+	INSERT INTO psn.Factura (monto,fecha_emision,fecha_vto,fecha_seg_vto,recargo,estado,cod_socio)
+	VALUES (@monto,@fecha_emision,@fecha_vto,@fecha_seg_vto, @recargo,@estado,@cod_socio)
 	
 END
+GO
+
+IF EXISTS (SELECT * FROM sys.procedures WHERE (object_id = OBJECT_ID('modificarFactura') AND type = N'U'))
+BEGIN
+    DROP PROCEDURE stp.modificarFactura;
+END;
+GO
+
+
+CREATE OR ALTER PROCEDURE stp.modificarFactura
+	@cod_socio		INT,
+	@cod_Factura	INT
+AS
+BEGIN
+	IF NOT EXISTS (SELECT 1 FROM psn.Factura WHERE @cod_socio = cod_socio)
+		BEGIN
+			PRINT 'No existe factura'
+			RETURN
+		END
+	IF NOT EXISTS (SELECT 1 FROM psn.Factura WHERE @cod_Factura = cod_Factura)
+		BEGIN
+			PRINT 'No existe factura'
+			RETURN
+		END
+	DECLARE @monto			DECIMAL(10,2),
+			@estado			VARCHAR(10),
+			@tipoSuscripc	CHAR(1),
+			@fecha_vto		DATE,
+			@fecha_seg_vto	DATE
+	SET @fecha_vto = (SELECT fecha_vto from psn.Factura WHERE cod_Factura = @cod_Factura)
+	SET @fecha_seg_vto = (SELECT fecha_seg_vto from psn.Factura WHERE cod_Factura = @cod_Factura)
+	SET @monto = (SELECT monto FROM psn.Factura WHERE cod_Factura = @cod_Factura)
+	IF GETDATE() > @fecha_seg_vto
+		SET @monto = @monto * 1.10
+	SET @estado = 'VENCIDA'
+
+	UPDATE psn.Factura
+		SET
+			monto = ISNULL(monto, @monto),
+			estado = ISNULL(estado, @estado)
+		where cod_Factura = @cod_Factura;
+		PRINT 'Factura actualizada correctamente'
+END
+GO
+
+IF EXISTS (SELECT * FROM sys.procedures WHERE name = 'borrarFactura')
+BEGIN
+    DROP PROCEDURE stp.borrarFactura;
+END;
+GO
+
+CREATE OR ALTER PROCEDURE stp.borrarFactura
+    @cod_Factura INT
+AS
+BEGIN
+    SET NOCOUNT ON;
+    -- Validaci√≥n: verificar que exista el c√≥digo
+    IF NOT EXISTS (SELECT 1 FROM psn.Factura WHERE cod_Factura = @cod_Factura)
+    BEGIN
+        PRINT 'Error: No existe factura.';
+        RETURN;
+    END
+
+    -- Eliminaci√≥n del registro
+    DELETE FROM psn.Factura
+    WHERE cod_Factura = @cod_Factura;
+
+    PRINT 'Factura eliminada correctamente.';
+END;
 GO
 
 ----------------------------------------------------------------------------------------------------------------------------------------------------
@@ -1534,9 +1740,6 @@ GO
 ---------------
 -- STORED PROCEDURES PARA TABLA RESERVA
 
-<<<<<<< HEAD
-------------------------------------------------------------------------------------------------------------------------------------------------------------
-=======
 -- SP PARA INSERTAR RESERVA
 
 IF EXISTS (SELECT * FROM sys.procedures WHERE name = 'insertarReserva')
@@ -1923,7 +2126,6 @@ BEGIN
 END;
 GO
 
->>>>>>> 89e6040b86ac7c923c6b6ea766efc56152c7f119
 --- STORED PROCEDURES PARA ITEM_FACTURA
 
 -- INSERCION ITEM_FACTURA
@@ -1940,16 +2142,6 @@ AS
 BEGIN
     SET NOCOUNT ON;
 
-<<<<<<< HEAD
-    -- ValidaciÛn: cod_Factura debe ser mayor a 0
-    IF @cod_Factura IS NULL OR @cod_Factura <= 0
-    BEGIN
-        PRINT 'Error: El cÛdigo de factura debe ser un n˙mero positivo.';
-        RETURN;
-    END
-
-    -- InserciÛn
-=======
     -- Validaci√≥n: cod_Factura debe ser mayor a 0
     IF @cod_Factura IS NULL OR @cod_Factura <= 0
     BEGIN
@@ -1958,7 +2150,6 @@ BEGIN
     END
 
     -- Inserci√≥n
->>>>>>> 89e6040b86ac7c923c6b6ea766efc56152c7f119
     INSERT INTO psn.Item_Factura (cod_Factura)
     VALUES (@cod_Factura);
 
@@ -1985,20 +2176,6 @@ BEGIN
     -- Validar existencia de cod_item
     IF NOT EXISTS (SELECT 1 FROM psn.Item_Factura WHERE cod_item = @cod_item)
     BEGIN
-<<<<<<< HEAD
-        PRINT 'Error: No existe un Ìtem de factura con ese cÛdigo.';
-        RETURN;
-    END
-
-    -- ValidaciÛn: cod_Factura debe ser mayor a 0
-    IF @cod_Factura IS NULL OR @cod_Factura <= 0
-    BEGIN
-        PRINT 'Error: El cÛdigo de factura debe ser un n˙mero positivo.';
-        RETURN;
-    END
-
-    -- ActualizaciÛn
-=======
         PRINT 'Error: No existe un √≠tem de factura con ese c√≥digo.';
         RETURN;
     END
@@ -2011,7 +2188,6 @@ BEGIN
     END
 
     -- Actualizaci√≥n
->>>>>>> 89e6040b86ac7c923c6b6ea766efc56152c7f119
     UPDATE psn.Item_Factura
     SET cod_Factura = @cod_Factura
     WHERE cod_item = @cod_item;
@@ -2036,19 +2212,11 @@ BEGIN
     -- Validar existencia
     IF NOT EXISTS (SELECT 1 FROM psn.Item_Factura WHERE cod_item = @cod_item)
     BEGIN
-<<<<<<< HEAD
-        PRINT 'Error: No existe un Ìtem de factura con ese cÛdigo.';
-        RETURN;
-    END
-
-    -- EliminaciÛn
-=======
         PRINT 'Error: No existe un √≠tem de factura con ese c√≥digo.';
         RETURN;
     END
 
     -- Eliminaci√≥n
->>>>>>> 89e6040b86ac7c923c6b6ea766efc56152c7f119
     DELETE FROM psn.Item_Factura
     WHERE cod_item = @cod_item;
 
@@ -2084,21 +2252,13 @@ BEGIN
 
     IF @cod_socio IS NULL OR @cod_socio <= 0
     BEGIN
-<<<<<<< HEAD
-        PRINT 'Error: El cÛdigo de socio debe ser un n˙mero positivo.';
-=======
         PRINT 'Error: El c√≥digo de socio debe ser un n√∫mero positivo.';
->>>>>>> 89e6040b86ac7c923c6b6ea766efc56152c7f119
         RETURN;
     END
 
     IF @cod_clase IS NULL OR @cod_clase <= 0
     BEGIN
-<<<<<<< HEAD
-        PRINT 'Error: El cÛdigo de clase debe ser un n˙mero positivo.';
-=======
         PRINT 'Error: El c√≥digo de clase debe ser un n√∫mero positivo.';
->>>>>>> 89e6040b86ac7c923c6b6ea766efc56152c7f119
         RETURN;
     END
 
@@ -2108,19 +2268,11 @@ BEGIN
         WHERE fecha = @fecha AND cod_socio = @cod_socio AND cod_clase = @cod_clase
     )
     BEGIN
-<<<<<<< HEAD
-        PRINT 'Error: Ya existe un registro con esa combinaciÛn de fecha, socio y clase.';
-        RETURN;
-    END
-
-    -- InserciÛn
-=======
         PRINT 'Error: Ya existe un registro con esa combinaci√≥n de fecha, socio y clase.';
         RETURN;
     END
 
     -- Inserci√≥n
->>>>>>> 89e6040b86ac7c923c6b6ea766efc56152c7f119
     INSERT INTO psn.Asiste (fecha, cod_socio, cod_clase)
     VALUES (@fecha, @cod_socio, @cod_clase);
 
@@ -2153,11 +2305,7 @@ BEGIN
         WHERE fecha = @fecha_original AND cod_socio = @cod_socio_original AND cod_clase = @cod_clase_original
     )
     BEGIN
-<<<<<<< HEAD
-        PRINT 'Error: No se encontrÛ el registro original de asistencia.';
-=======
         PRINT 'Error: No se encontr√≥ el registro original de asistencia.';
->>>>>>> 89e6040b86ac7c923c6b6ea766efc56152c7f119
         RETURN;
     END
 
@@ -2170,21 +2318,13 @@ BEGIN
 
     IF @nuevo_cod_socio IS NULL OR @nuevo_cod_socio <= 0
     BEGIN
-<<<<<<< HEAD
-        PRINT 'Error: El nuevo cÛdigo de socio debe ser un n˙mero positivo.';
-=======
         PRINT 'Error: El nuevo c√≥digo de socio debe ser un n√∫mero positivo.';
->>>>>>> 89e6040b86ac7c923c6b6ea766efc56152c7f119
         RETURN;
     END
 
     IF @nuevo_cod_clase IS NULL OR @nuevo_cod_clase <= 0
     BEGIN
-<<<<<<< HEAD
-        PRINT 'Error: El nuevo cÛdigo de clase debe ser un n˙mero positivo.';
-=======
         PRINT 'Error: El nuevo c√≥digo de clase debe ser un n√∫mero positivo.';
->>>>>>> 89e6040b86ac7c923c6b6ea766efc56152c7f119
         RETURN;
     END
 
@@ -2203,11 +2343,7 @@ BEGIN
         RETURN;
     END
 
-<<<<<<< HEAD
-    -- ActualizaciÛn
-=======
     -- Actualizaci√≥n
->>>>>>> 89e6040b86ac7c923c6b6ea766efc56152c7f119
     UPDATE psn.Asiste
     SET fecha = @nueva_fecha,
         cod_socio = @nuevo_cod_socio,
@@ -2240,19 +2376,11 @@ BEGIN
         WHERE fecha = @fecha AND cod_socio = @cod_socio AND cod_clase = @cod_clase
     )
     BEGIN
-<<<<<<< HEAD
-        PRINT 'Error: No se encontrÛ un registro con esos datos.';
-        RETURN;
-    END
-
-    -- EliminaciÛn
-=======
         PRINT 'Error: No se encontr√≥ un registro con esos datos.';
         RETURN;
     END
 
     -- Eliminaci√≥n
->>>>>>> 89e6040b86ac7c923c6b6ea766efc56152c7f119
     DELETE FROM psn.Asiste
     WHERE fecha = @fecha AND cod_socio = @cod_socio AND cod_clase = @cod_clase;
 
@@ -2281,41 +2409,25 @@ BEGIN
     -- Validaciones
     IF @fecha_inscripcion IS NULL OR @fecha_inscripcion > GETDATE()
     BEGIN
-<<<<<<< HEAD
-        PRINT 'Error: La fecha de inscripciÛn no puede ser nula ni futura.';
-=======
         PRINT 'Error: La fecha de inscripci√≥n no puede ser nula ni futura.';
->>>>>>> 89e6040b86ac7c923c6b6ea766efc56152c7f119
         RETURN;
     END
 
     IF @estado IS NULL OR LTRIM(RTRIM(@estado)) = ''
     BEGIN
-<<<<<<< HEAD
-        PRINT 'Error: El estado no puede estar vacÌo.';
-=======
         PRINT 'Error: El estado no puede estar vac√≠o.';
->>>>>>> 89e6040b86ac7c923c6b6ea766efc56152c7f119
         RETURN;
     END
 
     IF @cod_socio IS NULL OR @cod_socio <= 0
     BEGIN
-<<<<<<< HEAD
-        PRINT 'Error: El cÛdigo de socio debe ser un n˙mero positivo.';
-=======
         PRINT 'Error: El c√≥digo de socio debe ser un n√∫mero positivo.';
->>>>>>> 89e6040b86ac7c923c6b6ea766efc56152c7f119
         RETURN;
     END
 
     IF @cod_clase IS NULL OR @cod_clase <= 0
     BEGIN
-<<<<<<< HEAD
-        PRINT 'Error: El cÛdigo de clase debe ser un n˙mero positivo.';
-=======
         PRINT 'Error: El c√≥digo de clase debe ser un n√∫mero positivo.';
->>>>>>> 89e6040b86ac7c923c6b6ea766efc56152c7f119
         RETURN;
     END
 
@@ -2325,17 +2437,6 @@ BEGIN
         WHERE fecha_inscripcion = @fecha_inscripcion AND cod_socio = @cod_socio AND cod_clase = @cod_clase
     )
     BEGIN
-<<<<<<< HEAD
-        PRINT 'Error: Ya existe una inscripciÛn con esos datos.';
-        RETURN;
-    END
-
-    -- InserciÛn
-    INSERT INTO psn.Inscripto (fecha_inscripcion, estado, cod_socio, cod_clase)
-    VALUES (@fecha_inscripcion, @estado, @cod_socio, @cod_clase);
-
-    PRINT 'InscripciÛn registrada correctamente.';
-=======
         PRINT 'Error: Ya existe una inscripci√≥n con esos datos.';
         RETURN;
     END
@@ -2345,7 +2446,6 @@ BEGIN
     VALUES (@fecha_inscripcion, @estado, @cod_socio, @cod_clase);
 
     PRINT 'Inscripci√≥n registrada correctamente.';
->>>>>>> 89e6040b86ac7c923c6b6ea766efc56152c7f119
 END;
 GO
 
@@ -2373,11 +2473,7 @@ BEGIN
         WHERE fecha_inscripcion = @fecha_original AND cod_socio = @cod_socio_original AND cod_clase = @cod_clase_original
     )
     BEGIN
-<<<<<<< HEAD
-        PRINT 'Error: No se encontrÛ la inscripciÛn original.';
-=======
         PRINT 'Error: No se encontr√≥ la inscripci√≥n original.';
->>>>>>> 89e6040b86ac7c923c6b6ea766efc56152c7f119
         RETURN;
     END
 
@@ -2390,31 +2486,19 @@ BEGIN
 
     IF @nuevo_estado IS NULL OR LTRIM(RTRIM(@nuevo_estado)) = ''
     BEGIN
-<<<<<<< HEAD
-        PRINT 'Error: El nuevo estado no puede estar vacÌo.';
-=======
         PRINT 'Error: El nuevo estado no puede estar vac√≠o.';
->>>>>>> 89e6040b86ac7c923c6b6ea766efc56152c7f119
         RETURN;
     END
 
     IF @nuevo_cod_socio IS NULL OR @nuevo_cod_socio <= 0
     BEGIN
-<<<<<<< HEAD
-        PRINT 'Error: El nuevo cÛdigo de socio debe ser un n˙mero positivo.';
-=======
         PRINT 'Error: El nuevo c√≥digo de socio debe ser un n√∫mero positivo.';
->>>>>>> 89e6040b86ac7c923c6b6ea766efc56152c7f119
         RETURN;
     END
 
     IF @nuevo_cod_clase IS NULL OR @nuevo_cod_clase <= 0
     BEGIN
-<<<<<<< HEAD
-        PRINT 'Error: El nuevo cÛdigo de clase debe ser un n˙mero positivo.';
-=======
         PRINT 'Error: El nuevo c√≥digo de clase debe ser un n√∫mero positivo.';
->>>>>>> 89e6040b86ac7c923c6b6ea766efc56152c7f119
         RETURN;
     END
 
@@ -2429,19 +2513,11 @@ BEGIN
           )
     )
     BEGIN
-<<<<<<< HEAD
-        PRINT 'Error: Ya existe otra inscripciÛn con los nuevos datos.';
-        RETURN;
-    END
-
-    -- ActualizaciÛn
-=======
         PRINT 'Error: Ya existe otra inscripci√≥n con los nuevos datos.';
         RETURN;
     END
 
     -- Actualizaci√≥n
->>>>>>> 89e6040b86ac7c923c6b6ea766efc56152c7f119
     UPDATE psn.Inscripto
     SET fecha_inscripcion = @nueva_fecha,
         estado = @nuevo_estado,
@@ -2451,11 +2527,7 @@ BEGIN
       AND cod_socio = @cod_socio_original
       AND cod_clase = @cod_clase_original;
 
-<<<<<<< HEAD
-    PRINT 'InscripciÛn modificada correctamente.';
-=======
     PRINT 'Inscripci√≥n modificada correctamente.';
->>>>>>> 89e6040b86ac7c923c6b6ea766efc56152c7f119
 END;
 GO
 
@@ -2480,33 +2552,16 @@ BEGIN
         WHERE fecha_inscripcion = @fecha_inscripcion AND cod_socio = @cod_socio AND cod_clase = @cod_clase
     )
     BEGIN
-<<<<<<< HEAD
-        PRINT 'Error: No se encontrÛ una inscripciÛn con esos datos.';
-        RETURN;
-    END
-
-    -- EliminaciÛn
-=======
         PRINT 'Error: No se encontr√≥ una inscripci√≥n con esos datos.';
         RETURN;
     END
 
     -- Eliminaci√≥n
->>>>>>> 89e6040b86ac7c923c6b6ea766efc56152c7f119
     DELETE FROM psn.Inscripto
     WHERE fecha_inscripcion = @fecha_inscripcion
       AND cod_socio = @cod_socio
       AND cod_clase = @cod_clase;
 
-<<<<<<< HEAD
-    PRINT 'InscripciÛn eliminada correctamente.';
-END;
-GO
-
-
------------------
-=======
     PRINT 'Inscripci√≥n eliminada correctamente.';
 END;
 GO
->>>>>>> 89e6040b86ac7c923c6b6ea766efc56152c7f119

@@ -1,6 +1,7 @@
--- 3. SCRIPT DE IMPORTACION DE DATOS - 12/06/2025 - Com 5600 - Grupo 11 - Base de Datos Aplicadas,
+-- SCRIPT DE IMPORTACION DE DATOS --
+-- Comision 5600 - Grupo 11
+-- Fecha: 12/06/2025
 -- Integrantes: 
---ATENCION: puede ejecutar el archivo como bloque para crear los SP  y luego ir ejecutandolos de a uno para ver la insercion
 
 Use Com5600G11
 -----------------------------------------------------------------------------------------------------------------------
@@ -11,5 +12,3 @@ IF NOT EXISTS (SELECT * FROM sys.schemas WHERE name = 'imp')
 		PRINT ' Schema creado exitosamente';
 	END;
 go
-
-

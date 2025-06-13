@@ -59,6 +59,11 @@ GO
 ---------------------------------------------------------------------------------------------------------------
 -- MODIFICAR
 
+IF  EXISTS (SELECT * FROM sys.procedures WHERE name = 'modificarCategoria')
+BEGIN
+    DROP PROCEDURE stp.modificarCategoria;
+END;
+GO
 CREATE OR ALTER PROCEDURE stp.modificarCategoria
 	@cod_categoria		INT,
 	@descripcion		VARCHAR(50),
@@ -102,6 +107,31 @@ BEGIN
 		where cod_categoria = @cod_categoria;
 		PRINT 'Categoria actualizada correctamente'
 END
+GO
+
+-- SP PARA BORRAR CATE
+IF EXISTS (SELECT * FROM sys.procedures WHERE name = 'borrarCategoria')
+BEGIN
+    DROP PROCEDURE stp.borrarCategoria;
+END;
+GO
+CREATE OR ALTER PROCEDURE stp.borrarCategoria
+        @cod_categoria INT
+    AS
+    BEGIN
+        SET NOCOUNT ON;
+        IF EXISTS (SELECT 1 FROM psn.Categoria WHERE cod_categoria = @cod_categoria)
+        BEGIN
+            DELETE FROM psn.Categoria WHERE cod_categoria = @cod_categoria;
+            PRINT 'Categoria eliminada.';
+        END
+        ELSE
+        BEGIN
+            PRINT 'No existe categoria.';
+        END
+    END
+GO
+
 ----------------------------------------------------------------------------------------------------------------
 --	STORED PROCEDURES PARA TABLA ACTIVIDAD
 
@@ -111,8 +141,8 @@ CREATE OR ALTER PROCEDURE stp.insertarActividad
 	@vig_valor			DATE
 AS
 BEGIN
-	--	Validar que no exista la misma descripciÛn para otra actividad.
-	IF (EXISTS (SELECT 1 FROM psn.Actividad WHERE @descripcion = descripcion)
+	--	Validar que no exista la misma descripci√≥n para otra actividad.
+	IF (EXISTS (SELECT 1 FROM psn.Actividad WHERE @descripcion = descripcion))
 		BEGIN
 			PRINT 'Ya existe esa actividad.'
 			RETURN;
@@ -126,6 +156,8 @@ BEGIN
 	IF @vig_valor < GETDATE()
 		BEGIN
 			PRINT 'Fecha de vigencia invalida.'
+			RETURN
+		END
 
 	INSERT INTO psn.Actividad (descripcion,valor_mensual,vig_valor)
 		VALUES(@descripcion,@valor_mensual,@vig_valor)
@@ -139,7 +171,7 @@ CREATE OR ALTER PROCEDURE stp.modificarActividad
 	@vig_valor			DATE
 AS
 BEGIN
-	-- Validar que exista la descripciÛn de la actividad
+	-- Validar que exista la descripci√≥n de la actividad
 	IF NOT EXISTS (SELECT 1 FROM psn.Actividad WHERE descripcion = @descripcion)
 	BEGIN
 		PRINT 'No existe esa actividad.'
@@ -153,10 +185,10 @@ BEGIN
 		RETURN;
 	END
 
-	-- Validar que la fecha no estÈ en el pasado
+	-- Validar que la fecha no est√© en el pasado
 	IF @vig_valor < GETDATE()
 	BEGIN
-		PRINT 'Fecha de vigencia inv·lida.'
+		PRINT 'Fecha de vigencia inv√°lida.'
 		RETURN;
 	END
 
@@ -175,7 +207,7 @@ CREATE OR ALTER PROCEDURE stp.eliminarActividad
 	@descripcion VARCHAR(50)
 AS
 BEGIN
-	-- Validar que exista la descripciÛn de la actividad
+	-- Validar que exista la descripci√≥n de la actividad
 	IF NOT EXISTS (SELECT 1 FROM psn.Actividad WHERE descripcion = @descripcion)
 	BEGIN
 		PRINT 'No existe esa actividad.'
@@ -216,76 +248,76 @@ CREATE OR ALTER PROCEDURE stp.insertarSocio
 AS
 BEGIN
 	SET NOCOUNT ON;
-    -- ValidaciÛn de que ning˙n campo sea NULL
+    -- Validaci√≥n de que ning√∫n campo sea NULL
     IF @dni IS NULL OR @nombre IS NULL OR @apellido IS NULL OR 
        @fecha_nac IS NULL OR @email IS NULL OR @tel IS NULL OR @tel_emerg IS NULL OR
 	   @estado IS NULL OR @saldo IS NULL OR @nombre_cobertura IS NULL OR @nro_afiliado IS NULL 
 	   OR @tel_cobertura IS NULL OR @cod_responsable IS NULL
     BEGIN
-        PRINT 'Error: Ning˙n campo puede ser NULL';
+        PRINT 'Error: Ning√∫n campo puede ser NULL';
         RETURN;
     END;
 
-    -- ValidaciÛn de que el DNI tenga 8 dÌgitos
+    -- Validaci√≥n de que el DNI tenga 8 d√≠gitos
     IF LEN(@dni) < 8 or LEN(@dni) > 8
     BEGIN
-        PRINT 'Error: El DNI debe ser de 8 dÌgitos';
+        PRINT 'Error: El DNI debe ser de 8 d√≠gitos';
         RETURN;
 	END;
 
-	-- ValidaciÛn de que el DNI no estÈ insertado
+	-- Validaci√≥n de que el DNI no est√© insertado
 	IF EXISTS (SELECT 1 FROM psn.Socio WHERE dni = @dni)
     BEGIN
         PRINT 'Error: Ya existe un socio con ese DNI';
         RETURN;
     END;
 
-	-- ValidaciÛn de que el nombre sÛlo contenga letras y espacios
+	-- Validaci√≥n de que el nombre s√≥lo contenga letras y espacios
 	IF @nombre LIKE '%[^a-zA-Z ]%'
 	BEGIN
     PRINT 'Error: El nombre solo puede contener letras y espacios.';
     RETURN;
 	END
 
-	-- ValidaciÛn de que el apellido sÛlo contenga letras y espacios
+	-- Validaci√≥n de que el apellido s√≥lo contenga letras y espacios
 	IF @apellido LIKE '%[^a-zA-Z ]%'
 	BEGIN
     PRINT 'Error: El apellido solo puede contener letras y espacios.';
     RETURN;
 	END
 
-    -- ValidaciÛn de que la fecha de nacimiento no sea futura
+    -- Validaci√≥n de que la fecha de nacimiento no sea futura
     IF @fecha_nac > GETDATE()
     BEGIN
         PRINT 'Error: La fecha de nacimiento no puede ser futura';
         RETURN;
     END;
 
-	-- ValidaciÛn de email
+	-- Validaci√≥n de email
 	IF @email NOT LIKE '_%@_%._%'
 	BEGIN
-		PRINT 'Error: Email inv·lido. Debe tener formato ejemplo@dominio.com.';
+		PRINT 'Error: Email inv√°lido. Debe tener formato ejemplo@dominio.com.';
 		RETURN;
 	END
 
 	-- Validacion de saldo
 	IF @saldo < 0
 	BEGIN
-		PRINT 'Saldo inv·lido. No puede ser negativo.';
+		PRINT 'Saldo inv√°lido. No puede ser negativo.';
 		RETURN;
 	END
 
-	-- ValidaciÛn del telefono
+	-- Validaci√≥n del telefono
 	IF (LEN(@tel) < 8 OR LEN(@tel) > 14 OR @tel LIKE '%[^0-9]%')
 	BEGIN
-    PRINT 'Error: TelÈfono inv·lido. Debe contener entre 8 y 14 dÌgitos numÈricos.';
+    PRINT 'Error: Tel√©fono inv√°lido. Debe contener entre 8 y 14 d√≠gitos num√©ricos.';
     RETURN;
 	END
 
 	-- Validacion del telefono de emergencia
 	IF (LEN(@tel_emerg) < 8 OR LEN(@tel_emerg) > 14 OR @tel_emerg LIKE '%[^0-9]%')
 	BEGIN
-    PRINT 'Error: TelÈfono de emergencia inv·lido. Debe contener entre 8 y 14 dÌgitos numÈricos.';
+    PRINT 'Error: Tel√©fono de emergencia inv√°lido. Debe contener entre 8 y 14 d√≠gitos num√©ricos.';
     RETURN;
 	END
 
@@ -293,7 +325,7 @@ BEGIN
 
 	IF (LEN(@tel_cobertura) < 8 OR LEN(@tel_cobertura) > 14 OR @tel_cobertura LIKE '%[^0-9]%')
 	BEGIN
-    PRINT 'Error: TelÈfono de cobertura inv·lido. Debe contener entre 8 y 14 dÌgitos numÈricos.';
+    PRINT 'Error: Tel√©fono de cobertura inv√°lido. Debe contener entre 8 y 14 d√≠gitos num√©ricos.';
     RETURN;
 	END
 
@@ -339,76 +371,76 @@ CREATE OR ALTER PROCEDURE stp.modificarSocio
 AS
 BEGIN
 	SET NOCOUNT ON;
-    -- ValidaciÛn de que ning˙n campo sea NULL
+    -- Validaci√≥n de que ning√∫n campo sea NULL
     IF @cod_socio IS NULL OR @dni IS NULL OR @nombre IS NULL OR @apellido IS NULL OR 
        @fecha_nac IS NULL OR @email IS NULL OR @tel IS NULL OR @tel_emerg IS NULL OR
 	   @estado IS NULL OR @saldo IS NULL OR @nombre_cobertura IS NULL OR @nro_afiliado IS NULL 
 	   OR @tel_cobertura IS NULL OR @cod_responsable IS NULL
     BEGIN
-        PRINT 'Error: Ning˙n campo puede ser NULL';
+        PRINT 'Error: Ning√∫n campo puede ser NULL';
         RETURN;
     END;
 
-    -- ValidaciÛn de que el socio se haya insertado
+    -- Validaci√≥n de que el socio se haya insertado
     IF NOT EXISTS (SELECT 1 FROM psn.Socio WHERE cod_socio = @cod_socio)
     BEGIN
         PRINT 'Error: Socio no encontrado.';
         RETURN;
     END;
 
-    -- ValidaciÛn de que el DNI tenga 8 dÌgitos
+    -- Validaci√≥n de que el DNI tenga 8 d√≠gitos
     IF LEN(@dni) < 8 or LEN(@dni) > 8
     BEGIN
-        PRINT 'Error: El DNI debe ser de 8 dÌgitos';
+        PRINT 'Error: El DNI debe ser de 8 d√≠gitos';
         RETURN;
 	END;
 
-		-- ValidaciÛn de que el nombre sÛlo contenga letras y espacios
+		-- Validaci√≥n de que el nombre s√≥lo contenga letras y espacios
 	IF @nombre LIKE '%[^a-zA-Z ]%'
 	BEGIN
     PRINT 'Error: El nombre solo puede contener letras y espacios.';
     RETURN;
 	END
 
-	-- ValidaciÛn de que el apellido sÛlo contenga letras y espacios
+	-- Validaci√≥n de que el apellido s√≥lo contenga letras y espacios
 	IF @apellido LIKE '%[^a-zA-Z ]%'
 	BEGIN
     PRINT 'Error: El apellido solo puede contener letras y espacios.';
     RETURN;
 	END
 
-    -- ValidaciÛn de que la fecha de nacimiento no sea futura
+    -- Validaci√≥n de que la fecha de nacimiento no sea futura
     IF @fecha_nac > GETDATE()
     BEGIN
         PRINT 'Error: La fecha de nacimiento no puede ser futura';
         RETURN;
     END;
 
-	-- ValidaciÛn de email
+	-- Validaci√≥n de email
 	IF @email NOT LIKE '_%@_%._%'
 	BEGIN
-		PRINT 'Error: Email inv·lido. Debe tener formato ejemplo@dominio.com.';
+		PRINT 'Error: Email inv√°lido. Debe tener formato ejemplo@dominio.com.';
 		RETURN;
 	END
 
 	-- Validacion de saldo
 	IF @saldo < 0
 	BEGIN
-		PRINT 'Saldo inv·lido. No puede ser negativo.';
+		PRINT 'Saldo inv√°lido. No puede ser negativo.';
 		RETURN;
 	END
 
-	-- ValidaciÛn del telefono
+	-- Validaci√≥n del telefono
 	IF (LEN(@tel) < 8 OR LEN(@tel) > 14 OR @tel LIKE '%[^0-9]%')
 	BEGIN
-    PRINT 'Error: TelÈfono inv·lido. Debe contener entre 8 y 14 dÌgitos numÈricos.';
+    PRINT 'Error: Tel√©fono inv√°lido. Debe contener entre 8 y 14 d√≠gitos num√©ricos.';
     RETURN;
 	END
 
 	-- Validacion del telefono de emergencia
 	IF (LEN(@tel_emerg) < 8 OR LEN(@tel_emerg) > 14 OR @tel_emerg LIKE '%[^0-9]%')
 	BEGIN
-    PRINT 'Error: TelÈfono de emergencia inv·lido. Debe contener entre 8 y 14 dÌgitos numÈricos.';
+    PRINT 'Error: Tel√©fono de emergencia inv√°lido. Debe contener entre 8 y 14 d√≠gitos num√©ricos.';
     RETURN;
 	END
 
@@ -416,11 +448,11 @@ BEGIN
 
 	IF (LEN(@tel_cobertura) < 8 OR LEN(@tel_cobertura) > 14 OR @tel_cobertura LIKE '%[^0-9]%')
 	BEGIN
-    PRINT 'Error: TelÈfono de cobertura inv·lido. Debe contener entre 8 y 14 dÌgitos numÈricos.';
+    PRINT 'Error: Tel√©fono de cobertura inv√°lido. Debe contener entre 8 y 14 d√≠gitos num√©ricos.';
     RETURN;
 	END
 
-		UPDATE Socio
+		UPDATE psn.Socio
 	SET
 		dni = @dni,
 		nombre = @nombre,
@@ -459,7 +491,7 @@ CREATE OR ALTER PROCEDURE stp.borrarSocio
         END
         ELSE
         BEGIN
-            PRINT 'El socio con el cÛdigo especificado no existe.';
+            PRINT 'El socio con el c√≥digo especificado no existe.';
         END
     END
 GO
@@ -483,53 +515,53 @@ CREATE OR ALTER PROCEDURE stp.insertarProfesor
 AS
 BEGIN
 	
-    -- ValidaciÛn de que ning˙n campo sea NULL
+    -- Validaci√≥n de que ning√∫n campo sea NULL
     IF @dni IS NULL OR @nombre IS NULL OR @apellido IS NULL OR 
        @email IS NULL OR @tel IS NULL
     BEGIN
-        PRINT 'Error: Ning˙n campo puede ser NULL';
+        PRINT 'Error: Ning√∫n campo puede ser NULL';
         RETURN;
     END;
 
-    -- ValidaciÛn de que el DNI tenga 8 dÌgitos
+    -- Validaci√≥n de que el DNI tenga 8 d√≠gitos
     IF LEN(@dni) < 8 or LEN(@dni) > 8
     BEGIN
-        PRINT 'Error: El DNI debe ser de 8 dÌgitos';
+        PRINT 'Error: El DNI debe ser de 8 d√≠gitos';
         RETURN;
 	END;
 
-	-- ValidaciÛn de que el DNI no estÈ insertado
+	-- Validaci√≥n de que el DNI no est√© insertado
 	IF EXISTS (SELECT 1 FROM psn.Profesor WHERE dni = @dni)
     BEGIN
         PRINT 'Error: Ya existe un profesor con ese DNI';
         RETURN;
     END;
 
-		-- ValidaciÛn de que el nombre sÛlo contenga letras y espacios
+		-- Validaci√≥n de que el nombre s√≥lo contenga letras y espacios
 	IF @nombre LIKE '%[^a-zA-Z ]%'
 	BEGIN
     PRINT 'Error: El nombre solo puede contener letras y espacios.';
     RETURN;
 	END
 
-	-- ValidaciÛn de que el apellido sÛlo contenga letras y espacios
+	-- Validaci√≥n de que el apellido s√≥lo contenga letras y espacios
 	IF @apellido LIKE '%[^a-zA-Z ]%'
 	BEGIN
     PRINT 'Error: El apellido solo puede contener letras y espacios.';
     RETURN;
 	END
 
-	-- ValidaciÛn de email
+	-- Validaci√≥n de email
 	IF @email NOT LIKE '_%@_%._%'
 	BEGIN
-		PRINT 'Error: Email inv·lido. Debe tener formato ejemplo@dominio.com.';
+		PRINT 'Error: Email inv√°lido. Debe tener formato ejemplo@dominio.com.';
 		RETURN;
 	END
 
-	-- ValidaciÛn del telefono
+	-- Validaci√≥n del telefono
 	IF (LEN(@tel) < 8 OR LEN(@tel) > 14 OR @tel LIKE '%[^0-9]%')
 	BEGIN
-    PRINT 'Error: TelÈfono inv·lido. Debe contener entre 8 y 14 dÌgitos numÈricos.';
+    PRINT 'Error: Tel√©fono inv√°lido. Debe contener entre 8 y 14 d√≠gitos num√©ricos.';
     RETURN;
 	END
 
@@ -562,52 +594,52 @@ AS
 BEGIN
     SET NOCOUNT ON;
 
-    -- ValidaciÛn de que ning˙n campo sea NULL
+    -- Validaci√≥n de que ning√∫n campo sea NULL
     IF @cod_prof IS NULL OR @dni IS NULL OR @nombre IS NULL OR @apellido IS NULL OR @email IS NULL OR @tel IS NULL
     BEGIN
-        PRINT 'Error: Ning˙n campo puede ser NULL';
+        PRINT 'Error: Ning√∫n campo puede ser NULL';
         RETURN;
     END;
 
-    -- ValidaciÛn de existencia del profesor
+    -- Validaci√≥n de existencia del profesor
     IF NOT EXISTS (SELECT 1 FROM psn.Profesor WHERE cod_prof = @cod_prof)
     BEGIN
         PRINT 'Error: Profesor no encontrado';
         RETURN;
     END;
 
-    -- ValidaciÛn de DNI
+    -- Validaci√≥n de DNI
     IF LEN(@dni) <> 8
     BEGIN
-        PRINT 'Error: El DNI debe tener exactamente 8 dÌgitos';
+        PRINT 'Error: El DNI debe tener exactamente 8 d√≠gitos';
         RETURN;
     END;
 
-	-- ValidaciÛn de que el nombre sÛlo contenga letras y espacios
+	-- Validaci√≥n de que el nombre s√≥lo contenga letras y espacios
 	IF @nombre LIKE '%[^a-zA-Z ]%'
 	BEGIN
     PRINT 'Error: El nombre solo puede contener letras y espacios.';
     RETURN;
 	END
 
-	-- ValidaciÛn de que el apellido sÛlo contenga letras y espacios
+	-- Validaci√≥n de que el apellido s√≥lo contenga letras y espacios
 	IF @apellido LIKE '%[^a-zA-Z ]%'
 	BEGIN
     PRINT 'Error: El apellido solo puede contener letras y espacios.';
     RETURN;
 	END
 
-    -- ValidaciÛn de email
+    -- Validaci√≥n de email
     IF @email NOT LIKE '_%@_%._%'
     BEGIN
-        PRINT 'Error: Email inv·lido. Debe tener formato ejemplo@dominio.com';
+        PRINT 'Error: Email inv√°lido. Debe tener formato ejemplo@dominio.com';
         RETURN;
     END;
 
-    -- ValidaciÛn de telÈfono
+    -- Validaci√≥n de tel√©fono
     IF (LEN(@tel) < 10 OR LEN(@tel) > 14 OR @tel LIKE '%[^0-9]%')
     BEGIN
-        PRINT 'Error: TelÈfono inv·lido. Debe contener entre 10 y 14 dÌgitos numÈricos';
+        PRINT 'Error: Tel√©fono inv√°lido. Debe contener entre 10 y 14 d√≠gitos num√©ricos';
         RETURN;
     END;
 
@@ -644,7 +676,7 @@ CREATE OR ALTER PROCEDURE stp.borrarProfesor
         END
         ELSE
         BEGIN
-            PRINT 'El profesor con el cÛdigo especificado no existe.';
+            PRINT 'El profesor con el c√≥digo especificado no existe.';
         END
     END
 GO
@@ -682,13 +714,13 @@ BEGIN
        @estado IS NULL OR @saldo IS NULL OR @nombre_cobertura IS NULL OR @nro_afiliado IS NULL 
        OR @tel_cobertura IS NULL OR @cod_responsable IS NULL
     BEGIN
-        PRINT 'Error: Ning˙n campo puede ser NULL';
+        PRINT 'Error: Ning√∫n campo puede ser NULL';
         RETURN;
     END;
 
     IF LEN(@dni) <> 8
     BEGIN
-        PRINT 'Error: El DNI debe ser de 8 dÌgitos';
+        PRINT 'Error: El DNI debe ser de 8 d√≠gitos';
         RETURN;
     END;
 
@@ -698,14 +730,14 @@ BEGIN
         RETURN;
     END;
 
-	-- ValidaciÛn de que el nombre sÛlo contenga letras y espacios
+	-- Validaci√≥n de que el nombre s√≥lo contenga letras y espacios
 	IF @nombre LIKE '%[^a-zA-Z ]%'
 	BEGIN
     PRINT 'Error: El nombre solo puede contener letras y espacios.';
     RETURN;
 	END
 
-	-- ValidaciÛn de que el apellido sÛlo contenga letras y espacios
+	-- Validaci√≥n de que el apellido s√≥lo contenga letras y espacios
 	IF @apellido LIKE '%[^a-zA-Z ]%'
 	BEGIN
     PRINT 'Error: El apellido solo puede contener letras y espacios.';
@@ -720,31 +752,31 @@ BEGIN
 
     IF @email NOT LIKE '_%@_%._%'
     BEGIN
-        PRINT 'Error: Email inv·lido. Debe tener formato ejemplo@dominio.com.';
+        PRINT 'Error: Email inv√°lido. Debe tener formato ejemplo@dominio.com.';
         RETURN;
     END;
 
     IF @saldo < 0
     BEGIN
-        PRINT 'Saldo inv·lido. No puede ser negativo.';
+        PRINT 'Saldo inv√°lido. No puede ser negativo.';
         RETURN;
     END;
 
     IF (LEN(@tel) < 8 OR LEN(@tel) > 14 OR @tel LIKE '%[^0-9]%')
     BEGIN
-        PRINT 'Error: TelÈfono inv·lido.';
+        PRINT 'Error: Tel√©fono inv√°lido.';
         RETURN;
     END;
 
     IF (LEN(@tel_emerg) < 8 OR LEN(@tel_emerg) > 14 OR @tel_emerg LIKE '%[^0-9]%')
     BEGIN
-        PRINT 'Error: TelÈfono de emergencia inv·lido.';
+        PRINT 'Error: Tel√©fono de emergencia inv√°lido.';
         RETURN;
     END;
 
     IF (LEN(@tel_cobertura) < 8 OR LEN(@tel_cobertura) > 14 OR @tel_cobertura LIKE '%[^0-9]%')
     BEGIN
-        PRINT 'Error: TelÈfono de cobertura inv·lido.';
+        PRINT 'Error: Tel√©fono de cobertura inv√°lido.';
         RETURN;
     END;
 
@@ -797,7 +829,7 @@ BEGIN
        @estado IS NULL OR @saldo IS NULL OR @nombre_cobertura IS NULL OR @nro_afiliado IS NULL 
        OR @tel_cobertura IS NULL OR @cod_responsable IS NULL
     BEGIN
-        PRINT 'Error: Ning˙n campo puede ser NULL';
+        PRINT 'Error: Ning√∫n campo puede ser NULL';
         RETURN;
     END;
 
@@ -809,18 +841,18 @@ BEGIN
 
     IF LEN(@dni) <> 8
     BEGIN
-        PRINT 'Error: El DNI debe ser de 8 dÌgitos';
+        PRINT 'Error: El DNI debe ser de 8 d√≠gitos';
         RETURN;
     END;
 
-	-- ValidaciÛn de que el nombre sÛlo contenga letras y espacios
+	-- Validaci√≥n de que el nombre s√≥lo contenga letras y espacios
 	IF @nombre LIKE '%[^a-zA-Z ]%'
 	BEGIN
     PRINT 'Error: El nombre solo puede contener letras y espacios.';
     RETURN;
 	END
 
-	-- ValidaciÛn de que el apellido sÛlo contenga letras y espacios
+	-- Validaci√≥n de que el apellido s√≥lo contenga letras y espacios
 	IF @apellido LIKE '%[^a-zA-Z ]%'
 	BEGIN
     PRINT 'Error: El apellido solo puede contener letras y espacios.';
@@ -835,31 +867,31 @@ BEGIN
 
     IF @email NOT LIKE '_%@_%._%'
     BEGIN
-        PRINT 'Error: Email inv·lido.';
+        PRINT 'Error: Email inv√°lido.';
         RETURN;
     END;
 
     IF @saldo < 0
     BEGIN
-        PRINT 'Saldo inv·lido. No puede ser negativo.';
+        PRINT 'Saldo inv√°lido. No puede ser negativo.';
         RETURN;
     END;
 
     IF (LEN(@tel) < 8 OR LEN(@tel) > 14 OR @tel LIKE '%[^0-9]%')
     BEGIN
-        PRINT 'Error: TelÈfono inv·lido.';
+        PRINT 'Error: Tel√©fono inv√°lido.';
         RETURN;
     END;
 
     IF (LEN(@tel_emerg) < 8 OR LEN(@tel_emerg) > 14 OR @tel_emerg LIKE '%[^0-9]%')
     BEGIN
-        PRINT 'Error: TelÈfono de emergencia inv·lido.';
+        PRINT 'Error: Tel√©fono de emergencia inv√°lido.';
         RETURN;
     END;
 
     IF (LEN(@tel_cobertura) < 8 OR LEN(@tel_cobertura) > 14 OR @tel_cobertura LIKE '%[^0-9]%')
     BEGIN
-        PRINT 'Error: TelÈfono de cobertura inv·lido.';
+        PRINT 'Error: Tel√©fono de cobertura inv√°lido.';
         RETURN;
     END;
 
@@ -905,7 +937,7 @@ BEGIN
     END
     ELSE
     BEGIN
-        PRINT 'El invitado con el cÛdigo especificado no existe.';
+        PRINT 'El invitado con el c√≥digo especificado no existe.';
     END
 END;
 GO
@@ -930,42 +962,42 @@ AS
 BEGIN
 	SET NOCOUNT ON;
 
-	-- ValidaciÛn: monto > 0
+	-- Validaci√≥n: monto > 0
 	IF @monto <= 0
 	BEGIN
 		PRINT 'ERROR: El monto debe ser mayor a cero.';
 		RETURN;
 	END
 
-	-- ValidaciÛn: fecha de pago no puede ser futura
+	-- Validaci√≥n: fecha de pago no puede ser futura
 	IF @fecha_pago > GETDATE()
 	BEGIN
 		PRINT 'ERROR: La fecha de pago no puede ser futura.';
 		RETURN;
 	END
 
-	-- ValidaciÛn: estado permitido
+	-- Validaci√≥n: estado permitido
 	IF @estado NOT IN ('Pendiente', 'Pagado', 'Anulado')
 	BEGIN
 		PRINT 'Error: El estado debe ser: Pendiente, Pagado o Anulado.';
 		RETURN;
 	END
 
-	-- ValidaciÛn: al menos uno de los cÛdigos debe estar presente
+	-- Validaci√≥n: al menos uno de los c√≥digos debe estar presente
 	IF @cod_socio IS NULL AND @cod_invitado IS NULL
 	BEGIN
-		PRINT 'Error: Debe especificar un cÛdigo de socio o de invitado.';
+		PRINT 'Error: Debe especificar un c√≥digo de socio o de invitado.';
 		RETURN;
 	END
 
-	-- ValidaciÛn: no ambos cÛdigos a la vez 
+	-- Validaci√≥n: no ambos c√≥digos a la vez 
 	IF @cod_socio IS NOT NULL AND @cod_invitado IS NOT NULL
 	BEGIN
 		PRINT 'ERROR: Solo se debe especificar cod_socio o cod_invitado, no ambos.';
 		RETURN;
 	END
 
-	-- InserciÛn
+	-- Inserci√≥n
 	INSERT INTO psn.Pago (monto, fecha_pago, estado, cod_socio, cod_invitado)
 	VALUES (@monto, @fecha_pago, @estado, @cod_socio, @cod_invitado);
 
@@ -992,49 +1024,49 @@ AS
 BEGIN
 	SET NOCOUNT ON;
 
-	-- ValidaciÛn: existencia del pago
+	-- Validaci√≥n: existencia del pago
 	IF NOT EXISTS (SELECT 1 FROM psn.Pago WHERE cod_pago = @cod_pago)
 	BEGIN
-		PRINT 'ERROR: No existe un pago con ese cÛdigo.';
+		PRINT 'ERROR: No existe un pago con ese c√≥digo.';
 		RETURN;
 	END
 
-	-- ValidaciÛn: monto > 0
+	-- Validaci√≥n: monto > 0
 	IF @monto <= 0
 	BEGIN
 		PRINT 'ERROR: El monto debe ser mayor a cero.';
 		RETURN;
 	END
 
-	-- ValidaciÛn: fecha de pago no puede ser futura
+	-- Validaci√≥n: fecha de pago no puede ser futura
 	IF @fecha_pago > GETDATE()
 	BEGIN
 		PRINT 'ERROR: La fecha de pago no puede ser futura.';
 		RETURN;
 	END
 
-	-- ValidaciÛn: estado permitido
+	-- Validaci√≥n: estado permitido
 	IF @estado NOT IN ('Pendiente', 'Pagado', 'Anulado')
 	BEGIN
 		PRINT 'ERROR: El estado debe ser: Pendiente, Pagado o Anulado.';
 		RETURN;
 	END
 
-	-- ValidaciÛn: al menos uno de los cÛdigos debe estar presente
+	-- Validaci√≥n: al menos uno de los c√≥digos debe estar presente
 	IF @cod_socio IS NULL AND @cod_invitado IS NULL
 	BEGIN
-		PRINT 'ERROR: Debe especificar un cÛdigo de socio o de invitado.';
+		PRINT 'ERROR: Debe especificar un c√≥digo de socio o de invitado.';
 		RETURN;
 	END
 
-	-- ValidaciÛn: no ambos cÛdigos a la vez
+	-- Validaci√≥n: no ambos c√≥digos a la vez
 	IF @cod_socio IS NOT NULL AND @cod_invitado IS NOT NULL
 	BEGIN
 		PRINT 'ERROR: Solo se debe especificar cod_socio o cod_invitado, no ambos.';
 		RETURN;
 	END
 
-	-- ActualizaciÛn
+	-- Actualizaci√≥n
 	UPDATE Com5600G11.psn.Pago
 	SET
 		monto = @monto,
@@ -1063,14 +1095,14 @@ AS
 BEGIN
 	SET NOCOUNT ON;
 
-	-- ValidaciÛn: existencia del pago
+	-- Validaci√≥n: existencia del pago
 	IF NOT EXISTS (SELECT 1 FROM psn.Pago WHERE cod_pago = @cod_pago)
 	BEGIN
-		PRINT 'ERROR: No existe un pago con ese cÛdigo.';
+		PRINT 'ERROR: No existe un pago con ese c√≥digo.';
 		RETURN;
 	END
 
-	-- EliminaciÛn
+	-- Eliminaci√≥n
 	DELETE FROM psn.Pago
 	WHERE cod_pago = @cod_pago;
 
@@ -1087,8 +1119,9 @@ GO
 IF EXISTS (SELECT * FROM sys.procedures WHERE name = 'suscribirSocio')
 BEGIN
     DROP PROCEDURE stp.suscribirSocio;
-END;
+END
 GO
+
 CREATE OR ALTER PROCEDURE stp.suscribirSocio
 	@cod_socio INT,
 	@tipoSuscripcion CHAR(1), --Si es anual A, si es mensual M
@@ -1128,17 +1161,82 @@ BEGIN
 	VALUES(@cod_socio,@cod_categoria,@fecha_inscripcion,@fecha_venc)
 END
 
+IF EXISTS (SELECT * FROM sys.procedures WHERE name = 'modificarSuscripcion')
+BEGIN
+    DROP PROCEDURE stp.modificarSuscripcion;
+END
+GO
 
+CREATE OR ALTER PROCEDURE stp.modificarSuscripcion
+	@cod_socio INT,
+	@nueva_cat INT,
+	@tiempo CHAR(1)
+AS
+BEGIN
+	IF NOT EXISTS (SELECT 1 FROM psn.Suscripcion WHERE cod_socio = @cod_socio)
+		BEGIN
+			PRINT 'No existe suscripcion'
+			RETURN
+		END
+	IF NOT EXISTS (SELECT 1 FROM psn.Suscripcion WHERE cod_categoria = @nueva_cat)
+		BEGIN
+			PRINT 'No existe categoria'
+			RETURN
+		END
+	DECLARE @edadLimite INT, @edadSocio INT, @fnac DATE
+	SET @edadLimite = (SELECT edad_max from psn.Categoria WHERE cod_categoria = @nueva_cat)
+	SET @fnac = ( SELECT fecha_nac from psn.Socio WHERE cod_socio = @cod_socio)
+	SET @edadSocio = (SELECT DATEDIFF(YEAR,@fnac,GETDATE()))
 
+	IF (@edadSocio > @edadLimite)
+	BEGIN
+		PRINT 'Categoria incorrecta'
+		RETURN
+	END
+
+	UPDATE psn.Suscripcion
+	SET 
+		cod_categoria = ISNULL(cod_categoria,@nueva_cat),
+		tiempoSuscr = ISNULL(tiempoSuscr, @tiempo)
+	WHERE cod_socio = @cod_socio
+END
+
+IF EXISTS (SELECT * FROM sys.procedures WHERE name = 'borrarSuscripcion')
+BEGIN
+    DROP PROCEDURE stp.borrarSuscripcion;
+END;
+GO
+
+CREATE OR ALTER PROCEDURE stp.borrarSuscripcion
+    @cod_socio INT
+AS
+BEGIN
+    SET NOCOUNT ON;
+    -- Validaci√≥n: verificar que exista el c√≥digo
+    IF NOT EXISTS (SELECT 1 FROM psn.Suscripcion WHERE cod_socio = @cod_socio)
+    BEGIN
+        PRINT 'Error: No existe suscripcion.';
+        RETURN;
+    END
+
+    -- Eliminaci√≥n del registro
+    DELETE FROM psn.Suscripcion
+    WHERE cod_socio = @cod_socio
+
+    PRINT 'Suscripcion eliminada';
+END;
+GO
 
 -----------------------------------------------------------------------------------------
 --	SP PARA FACTURAS
 
-IF NOT EXISTS (SELECT * FROM sys.procedures WHERE (object_id = OBJECT_ID('emitirFactura') AND type = N'U')
+IF EXISTS (SELECT * FROM sys.procedures WHERE (object_id = OBJECT_ID('emitirFactura') AND type = N'U'))
 BEGIN
-    DROP PROCEDURE stp.modificarInvitado;
+    DROP PROCEDURE stp.emitirFactura;
 END;
 GO
+
+
 CREATE OR ALTER PROCEDURE stp.emitirFactura
 	@cod_socio		INT
 AS
@@ -1149,11 +1247,95 @@ BEGIN
 		RETURN
 	END
 	DECLARE @categoria	INT,
-			@monto		DECIMAL(10,2)
-	SET @categoria = (SELECT cod_categoria from psn.Suscripcion WHERE @cod_socio = cod_socio)
-	--SET @monto = (SELECT valor_mensual)
+			@monto		DECIMAL(10,2),
+			@fecha_emision	DATE,
+			@fecha_vto		DATE,
+			@fecha_seg_vto	DATE,
+			@estado			VARCHAR(10),
+			@tipoSuscripc	CHAR(1),
+			@recargo		INT
+	SET @categoria = (SELECT cod_categoria FROM psn.Suscripcion WHERE @cod_socio = cod_socio)
+	SET @tipoSuscripc = (SELECT tiempoSuscr FROM psn.Suscripcion WHERE @cod_socio = cod_socio)
+	SET @monto = (SELECT valor_mensual from psn.Categoria WHERE cod_categoria = @categoria)
+	SET @fecha_emision = GETDATE();
+	SET @fecha_vto = DATEADD(DAY,5,@fecha_emision)
+	SET @fecha_seg_vto = DATEADD(DAY,5,@fecha_vto)
+	SET @estado = 'Pendiente'
+	SET @recargo = 0
+
+	INSERT INTO psn.Factura (monto,fecha_emision,fecha_vto,fecha_seg_vto,recargo,estado,cod_socio)
+	VALUES (@monto,@fecha_emision,@fecha_vto,@fecha_seg_vto, @recargo,@estado,@cod_socio)
 	
 END
+GO
+
+IF EXISTS (SELECT * FROM sys.procedures WHERE (object_id = OBJECT_ID('modificarFactura') AND type = N'U'))
+BEGIN
+    DROP PROCEDURE stp.modificarFactura;
+END;
+GO
+
+
+CREATE OR ALTER PROCEDURE stp.modificarFactura
+	@cod_socio		INT,
+	@cod_Factura	INT
+AS
+BEGIN
+	IF NOT EXISTS (SELECT 1 FROM psn.Factura WHERE @cod_socio = cod_socio)
+		BEGIN
+			PRINT 'No existe factura'
+			RETURN
+		END
+	IF NOT EXISTS (SELECT 1 FROM psn.Factura WHERE @cod_Factura = cod_Factura)
+		BEGIN
+			PRINT 'No existe factura'
+			RETURN
+		END
+	DECLARE @monto			DECIMAL(10,2),
+			@estado			VARCHAR(10),
+			@tipoSuscripc	CHAR(1),
+			@fecha_vto		DATE,
+			@fecha_seg_vto	DATE
+	SET @fecha_vto = (SELECT fecha_vto from psn.Factura WHERE cod_Factura = @cod_Factura)
+	SET @fecha_seg_vto = (SELECT fecha_seg_vto from psn.Factura WHERE cod_Factura = @cod_Factura)
+	SET @monto = (SELECT monto FROM psn.Factura WHERE cod_Factura = @cod_Factura)
+	IF GETDATE() > @fecha_seg_vto
+		SET @monto = @monto * 1.10
+	SET @estado = 'VENCIDA'
+
+	UPDATE psn.Factura
+		SET
+			monto = ISNULL(monto, @monto),
+			estado = ISNULL(estado, @estado)
+		where cod_Factura = @cod_Factura;
+		PRINT 'Factura actualizada correctamente'
+END
+GO
+
+IF EXISTS (SELECT * FROM sys.procedures WHERE name = 'borrarFactura')
+BEGIN
+    DROP PROCEDURE stp.borrarFactura;
+END;
+GO
+
+CREATE OR ALTER PROCEDURE stp.borrarFactura
+    @cod_Factura INT
+AS
+BEGIN
+    SET NOCOUNT ON;
+    -- Validaci√≥n: verificar que exista el c√≥digo
+    IF NOT EXISTS (SELECT 1 FROM psn.Factura WHERE cod_Factura = @cod_Factura)
+    BEGIN
+        PRINT 'Error: No existe factura.';
+        RETURN;
+    END
+
+    -- Eliminaci√≥n del registro
+    DELETE FROM psn.Factura
+    WHERE cod_Factura = @cod_Factura;
+
+    PRINT 'Factura eliminada correctamente.';
+END;
 GO
 
 ----------------------------------------------------------------------------------------------------------------------------------------------------
@@ -1176,35 +1358,35 @@ AS
 BEGIN
     SET NOCOUNT ON;
 
-    -- ValidaciÛn: monto debe ser mayor a 0
+    -- Validaci√≥n: monto debe ser mayor a 0
     IF @monto <= 0
     BEGIN
         PRINT 'Error: El monto debe ser mayor a cero.';
         RETURN;
     END
 
-    -- ValidaciÛn: medio_Pago no debe ser NULL ni vacÌo
+    -- Validaci√≥n: medio_Pago no debe ser NULL ni vac√≠o
     IF @medio_Pago IS NULL OR LTRIM(RTRIM(@medio_Pago)) = ''
     BEGIN
-        PRINT 'Error: El medio de pago no puede estar vacÌo.';
+        PRINT 'Error: El medio de pago no puede estar vac√≠o.';
         RETURN;
     END
 
-    -- ValidaciÛn: fecha no puede ser futura
+    -- Validaci√≥n: fecha no puede ser futura
     IF @fecha > GETDATE()
     BEGIN
         PRINT 'Error: La fecha no puede ser futura.';
         RETURN;
     END
 
-    -- ValidaciÛn: motivo no debe ser NULL ni vacÌo
+    -- Validaci√≥n: motivo no debe ser NULL ni vac√≠o
     IF @motivo IS NULL OR LTRIM(RTRIM(@motivo)) = ''
     BEGIN
-        PRINT 'Error: El motivo no puede estar vacÌo.';
+        PRINT 'Error: El motivo no puede estar vac√≠o.';
         RETURN;
     END
 
-    -- InserciÛn de datos
+    -- Inserci√≥n de datos
     INSERT INTO psn.Reembolso (monto, medio_Pago, fecha, motivo)
     VALUES (@monto, @medio_Pago, @fecha, @motivo);
 
@@ -1230,42 +1412,42 @@ AS
 BEGIN
     SET NOCOUNT ON;
 
-    -- ValidaciÛn: cÛdigo debe existir
+    -- Validaci√≥n: c√≥digo debe existir
     IF NOT EXISTS (SELECT 1 FROM psn.Reembolso WHERE codReembolso = @codReembolso)
     BEGIN
-        PRINT 'Error: No existe un reembolso con el cÛdigo especificado.';
+        PRINT 'Error: No existe un reembolso con el c√≥digo especificado.';
         RETURN;
     END
 
-    -- ValidaciÛn: monto debe ser mayor a 0
+    -- Validaci√≥n: monto debe ser mayor a 0
     IF @monto <= 0
     BEGIN
         PRINT 'Error: El monto debe ser mayor a cero.';
         RETURN;
     END
 
-    -- ValidaciÛn: medio_Pago no debe ser NULL ni vacÌo
+    -- Validaci√≥n: medio_Pago no debe ser NULL ni vac√≠o
     IF @medio_Pago IS NULL OR LTRIM(RTRIM(@medio_Pago)) = ''
     BEGIN
-        PRINT 'Error: El medio de pago no puede estar vacÌo.';
+        PRINT 'Error: El medio de pago no puede estar vac√≠o.';
         RETURN;
     END
 
-    -- ValidaciÛn: fecha no puede ser futura
+    -- Validaci√≥n: fecha no puede ser futura
     IF @fecha > GETDATE()
     BEGIN
         PRINT 'Error: La fecha no puede ser futura.';
         RETURN;
     END
 
-    -- ValidaciÛn: motivo no debe ser NULL ni vacÌo
+    -- Validaci√≥n: motivo no debe ser NULL ni vac√≠o
     IF @motivo IS NULL OR LTRIM(RTRIM(@motivo)) = ''
     BEGIN
-        PRINT 'Error: El motivo no puede estar vacÌo.';
+        PRINT 'Error: El motivo no puede estar vac√≠o.';
         RETURN;
     END
 
-    -- ActualizaciÛn de datos
+    -- Actualizaci√≥n de datos
     UPDATE psn.Reembolso
     SET
         monto = @monto,
@@ -1292,14 +1474,14 @@ AS
 BEGIN
     SET NOCOUNT ON;
 
-    -- ValidaciÛn: verificar que exista el cÛdigo
+    -- Validaci√≥n: verificar que exista el c√≥digo
     IF NOT EXISTS (SELECT 1 FROM psn.Reembolso WHERE codReembolso = @codReembolso)
     BEGIN
-        PRINT 'Error: No existe un reembolso con el cÛdigo especificado.';
+        PRINT 'Error: No existe un reembolso con el c√≥digo especificado.';
         RETURN;
     END
 
-    -- EliminaciÛn del registro
+    -- Eliminaci√≥n del registro
     DELETE FROM psn.Reembolso
     WHERE codReembolso = @codReembolso;
 
@@ -1336,7 +1518,7 @@ BEGIN
     -- Validaciones
     IF @dni IS NULL OR LEN(@dni) != 8 OR @dni NOT LIKE '%[0-9]%'
     BEGIN
-        PRINT 'Error: El DNI debe contener exactamente 8 dÌgitos numÈricos.';
+        PRINT 'Error: El DNI debe contener exactamente 8 d√≠gitos num√©ricos.';
         RETURN;
     END
 
@@ -1346,30 +1528,30 @@ BEGIN
         RETURN;
     END
 
-  -- ValidaciÛn de que el nombre sÛlo contenga letras y espacios
+  -- Validaci√≥n de que el nombre s√≥lo contenga letras y espacios
 	IF @nombre LIKE '%[^a-zA-Z ]%'
 	BEGIN
     PRINT 'Error: El nombre solo puede contener letras y espacios.';
     RETURN;
 	END
 
-	-- ValidaciÛn de que el apellido sÛlo contenga letras y espacios
+	-- Validaci√≥n de que el apellido s√≥lo contenga letras y espacios
 	IF @apellido LIKE '%[^a-zA-Z ]%'
 	BEGIN
     PRINT 'Error: El apellido solo puede contener letras y espacios.';
     RETURN;
 	END
 
-	-- ValidaciÛn de email
+	-- Validaci√≥n de email
 	IF @email NOT LIKE '_%@_%._%'
 	BEGIN
-		PRINT 'Error: Email inv·lido. Debe tener formato ejemplo@dominio.com.';
+		PRINT 'Error: Email inv√°lido. Debe tener formato ejemplo@dominio.com.';
 		RETURN;
 	END
 
     IF @parentezco IS NULL OR LTRIM(RTRIM(@parentezco)) = ''
     BEGIN
-        PRINT 'Error: El parentezco no puede estar vacÌo.';
+        PRINT 'Error: El parentezco no puede estar vac√≠o.';
         RETURN;
     END
 
@@ -1381,17 +1563,17 @@ BEGIN
 
     IF @nro_socio IS NULL OR @nro_socio <= 0
     BEGIN
-        PRINT 'Error: El n˙mero de socio debe ser un n˙mero positivo.';
+        PRINT 'Error: El n√∫mero de socio debe ser un n√∫mero positivo.';
         RETURN;
     END
 
     IF @tel IS NULL OR @tel LIKE '%[^0-9]%' OR LEN(@tel) < 10 OR LEN(@tel) > 14
     BEGIN
-        PRINT 'Error: El telÈfono debe contener solo n˙meros y tener entre 10 y 14 dÌgitos.';
+        PRINT 'Error: El tel√©fono debe contener solo n√∫meros y tener entre 10 y 14 d√≠gitos.';
         RETURN;
     END
 
-    -- InserciÛn
+    -- Inserci√≥n
     INSERT INTO psn.Responsable (dni, nombre, apellido, email, parentezco, fecha_nac, nro_socio, tel)
     VALUES (@dni, @nombre, @apellido, @email, @parentezco, @fecha_nac, @nro_socio, @tel);
 
@@ -1424,14 +1606,14 @@ BEGIN
     -- Validar existencia
     IF NOT EXISTS (SELECT 1 FROM psn.Responsable WHERE cod_responsable = @cod_responsable)
     BEGIN
-        PRINT 'Error: No existe un responsable con ese cÛdigo.';
+        PRINT 'Error: No existe un responsable con ese c√≥digo.';
         RETURN;
     END
 
     -- Validaciones (igual que en el insert)
     IF @dni IS NULL OR LEN(@dni) != 8 OR @dni NOT LIKE '%[0-9]%'
     BEGIN
-        PRINT 'Error: El DNI debe contener exactamente 8 dÌgitos numÈricos.';
+        PRINT 'Error: El DNI debe contener exactamente 8 d√≠gitos num√©ricos.';
         RETURN;
     END
 
@@ -1456,16 +1638,16 @@ BEGIN
     RETURN;
 	END
 
-	-- ValidaciÛn de email
+	-- Validaci√≥n de email
 	IF @email NOT LIKE '_%@_%._%'
 	BEGIN
-		PRINT 'Error: Email inv·lido. Debe tener formato ejemplo@dominio.com.';
+		PRINT 'Error: Email inv√°lido. Debe tener formato ejemplo@dominio.com.';
 		RETURN;
 	END
 
     IF @parentezco IS NULL OR LTRIM(RTRIM(@parentezco)) = ''
     BEGIN
-        PRINT 'Error: El parentezco no puede estar vacÌo.';
+        PRINT 'Error: El parentezco no puede estar vac√≠o.';
         RETURN;
     END
 
@@ -1477,17 +1659,17 @@ BEGIN
 
     IF @nro_socio IS NULL OR @nro_socio <= 0
     BEGIN
-        PRINT 'Error: El n˙mero de socio debe ser un n˙mero positivo.';
+        PRINT 'Error: El n√∫mero de socio debe ser un n√∫mero positivo.';
         RETURN;
     END
 
     IF @tel IS NULL OR @tel LIKE '%[^0-9]%' OR LEN(@tel) < 10 OR LEN(@tel) > 14
     BEGIN
-        PRINT 'Error: El telÈfono debe contener solo n˙meros y tener entre 10 y 14 dÌgitos.';
+        PRINT 'Error: El tel√©fono debe contener solo n√∫meros y tener entre 10 y 14 d√≠gitos.';
         RETURN;
     END
 
-    -- ActualizaciÛn
+    -- Actualizaci√≥n
     UPDATE psn.Responsable
     SET dni = @dni,
         nombre = @nombre,
@@ -1519,11 +1701,11 @@ BEGIN
     -- Validar existencia
     IF NOT EXISTS (SELECT 1 FROM psn.Responsable WHERE cod_responsable = @cod_responsable)
     BEGIN
-        PRINT 'Error: No existe un responsable con ese cÛdigo.';
+        PRINT 'Error: No existe un responsable con ese c√≥digo.';
         RETURN;
     END
 
-    -- EliminaciÛn
+    -- Eliminaci√≥n
     DELETE FROM psn.Responsable
     WHERE cod_responsable = @cod_responsable;
 
@@ -1531,8 +1713,831 @@ BEGIN
 END;
 GO
 
+---------------
+-- STORED PROCEDURES PARA TABLA RESERVA
 
-------------------------------------------------------------------------------------------------------------------------------------------------------------
+-- SP PARA INSERTAR RESERVA
+
+IF EXISTS (SELECT * FROM sys.procedures WHERE name = 'insertarReserva')
+BEGIN
+    DROP PROCEDURE stp.insertarReserva;
+END;
+GO
+
+CREATE OR ALTER PROCEDURE stp.insertarReserva
+    @cod_socio          INT = NULL,
+    @cod_invitado       INT = NULL,
+    @monto              DECIMAL(10,2),
+    @fechahoraInicio    DATETIME,
+    @fechahoraFin       DATETIME,
+    @piletaSUMColonia   VARCHAR(50)   
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    IF @cod_socio IS NULL AND @cod_invitado IS NULL
+    BEGIN
+        PRINT 'Error: Debe especificar un codigo de socio o de invitado para la reserva.';
+        RETURN;
+    END;
+
+    IF @cod_socio IS NOT NULL AND @cod_invitado IS NOT NULL
+    BEGIN
+        PRINT 'Error: Solo se debe especificar cod_socio o cod_invitado, no ambos.';
+        RETURN;
+    END;
+
+    IF @cod_socio IS NOT NULL AND NOT EXISTS (SELECT 1 FROM psn.Socio WHERE cod_socio = @cod_socio)
+    BEGIN
+        PRINT 'Error: El codigo de socio especificado no existe.';
+        RETURN;
+    END;
+
+    IF @cod_invitado IS NOT NULL AND NOT EXISTS (SELECT 1 FROM psn.Invitado WHERE cod_invitado = @cod_invitado)
+    BEGIN
+        PRINT 'Error: El codigo de invitado especificado no existe.';
+        RETURN;
+    END;
+
+    IF @monto IS NULL OR @fechahoraInicio IS NULL OR @fechahoraFin IS NULL OR @piletaSUMColonia IS NULL
+    BEGIN
+        PRINT 'Error: Campos criticos (monto, fecha/hora, recurso) no pueden ser NULL.';
+        RETURN;
+    END;
+
+    IF @fechahoraInicio < GETDATE()
+    BEGIN
+        PRINT 'Error: La fecha y hora de inicio de la reserva no puede ser en el pasado.';
+        RETURN;
+    END;
+
+    IF @fechahoraInicio >= @fechahoraFin
+    BEGIN
+        PRINT 'Error: La fecha y hora de inicio debe ser anterior a la fecha y hora de fin.';
+        RETURN;
+    END;
+
+    IF DATEDIFF(minute, @fechahoraInicio, @fechahoraFin) < 60
+    BEGIN
+        PRINT 'Error: La duracion de la reserva debe ser al menos de 60 minutos.';
+        RETURN;
+    END;
+
+    IF @monto <= 0
+    BEGIN
+        PRINT 'Error: El monto de la reserva debe ser mayor a cero.';
+        RETURN;
+    END;
+
+    IF EXISTS (SELECT 1 FROM psn.Reserva
+               WHERE piletaSUMColonia = @piletaSUMColonia
+                 AND (
+                        (@fechahoraInicio < fechahoraFin AND @fechahoraFin > fechahoraInicio) -- Solapamiento
+                     )
+              )
+    BEGIN
+       PRINT 'Error: El recurso "' + @piletaSUMColonia + '" ya esta reservado en el horario solicitado.';
+       RETURN;
+    END;
+
+    INSERT INTO psn.Reserva (
+        cod_socio,
+        cod_invitado,
+        monto,
+        fechahoraInicio,
+        fechahoraFin,
+        piletaSUMColonia
+    )
+    VALUES (
+        @cod_socio,
+        @cod_invitado,
+        @monto,
+        @fechahoraInicio,
+        @fechahoraFin,
+        @piletaSUMColonia
+    );
+
+    PRINT 'Reserva insertada correctamente.';
+END;
+GO
+
+-- SP PARA MODIFICAR RESERVA
+
+IF EXISTS (SELECT * FROM sys.procedures WHERE name = 'modificarReserva')
+BEGIN
+    DROP PROCEDURE stp.modificarReserva;
+END;
+GO
+
+CREATE OR ALTER PROCEDURE stp.modificarReserva
+    @cod_reserva        INT,
+    @cod_socio          INT = NULL,
+    @cod_invitado       INT = NULL,
+    @monto              DECIMAL(10,2),
+    @fechahoraInicio    DATETIME,
+    @fechahoraFin       DATETIME,
+    @piletaSUMColonia   VARCHAR(50)
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    IF NOT EXISTS (SELECT 1 FROM psn.Reserva WHERE cod_reserva = @cod_reserva)
+    BEGIN
+        PRINT 'Error: El codigo de reserva especificado no existe.';
+        RETURN;
+    END;
+
+    IF @cod_socio IS NULL AND @cod_invitado IS NULL
+    BEGIN
+        PRINT 'Error: Debe especificar un codigo de socio o de invitado para la reserva.';
+        RETURN;
+    END;
+
+    IF @cod_socio IS NOT NULL AND @cod_invitado IS NOT NULL
+    BEGIN
+        PRINT 'Error: Solo se debe especificar cod_socio o cod_invitado, no ambos.';
+        RETURN;
+    END;
+
+    IF @cod_socio IS NOT NULL AND NOT EXISTS (SELECT 1 FROM psn.Socio WHERE cod_socio = @cod_socio)
+    BEGIN
+        PRINT 'Error: El codigo de socio especificado no existe.';
+        RETURN;
+    END;
+
+    IF @cod_invitado IS NOT NULL AND NOT EXISTS (SELECT 1 FROM psn.Invitado WHERE cod_invitado = @cod_invitado)
+    BEGIN
+        PRINT 'Error: El codigo de invitado especificado no existe.';
+        RETURN;
+    END;
+
+    IF @monto IS NULL OR @fechahoraInicio IS NULL OR @fechahoraFin IS NULL OR @piletaSUMColonia IS NULL
+    BEGIN
+        PRINT 'Error: Campos criticos (monto, fecha/hora, recurso) no pueden ser NULL.';
+        RETURN;
+    END;
+    
+    IF @fechahoraInicio < GETDATE()
+    BEGIN
+        PRINT 'Error: La fecha y hora de inicio de la reserva no puede ser en el pasado.';
+        RETURN;
+    END;
+
+    IF @fechahoraInicio >= @fechahoraFin
+    BEGIN
+        PRINT 'Error: La fecha y hora de inicio debe ser anterior a la fecha y hora de fin.';
+        RETURN;
+    END;
+
+    IF DATEDIFF(minute, @fechahoraInicio, @fechahoraFin) < 60
+    BEGIN
+        PRINT 'Error: La duracion de la reserva debe ser al menos de 60 minutos.';
+        RETURN;
+    END;
+
+    IF @monto <= 0
+    BEGIN
+        PRINT 'Error: El monto de la reserva debe ser mayor a cero.';
+        RETURN;
+    END;
+
+    IF EXISTS (SELECT 1 FROM psn.Reserva
+               WHERE cod_reserva <> @cod_reserva -- Excluir la reserva que se esta modificando
+                 AND piletaSUMColonia = @piletaSUMColonia
+                 AND (
+                        (@fechahoraInicio < fechahoraFin AND @fechahoraFin > fechahoraInicio) -- Solapamiento
+                     )
+              )
+    BEGIN
+       PRINT 'Error: El recurso "' + @piletaSUMColonia + '" ya esta reservado en el horario solicitado por otra reserva.';
+       RETURN;
+    END;
+
+    UPDATE psn.Reserva
+    SET
+        cod_socio = @cod_socio,
+        cod_invitado = @cod_invitado,
+        monto = @monto,
+        fechahoraInicio = @fechahoraInicio,
+        fechahoraFin = @fechahoraFin,
+        piletaSUMColonia = @piletaSUMColonia
+    WHERE cod_reserva = @cod_reserva;
+
+    PRINT 'Reserva modificada correctamente.';
+END;
+GO
+
+-- SP PARA BORRAR RESERVA
+
+IF EXISTS (SELECT * FROM sys.procedures WHERE name = 'borrarReserva')
+BEGIN
+    DROP PROCEDURE stp.borrarReserva;
+END;
+GO
+
+CREATE OR ALTER PROCEDURE stp.borrarReserva
+    @cod_reserva INT
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    IF NOT EXISTS (SELECT 1 FROM psn.Reserva WHERE cod_reserva = @cod_reserva)
+    BEGIN
+        PRINT 'Error: El codigo de reserva especificado no existe.';
+        RETURN;
+    END;
+
+    DELETE FROM psn.Reserva
+    WHERE cod_reserva = @cod_reserva;
+
+    PRINT 'Reserva borrada correctamente.';
+END;
+GO
+
+---------------
+-- STORED PROCEDURES PARA TABLA CLASE
+
+-- SP PARA INSERTAR CLASE
+
+IF EXISTS (SELECT * FROM sys.procedures WHERE name = 'insertarClase')
+BEGIN
+    DROP PROCEDURE stp.insertarClase;
+END;
+GO
+
+CREATE OR ALTER PROCEDURE stp.insertarClase
+    @categoria     INT,
+    @cod_actividad INT
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    IF @categoria IS NULL OR @cod_actividad IS NULL
+    BEGIN
+        PRINT 'Error: Los campos categor√≠a y c√≥digo de actividad no pueden ser NULL.';
+        RETURN;
+    END;
+
+    IF NOT EXISTS (SELECT 1 FROM psn.Categoria WHERE cod_categoria = @categoria)
+    BEGIN
+        PRINT 'Error: La categor√≠a especificada no existe.';
+        RETURN;
+    END;
+
+    IF NOT EXISTS (SELECT 1 FROM psn.Actividad WHERE cod_actividad = @cod_actividad)
+    BEGIN
+        PRINT 'Error: La actividad especificada no existe.';
+        RETURN;
+    END;
+
+    IF EXISTS (SELECT 1 FROM psn.Clase WHERE categoria = @categoria AND cod_actividad = @cod_actividad)
+    BEGIN
+        PRINT 'Error: Ya existe una clase con esta combinaci√≥n de categor√≠a y actividad.';
+        RETURN;
+    END;
+
+    INSERT INTO psn.Clase (categoria, cod_actividad)
+    VALUES (@categoria, @cod_actividad);
+
+    PRINT 'Clase insertada correctamente.';
+END;
+GO
+
+-- SP PARA MODIFICAR CLASE
+IF EXISTS (SELECT * FROM sys.procedures WHERE name = 'modificarClase')
+BEGIN
+    DROP PROCEDURE stp.modificarClase;
+END;
+GO
+
+CREATE OR ALTER PROCEDURE stp.modificarClase
+    @cod_clase     INT,
+    @categoria     INT,
+    @cod_actividad   INT
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    IF @cod_clase IS NULL
+    BEGIN
+        PRINT 'Error: El c√≥digo de clase no puede ser NULL.';
+        RETURN;
+    END;
+
+    IF NOT EXISTS (SELECT 1 FROM psn.Clase WHERE cod_clase = @cod_clase)
+    BEGIN
+        PRINT 'Error: La clase con el c√≥digo especificado no existe.';
+        RETURN;
+    END;
+
+    IF @categoria IS NULL OR @cod_actividad IS NULL
+    BEGIN
+        PRINT 'Error: Los campos categor√≠a y c√≥digo de actividad no pueden ser NULL para la modificaci√≥n.';
+        RETURN;
+    END;
+
+    IF NOT EXISTS (SELECT 1 FROM psn.Categoria WHERE cod_categoria = @categoria)
+    BEGIN
+        PRINT 'Error: La nueva categor√≠a especificada no existe.';
+        RETURN;
+    END;
+
+    IF NOT EXISTS (SELECT 1 FROM psn.Actividad WHERE cod_actividad = @cod_actividad)
+    BEGIN
+        PRINT 'Error: La nueva actividad especificada no existe.';
+        RETURN;
+    END;
+
+    IF EXISTS (SELECT 1 FROM psn.Clase WHERE categoria = @categoria AND cod_actividad = @cod_actividad AND cod_clase <> @cod_clase)
+    BEGIN
+        PRINT 'Error: La modificaci√≥n resultar√≠a en una clase duplicada con esta combinaci√≥n de categor√≠a y actividad.';
+        RETURN;
+    END;
+
+    UPDATE psn.Clase
+    SET
+        categoria = @categoria,
+        cod_actividad = @cod_actividad
+    WHERE cod_clase = @cod_clase;
+
+    PRINT 'Clase modificada correctamente.';
+END;
+GO
+
+-- SP PARA BORRAR CLASE
+IF EXISTS (SELECT * FROM sys.procedures WHERE name = 'borrarClase')
+BEGIN
+    DROP PROCEDURE stp.borrarClase;
+END;
+GO
+
+CREATE OR ALTER PROCEDURE stp.borrarClase
+    @cod_clase INT
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    IF @cod_clase IS NULL
+    BEGIN
+        PRINT 'Error: El c√≥digo de clase no puede ser NULL.';
+        RETURN;
+    END;
+
+    IF NOT EXISTS (SELECT 1 FROM psn.Clase WHERE cod_clase = @cod_clase)
+    BEGIN
+        PRINT 'Error: La clase con el c√≥digo especificado no existe.';
+        RETURN;
+    END;
+
+    IF EXISTS (SELECT 1 FROM psn.HorarioClase WHERE cod_clase = @cod_clase)
+    BEGIN
+         PRINT 'Error: No se puede eliminar la clase porque tiene horarios asociados.';
+         RETURN;
+     END;
+
+    DELETE FROM psn.Clase
+    WHERE cod_clase = @cod_clase;
+
+    PRINT 'Clase eliminada correctamente.';
+END;
+GO
+
+--- STORED PROCEDURES PARA ITEM_FACTURA
+
+-- INSERCION ITEM_FACTURA
+
+IF EXISTS (SELECT * FROM sys.procedures WHERE name = 'insertarItem_factura')
+BEGIN
+    DROP PROCEDURE stp.insertarItem_factura;
+END;
+GO
+
+CREATE PROCEDURE stp.insertarItem_factura
+    @cod_Factura INT
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    -- Validaci√≥n: cod_Factura debe ser mayor a 0
+    IF @cod_Factura IS NULL OR @cod_Factura <= 0
+    BEGIN
+        PRINT 'Error: El c√≥digo de factura debe ser un n√∫mero positivo.';
+        RETURN;
+    END
+
+    -- Inserci√≥n
+    INSERT INTO psn.Item_Factura (cod_Factura)
+    VALUES (@cod_Factura);
+
+    PRINT 'Item de factura insertado correctamente.';
+END;
+GO
 
 
+-- MODIFICACION ITEM_FACTURA
 
+IF EXISTS (SELECT * FROM sys.procedures WHERE name = 'modificarItem_factura')
+BEGIN
+    DROP PROCEDURE stp.modificarItem_factura;
+END;
+GO
+
+CREATE PROCEDURE stp.modificarItem_factura
+    @cod_item     INT,
+    @cod_Factura  INT
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    -- Validar existencia de cod_item
+    IF NOT EXISTS (SELECT 1 FROM psn.Item_Factura WHERE cod_item = @cod_item)
+    BEGIN
+        PRINT 'Error: No existe un √≠tem de factura con ese c√≥digo.';
+        RETURN;
+    END
+
+    -- Validaci√≥n: cod_Factura debe ser mayor a 0
+    IF @cod_Factura IS NULL OR @cod_Factura <= 0
+    BEGIN
+        PRINT 'Error: El c√≥digo de factura debe ser un n√∫mero positivo.';
+        RETURN;
+    END
+
+    -- Actualizaci√≥n
+    UPDATE psn.Item_Factura
+    SET cod_Factura = @cod_Factura
+    WHERE cod_item = @cod_item;
+
+    PRINT 'Item de factura modificado correctamente.';
+END;
+GO
+
+-- BORRADO ITEM_FACTURA
+IF EXISTS (SELECT * FROM sys.procedures WHERE name = 'borrarItem_factura')
+BEGIN
+    DROP PROCEDURE stp.borrarItem_factura;
+END;
+GO
+
+CREATE PROCEDURE stp.borrarItem_factura
+    @cod_item INT
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    -- Validar existencia
+    IF NOT EXISTS (SELECT 1 FROM psn.Item_Factura WHERE cod_item = @cod_item)
+    BEGIN
+        PRINT 'Error: No existe un √≠tem de factura con ese c√≥digo.';
+        RETURN;
+    END
+
+    -- Eliminaci√≥n
+    DELETE FROM psn.Item_Factura
+    WHERE cod_item = @cod_item;
+
+    PRINT 'Item de factura eliminado correctamente.';
+END;
+GO
+
+
+----------------------- SPs ASISTE
+
+-- INSERCION ASISTE
+
+IF EXISTS (SELECT * FROM sys.procedures WHERE name = 'insertarAsiste')
+BEGIN
+    DROP PROCEDURE stp.insertarAsiste;
+END;
+GO
+
+CREATE PROCEDURE stp.insertarAsiste
+    @fecha      DATE,
+    @cod_socio  INT,
+    @cod_clase  INT
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    -- Validaciones
+    IF @fecha IS NULL OR @fecha > GETDATE()
+    BEGIN
+        PRINT 'Error: La fecha no puede ser nula ni futura.';
+        RETURN;
+    END
+
+    IF @cod_socio IS NULL OR @cod_socio <= 0
+    BEGIN
+        PRINT 'Error: El c√≥digo de socio debe ser un n√∫mero positivo.';
+        RETURN;
+    END
+
+    IF @cod_clase IS NULL OR @cod_clase <= 0
+    BEGIN
+        PRINT 'Error: El c√≥digo de clase debe ser un n√∫mero positivo.';
+        RETURN;
+    END
+
+    -- Validar si ya existe ese registro
+    IF EXISTS (
+        SELECT 1 FROM psn.Asiste
+        WHERE fecha = @fecha AND cod_socio = @cod_socio AND cod_clase = @cod_clase
+    )
+    BEGIN
+        PRINT 'Error: Ya existe un registro con esa combinaci√≥n de fecha, socio y clase.';
+        RETURN;
+    END
+
+    -- Inserci√≥n
+    INSERT INTO psn.Asiste (fecha, cod_socio, cod_clase)
+    VALUES (@fecha, @cod_socio, @cod_clase);
+
+    PRINT 'Asistencia registrada correctamente.';
+END;
+GO
+
+-- MODIFICACION ASISTE
+
+IF EXISTS (SELECT * FROM sys.procedures WHERE name = 'modificarAsiste')
+BEGIN
+    DROP PROCEDURE stp.modificarAsiste;
+END;
+GO
+
+CREATE PROCEDURE stp.modificarAsiste
+    @fecha_original     DATE,
+    @cod_socio_original INT,
+    @cod_clase_original INT,
+    @nueva_fecha        DATE,
+    @nuevo_cod_socio    INT,
+    @nuevo_cod_clase    INT
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    -- Validar existencia del registro original
+    IF NOT EXISTS (
+        SELECT 1 FROM psn.Asiste
+        WHERE fecha = @fecha_original AND cod_socio = @cod_socio_original AND cod_clase = @cod_clase_original
+    )
+    BEGIN
+        PRINT 'Error: No se encontr√≥ el registro original de asistencia.';
+        RETURN;
+    END
+
+    -- Validaciones para nuevos datos
+    IF @nueva_fecha IS NULL OR @nueva_fecha > GETDATE()
+    BEGIN
+        PRINT 'Error: La nueva fecha no puede ser nula ni futura.';
+        RETURN;
+    END
+
+    IF @nuevo_cod_socio IS NULL OR @nuevo_cod_socio <= 0
+    BEGIN
+        PRINT 'Error: El nuevo c√≥digo de socio debe ser un n√∫mero positivo.';
+        RETURN;
+    END
+
+    IF @nuevo_cod_clase IS NULL OR @nuevo_cod_clase <= 0
+    BEGIN
+        PRINT 'Error: El nuevo c√≥digo de clase debe ser un n√∫mero positivo.';
+        RETURN;
+    END
+
+    -- Validar duplicado en nuevos valores
+    IF EXISTS (
+        SELECT 1 FROM psn.Asiste
+        WHERE fecha = @nueva_fecha AND cod_socio = @nuevo_cod_socio AND cod_clase = @nuevo_cod_clase
+          AND NOT (
+              fecha = @fecha_original AND
+              cod_socio = @cod_socio_original AND
+              cod_clase = @cod_clase_original
+          )
+    )
+    BEGIN
+        PRINT 'Error: Ya existe otro registro con los nuevos valores.';
+        RETURN;
+    END
+
+    -- Actualizaci√≥n
+    UPDATE psn.Asiste
+    SET fecha = @nueva_fecha,
+        cod_socio = @nuevo_cod_socio,
+        cod_clase = @nuevo_cod_clase
+    WHERE fecha = @fecha_original AND cod_socio = @cod_socio_original AND cod_clase = @cod_clase_original;
+
+    PRINT 'Registro de asistencia modificado correctamente.';
+END;
+GO
+
+-- BORRADO ASISTE
+
+IF EXISTS (SELECT * FROM sys.procedures WHERE name = 'borrarAsiste')
+BEGIN
+    DROP PROCEDURE stp.borrarAsiste;
+END;
+GO
+
+CREATE PROCEDURE stp.borrarAsiste
+    @fecha      DATE,
+    @cod_socio  INT,
+    @cod_clase  INT
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    -- Validar existencia del registro
+    IF NOT EXISTS (
+        SELECT 1 FROM psn.Asiste
+        WHERE fecha = @fecha AND cod_socio = @cod_socio AND cod_clase = @cod_clase
+    )
+    BEGIN
+        PRINT 'Error: No se encontr√≥ un registro con esos datos.';
+        RETURN;
+    END
+
+    -- Eliminaci√≥n
+    DELETE FROM psn.Asiste
+    WHERE fecha = @fecha AND cod_socio = @cod_socio AND cod_clase = @cod_clase;
+
+    PRINT 'Asistencia eliminada correctamente.';
+END;
+GO
+
+
+------------------------------------------ SPs INSCRIPTO
+
+-- INSERCION INSCRIPTO
+
+IF EXISTS (SELECT * FROM sys.procedures WHERE name = 'insertarInscripto')
+    DROP PROCEDURE stp.insertarInscripto;
+GO
+
+CREATE PROCEDURE stp.insertarInscripto
+    @fecha_inscripcion DATE,
+    @estado            VARCHAR(50),
+    @cod_socio         INT,
+    @cod_clase         INT
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    -- Validaciones
+    IF @fecha_inscripcion IS NULL OR @fecha_inscripcion > GETDATE()
+    BEGIN
+        PRINT 'Error: La fecha de inscripci√≥n no puede ser nula ni futura.';
+        RETURN;
+    END
+
+    IF @estado IS NULL OR LTRIM(RTRIM(@estado)) = ''
+    BEGIN
+        PRINT 'Error: El estado no puede estar vac√≠o.';
+        RETURN;
+    END
+
+    IF @cod_socio IS NULL OR @cod_socio <= 0
+    BEGIN
+        PRINT 'Error: El c√≥digo de socio debe ser un n√∫mero positivo.';
+        RETURN;
+    END
+
+    IF @cod_clase IS NULL OR @cod_clase <= 0
+    BEGIN
+        PRINT 'Error: El c√≥digo de clase debe ser un n√∫mero positivo.';
+        RETURN;
+    END
+
+    -- Validar duplicado
+    IF EXISTS (
+        SELECT 1 FROM psn.Inscripto
+        WHERE fecha_inscripcion = @fecha_inscripcion AND cod_socio = @cod_socio AND cod_clase = @cod_clase
+    )
+    BEGIN
+        PRINT 'Error: Ya existe una inscripci√≥n con esos datos.';
+        RETURN;
+    END
+
+    -- Inserci√≥n
+    INSERT INTO psn.Inscripto (fecha_inscripcion, estado, cod_socio, cod_clase)
+    VALUES (@fecha_inscripcion, @estado, @cod_socio, @cod_clase);
+
+    PRINT 'Inscripci√≥n registrada correctamente.';
+END;
+GO
+
+-- MODIFICACION INSCRIPTO
+
+IF EXISTS (SELECT * FROM sys.procedures WHERE name = 'modificarInscripto')
+    DROP PROCEDURE stp.modificarInscripto;
+GO
+
+CREATE PROCEDURE stp.modificarInscripto
+    @fecha_original     DATE,
+    @cod_socio_original INT,
+    @cod_clase_original INT,
+    @nueva_fecha        DATE,
+    @nuevo_estado       VARCHAR(50),
+    @nuevo_cod_socio    INT,
+    @nuevo_cod_clase    INT
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    -- Validar existencia del registro original
+    IF NOT EXISTS (
+        SELECT 1 FROM psn.Inscripto
+        WHERE fecha_inscripcion = @fecha_original AND cod_socio = @cod_socio_original AND cod_clase = @cod_clase_original
+    )
+    BEGIN
+        PRINT 'Error: No se encontr√≥ la inscripci√≥n original.';
+        RETURN;
+    END
+
+    -- Validaciones nuevas
+    IF @nueva_fecha IS NULL OR @nueva_fecha > GETDATE()
+    BEGIN
+        PRINT 'Error: La nueva fecha no puede ser nula ni futura.';
+        RETURN;
+    END
+
+    IF @nuevo_estado IS NULL OR LTRIM(RTRIM(@nuevo_estado)) = ''
+    BEGIN
+        PRINT 'Error: El nuevo estado no puede estar vac√≠o.';
+        RETURN;
+    END
+
+    IF @nuevo_cod_socio IS NULL OR @nuevo_cod_socio <= 0
+    BEGIN
+        PRINT 'Error: El nuevo c√≥digo de socio debe ser un n√∫mero positivo.';
+        RETURN;
+    END
+
+    IF @nuevo_cod_clase IS NULL OR @nuevo_cod_clase <= 0
+    BEGIN
+        PRINT 'Error: El nuevo c√≥digo de clase debe ser un n√∫mero positivo.';
+        RETURN;
+    END
+
+    -- Validar duplicado con nuevos datos
+    IF EXISTS (
+        SELECT 1 FROM psn.Inscripto
+        WHERE fecha_inscripcion = @nueva_fecha AND cod_socio = @nuevo_cod_socio AND cod_clase = @nuevo_cod_clase
+          AND NOT (
+              fecha_inscripcion = @fecha_original AND
+              cod_socio = @cod_socio_original AND
+              cod_clase = @cod_clase_original
+          )
+    )
+    BEGIN
+        PRINT 'Error: Ya existe otra inscripci√≥n con los nuevos datos.';
+        RETURN;
+    END
+
+    -- Actualizaci√≥n
+    UPDATE psn.Inscripto
+    SET fecha_inscripcion = @nueva_fecha,
+        estado = @nuevo_estado,
+        cod_socio = @nuevo_cod_socio,
+        cod_clase = @nuevo_cod_clase
+    WHERE fecha_inscripcion = @fecha_original
+      AND cod_socio = @cod_socio_original
+      AND cod_clase = @cod_clase_original;
+
+    PRINT 'Inscripci√≥n modificada correctamente.';
+END;
+GO
+
+
+-- BORRADO INSCRIPTO
+
+IF EXISTS (SELECT * FROM sys.procedures WHERE name = 'borrarInscripto')
+    DROP PROCEDURE stp.borrarInscripto;
+GO
+
+CREATE PROCEDURE stp.borrarInscripto
+    @fecha_inscripcion DATE,
+    @cod_socio         INT,
+    @cod_clase         INT
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    -- Validar existencia
+    IF NOT EXISTS (
+        SELECT 1 FROM psn.Inscripto
+        WHERE fecha_inscripcion = @fecha_inscripcion AND cod_socio = @cod_socio AND cod_clase = @cod_clase
+    )
+    BEGIN
+        PRINT 'Error: No se encontr√≥ una inscripci√≥n con esos datos.';
+        RETURN;
+    END
+
+    -- Eliminaci√≥n
+    DELETE FROM psn.Inscripto
+    WHERE fecha_inscripcion = @fecha_inscripcion
+      AND cod_socio = @cod_socio
+      AND cod_clase = @cod_clase;
+
+    PRINT 'Inscripci√≥n eliminada correctamente.';
+END;
+GO

@@ -18,7 +18,6 @@ END;
 GO
 
 CREATE OR ALTER PROCEDURE stp.insertarCategoria
-	@cod_categoria		INT,
 	@descripcion		VARCHAR(50),
 	@valor_mensual		DECIMAL(10,2),
 	@vig_valor_mens		DATE,
@@ -135,12 +134,24 @@ GO
 ----------------------------------------------------------------------------------------------------------------
 --	STORED PROCEDURES PARA TABLA ACTIVIDAD
 
+IF EXISTS (SELECT * FROM sys.procedures WHERE name = 'insertarActividad')
+BEGIN
+    DROP PROCEDURE stp.insertarActividad;
+END;
+GO
+
 CREATE OR ALTER PROCEDURE stp.insertarActividad
 	@descripcion		VARCHAR(50),
 	@valor_mensual		DECIMAL(10,2),
 	@vig_valor			DATE
 AS
 BEGIN
+	IF @descripcion COLLATE Modern_Spanish_CI_AI NOT IN (
+    'Futsal', 'Voley', 'Taekwondo', 'Baile artistico', 'Natacion', 'Ajedrez')
+	BEGIN
+		PRINT 'Actividad no permitida.'
+		RETURN;
+	END
 	--	Validar que no exista la misma descripción para otra actividad.
 	IF (EXISTS (SELECT 1 FROM psn.Actividad WHERE @descripcion = descripcion))
 		BEGIN
@@ -163,6 +174,12 @@ BEGIN
 		VALUES(@descripcion,@valor_mensual,@vig_valor)
 	PRINT 'Actividad agregada correctamente.'
 END
+GO
+
+IF EXISTS (SELECT * FROM sys.procedures WHERE name = 'modificarActividad')
+BEGIN
+    DROP PROCEDURE stp.modificarActividad;
+END;
 GO
 
 CREATE OR ALTER PROCEDURE stp.modificarActividad
@@ -203,7 +220,13 @@ BEGIN
 END
 GO
 
-CREATE OR ALTER PROCEDURE stp.eliminarActividad
+IF EXISTS (SELECT * FROM sys.procedures WHERE name = 'borrarActividad')
+BEGIN
+    DROP PROCEDURE stp.borrarActividad;
+END;
+GO
+
+CREATE OR ALTER PROCEDURE stp.borrarActividad
 	@descripcion VARCHAR(50)
 AS
 BEGIN

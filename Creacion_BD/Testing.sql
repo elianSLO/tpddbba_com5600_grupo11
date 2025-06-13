@@ -1,4 +1,4 @@
-ï»¿-- SCRIPT DE PRUEBAS
+-- SCRIPT DE PRUEBAS
 
 --Estas pruebas se ejecutaran paso por paso siguiendo las instruccion en el orden dado
 
@@ -15,12 +15,12 @@ DBCC CHECKIDENT ('psn.Socio', RESEED, 0);
 
 ------ 1.1 INSERCION
 
--- CASO 1.1.1: Inserciï¿½n vï¿½lida
+-- CASO 1.1.1: Inserción válida
 
 EXEC stp.insertarSocio
 	@dni = '12345678',
 	@nombre = 'Juan',
-	@apellido = 'Pï¿½rez',
+	@apellido = 'Pérez',
 	@fecha_nac = '1990-05-20',
 	@email = 'juan.perez@email.com',
 	@tel = '1123456789',
@@ -38,7 +38,7 @@ EXEC stp.insertarSocio
 EXEC stp.insertarSocio
 	@dni = '12345679', -- mismo DNI que antes
 	@nombre = 'Carlos',
-	@apellido = 'Gï¿½mez',
+	@apellido = 'Gómez',
 	@fecha_nac = '1985-01-10',
 	@email = 'carlos.gomez@email.com',
 	@tel = '1134567891',
@@ -50,19 +50,19 @@ EXEC stp.insertarSocio
 	@tel_cobertura = '1145678901',
 	@cod_responsable = 1;
 
--- CASO 1.1.3: Email invï¿½lido (debe fallar por validaciï¿½n)
+-- CASO 1.1.3: Email inválido (debe fallar por validación)
 
 EXEC stp.insertarSocio
 	@dni = '87654321',
 	@nombre = 'Ana',
-	@apellido = 'Martï¿½nez',
+	@apellido = 'Martínez',
 	@fecha_nac = '1992-11-15',
 	@email = 'ana.martinez-email.com', -- sin @
 	@tel = '1134567892',
 	@tel_emerg = '1198765434',
 	@estado = 1,
 	@saldo = 500.00,
-	@nombre_cobertura = 'Medifï¿½',
+	@nombre_cobertura = 'Medifé',
 	@nro_afiliado = 'C54321',
 	@tel_cobertura = '1156789012',
 	@cod_responsable = 1;
@@ -71,8 +71,8 @@ EXEC stp.insertarSocio
 
 EXEC stp.insertarSocio
 	@dni = '23456789',
-	@nombre = 'Lucï¿½a',
-	@apellido = 'Fernï¿½ndez',
+	@nombre = 'Lucía',
+	@apellido = 'Fernández',
 	@fecha_nac = '2100-01-01',
 	@email = 'lucia.fernandez@email.com',
 	@tel = '1134567893',
@@ -89,7 +89,7 @@ EXEC stp.insertarSocio
 EXEC stp.insertarSocio
 	@dni = '34567890',
 	@nombre = 'Pedro',
-	@apellido = 'Lï¿½pez',
+	@apellido = 'López',
 	@fecha_nac = '1980-07-07',
 	@email = 'pedro.lopez@email.com',
 	@tel = '1134567894',
@@ -101,13 +101,13 @@ EXEC stp.insertarSocio
 	@tel_cobertura = '1178901234',
 	@cod_responsable = 1;
 
--- CASO 1.1.6: Telï¿½fono con letras (debe fallar)
--- Nota: Se utiliza la misma validaciï¿½n para telï¿½fono auxiliar y telï¿½fono de cobertura
+-- CASO 1.1.6: Teléfono con letras (debe fallar)
+-- Nota: Se utiliza la misma validación para teléfono auxiliar y teléfono de cobertura
 
 EXEC stp.insertarSocio
 	@dni = '45678901',
-	@nombre = 'Sofï¿½a',
-	@apellido = 'Ramï¿½rez',
+	@nombre = 'Sofía',
+	@apellido = 'Ramírez',
 	@fecha_nac = '1995-09-30',
 	@email = 'sofia.ramirez@email.com',
 	@tel = '444A5678', -- contiene letra
@@ -124,7 +124,7 @@ EXEC stp.insertarSocio
 EXEC stp.insertarSocio
 	@dni = NULL,
 	@nombre = 'Marta',
-	@apellido = 'Suï¿½rez',
+	@apellido = 'Suárez',
 	@fecha_nac = '1988-03-25',
 	@email = 'marta.suarez@email.com',
 	@tel = '1134567895',
@@ -150,12 +150,12 @@ DBCC CHECKIDENT ('psn.Socio', RESEED, 0);
 -- Aseguramos que exista un socio base para modificar
 -- Este debe coincidir con un 'cod_socio' que vayamos a usar en las pruebas
 
--- Inserciï¿½n de socio para pruebas
+-- Inserción de socio para pruebas
 
 EXEC stp.insertarSocio
 	@dni = '87654329',
 	@nombre = 'Carlos',
-	@apellido = 'Gutiï¿½rrez',
+	@apellido = 'Gutiérrez',
 	@fecha_nac = '1980-10-15',
 	@email = 'carlos.gutierrez@email.com',
 	@tel = '1130000001',
@@ -168,13 +168,13 @@ EXEC stp.insertarSocio
 	@cod_responsable = 1;
 
 
--- CASO 1.2.1: Modificaciï¿½n vï¿½lida
+-- CASO 1.2.1: Modificación válida
 
 EXEC stp.modificarSocio
 	@cod_socio = 1,
 	@dni = '87654321',
 	@nombre = 'Carlos A',
-	@apellido = 'Gutiï¿½rrez',
+	@apellido = 'Gutiérrez',
 	@fecha_nac = '1980-10-15',
 	@email = 'carlos.a.gutierrez@email.com',
 	@tel = '1130000002',
@@ -186,7 +186,7 @@ EXEC stp.modificarSocio
 	@tel_cobertura = '1150000002',
 	@cod_responsable = 1;
 
--- CASO 1.2.2: Cï¿½digo de socio no existente (debe fallar)
+-- CASO 1.2.2: Código de socio no existente (debe fallar)
 
 EXEC stp.modificarSocio
 	@cod_socio = 9999,
@@ -210,7 +210,7 @@ EXEC stp.modificarSocio
 	@cod_socio = 1,
 	@dni = '87654321',
 	@nombre = 'Carlos',
-	@apellido = 'Gutiï¿½rrez',
+	@apellido = 'Gutiérrez',
 	@fecha_nac = '2100-01-01',
 	@email = 'carlos@email.com',
 	@tel = '1130000003',
@@ -222,13 +222,13 @@ EXEC stp.modificarSocio
 	@tel_cobertura = '1150000003',
 	@cod_responsable = 1;
 
--- CASO 1.2.4: Email invï¿½lido (debe fallar)
+-- CASO 1.2.4: Email inválido (debe fallar)
 
 EXEC stp.modificarSocio
 	@cod_socio = 1,
 	@dni = '87654321',
 	@nombre = 'Carlos',
-	@apellido = 'Gutiï¿½rrez',
+	@apellido = 'Gutiérrez',
 	@fecha_nac = '1980-10-15',
 	@email = 'carlos.email.com', -- sin @
 	@tel = '1130000004',
@@ -240,13 +240,13 @@ EXEC stp.modificarSocio
 	@tel_cobertura = '1150000004',
 	@cod_responsable = 1;
 
--- CASO 1.2.5: Telï¿½fono con letras (debe fallar)
+-- CASO 1.2.5: Teléfono con letras (debe fallar)
 
 EXEC stp.modificarSocio
 	@cod_socio = 1,
 	@dni = '87654321',
 	@nombre = 'Carlos',
-	@apellido = 'Gutiï¿½rrez',
+	@apellido = 'Gutiérrez',
 	@fecha_nac = '1980-10-15',
 	@email = 'carlos@email.com',
 	@tel = '11A34567',
@@ -265,7 +265,7 @@ EXEC stp.modificarSocio
 	@cod_socio = 1,
 	@dni = '87654321',
 	@nombre = 'Carlos',
-	@apellido = 'Gutiï¿½rrez',
+	@apellido = 'Gutiérrez',
 	@fecha_nac = '1980-10-15',
 	@email = 'carlos@email.com',
 	@tel = '1130000006',
@@ -284,7 +284,7 @@ EXEC stp.modificarSocio
 	@cod_socio = 1,
 	@dni = NULL,
 	@nombre = 'Carlos',
-	@apellido = 'Gutiï¿½rrez',
+	@apellido = 'Gutiérrez',
 	@fecha_nac = '1980-10-15',
 	@email = 'carlos@email.com',
 	@tel = '1130000007',
@@ -312,7 +312,7 @@ DBCC CHECKIDENT ('psn.Socio', RESEED, 0);
 EXEC stp.insertarSocio
 	@dni = '99887236',
 	@nombre = 'Laura',
-	@apellido = 'Martï¿½nez',
+	@apellido = 'Martínez',
 	@fecha_nac = '1992-03-05',
 	@email = 'laura.martinez@email.com',
 	@tel = '1123456789',
@@ -328,7 +328,7 @@ EXEC stp.insertarSocio
 
 EXEC stp.borrarSocio @cod_socio = 1;
 
--- Verificar que se borrï¿½
+-- Verificar que se borró
 
 SELECT * FROM psn.Socio WHERE cod_socio = 1;
 
@@ -347,12 +347,12 @@ DELETE FROM psn.Invitado
 DBCC CHECKIDENT ('psn.Invitado', RESEED, 0);
 
 
--- CASO 2.1.1: Inserciï¿½n vï¿½lida
+-- CASO 2.1.1: Inserción válida
 
 EXEC stp.insertarInvitado
 	@dni = '12345678',
 	@nombre = 'Juan',
-	@apellido = 'Pï¿½rez',
+	@apellido = 'Pérez',
 	@fecha_nac = '1990-05-20',
 	@email = 'juan.perez@email.com',
 	@tel = '1123456789',
@@ -369,7 +369,7 @@ EXEC stp.insertarInvitado
 EXEC stp.insertarInvitado
 	@dni = '12345678', -- mismo DNI que antes
 	@nombre = 'Carlos',
-	@apellido = 'Gï¿½mez',
+	@apellido = 'Gómez',
 	@fecha_nac = '1985-01-10',
 	@email = 'carlos.gomez@email.com',
 	@tel = '1134567891',
@@ -381,19 +381,19 @@ EXEC stp.insertarInvitado
 	@tel_cobertura = '1145678901',
 	@cod_responsable = 1;
 
--- CASO 2.1.3: Email invï¿½lido (debe fallar por validaciï¿½n)
+-- CASO 2.1.3: Email inválido (debe fallar por validación)
 
 EXEC stp.insertarInvitado
 	@dni = '87654321',
 	@nombre = 'Ana',
-	@apellido = 'Martï¿½nez',
+	@apellido = 'Martínez',
 	@fecha_nac = '1992-11-15',
 	@email = 'ana.martinez-email.com', -- sin @
 	@tel = '1134567892',
 	@tel_emerg = '1198765434',
 	@estado = 1,
 	@saldo = 500.00,
-	@nombre_cobertura = 'Medifï¿½',
+	@nombre_cobertura = 'Medifé',
 	@nro_afiliado = 'C54321',
 	@tel_cobertura = '1156789012',
 	@cod_responsable = 1;
@@ -402,8 +402,8 @@ EXEC stp.insertarInvitado
 
 EXEC stp.insertarInvitado
 	@dni = '23456789',
-	@nombre = 'Lucï¿½a',
-	@apellido = 'Fernï¿½ndez',
+	@nombre = 'Lucía',
+	@apellido = 'Fernández',
 	@fecha_nac = '2100-01-01',
 	@email = 'lucia.fernandez@email.com',
 	@tel = '1134567893',
@@ -420,7 +420,7 @@ EXEC stp.insertarInvitado
 EXEC stp.insertarInvitado
 	@dni = '34567890',
 	@nombre = 'Pedro',
-	@apellido = 'Lï¿½pez',
+	@apellido = 'López',
 	@fecha_nac = '1980-07-07',
 	@email = 'pedro.lopez@email.com',
 	@tel = '1134567894',
@@ -432,12 +432,12 @@ EXEC stp.insertarInvitado
 	@tel_cobertura = '1178901234',
 	@cod_responsable = 1;
 
--- CASO 2.1.6: Telï¿½fono con letras (debe fallar)
+-- CASO 2.1.6: Teléfono con letras (debe fallar)
 
 EXEC stp.insertarInvitado
 	@dni = '45678901',
-	@nombre = 'Sofï¿½a',
-	@apellido = 'Ramï¿½rez',
+	@nombre = 'Sofía',
+	@apellido = 'Ramírez',
 	@fecha_nac = '1995-09-30',
 	@email = 'sofia.ramirez@email.com',
 	@tel = '444A5678', -- contiene letra
@@ -454,7 +454,7 @@ EXEC stp.insertarInvitado
 EXEC stp.insertarInvitado
 	@dni = NULL,
 	@nombre = 'Marta',
-	@apellido = 'Suï¿½rez',
+	@apellido = 'Suárez',
 	@fecha_nac = '1988-03-25',
 	@email = 'marta.suarez@email.com',
 	@tel = '1134567895',
@@ -486,7 +486,7 @@ DBCC CHECKIDENT ('psn.Invitado', RESEED, 0);
 EXEC stp.insertarInvitado
 	@dni = '87654329',
 	@nombre = 'Carlos',
-	@apellido = 'Gutiï¿½rrez',
+	@apellido = 'Gutiérrez',
 	@fecha_nac = '1980-10-15',
 	@email = 'carlos.gutierrez@email.com',
 	@tel = '1130000001',
@@ -499,13 +499,13 @@ EXEC stp.insertarInvitado
 	@cod_responsable = 1;
 
 
--- CASO 2.2.1: Modificaciï¿½n vï¿½lida
+-- CASO 2.2.1: Modificación válida
 
 EXEC stp.modificarInvitado
 	@cod_invitado = 2,
 	@dni = '87654321',
-	@nombre = 'Carlos A.',
-	@apellido = 'Gutiï¿½rrez',
+	@nombre = 'Carlos A',
+	@apellido = 'Gutiérrez',
 	@fecha_nac = '1980-10-15',
 	@email = 'carlos.a.gutierrez@email.com',
 	@tel = '1130000002',
@@ -517,7 +517,7 @@ EXEC stp.modificarInvitado
 	@tel_cobertura = '1150000002',
 	@cod_responsable = 1;
 
--- CASO 2.2.2: Cï¿½digo de socio no existente (debe fallar)
+-- CASO 2.2.2: Código de socio no existente (debe fallar)
 
 EXEC stp.modificarInvitado
 	@cod_invitado = 9999,
@@ -541,7 +541,7 @@ EXEC stp.modificarInvitado
 	@cod_invitado = 1,
 	@dni = '87654321',
 	@nombre = 'Carlos',
-	@apellido = 'Gutiï¿½rrez',
+	@apellido = 'Gutiérrez',
 	@fecha_nac = '2100-01-01',
 	@email = 'carlos@email.com',
 	@tel = '1130000003',
@@ -553,13 +553,13 @@ EXEC stp.modificarInvitado
 	@tel_cobertura = '1150000003',
 	@cod_responsable = 1;
 
--- CASO 2.2.4: Email invï¿½lido (debe fallar)
+-- CASO 2.2.4: Email inválido (debe fallar)
 
 EXEC stp.modificarInvitado
 	@cod_invitado = 1,
 	@dni = '87654321',
 	@nombre = 'Carlos',
-	@apellido = 'Gutiï¿½rrez',
+	@apellido = 'Gutiérrez',
 	@fecha_nac = '1980-10-15',
 	@email = 'carlos.email.com', -- sin @
 	@tel = '1130000004',
@@ -571,13 +571,13 @@ EXEC stp.modificarInvitado
 	@tel_cobertura = '1150000004',
 	@cod_responsable = 1;
 
--- CASO 2.2.5: Telï¿½fono con letras (debe fallar)
+-- CASO 2.2.5: Teléfono con letras (debe fallar)
 
 EXEC stp.modificarInvitado
 	@cod_invitado = 1,
 	@dni = '87654321',
 	@nombre = 'Carlos',
-	@apellido = 'Gutiï¿½rrez',
+	@apellido = 'Gutiérrez',
 	@fecha_nac = '1980-10-15',
 	@email = 'carlos@email.com',
 	@tel = '11A34567',
@@ -596,7 +596,7 @@ EXEC stp.modificarInvitado
 	@cod_invitado = 1,
 	@dni = '87654321',
 	@nombre = 'Carlos',
-	@apellido = 'Gutiï¿½rrez',
+	@apellido = 'Gutiérrez',
 	@fecha_nac = '1980-10-15',
 	@email = 'carlos@email.com',
 	@tel = '1130000006',
@@ -615,7 +615,7 @@ EXEC stp.modificarInvitado
 	@cod_invitado = 1,
 	@dni = NULL,
 	@nombre = 'Carlos',
-	@apellido = 'Gutiï¿½rrez',
+	@apellido = 'Gutiérrez',
 	@fecha_nac = '1980-10-15',
 	@email = 'carlos@email.com',
 	@tel = '1130000007',
@@ -639,7 +639,7 @@ SELECT * FROM psn.Invitado WHERE cod_invitado = 1;
 EXEC stp.insertarInvitado
 	@dni = '99887236',
 	@nombre = 'Laura',
-	@apellido = 'Martï¿½nez',
+	@apellido = 'Martínez',
 	@fecha_nac = '1992-03-05',
 	@email = 'laura.martinez@email.com',
 	@tel = '1123456789',
@@ -654,7 +654,7 @@ EXEC stp.insertarInvitado
 -- CASO 2.3.1: Borrado de invitado existente
 
 EXEC stp.borrarInvitado @cod_invitado = 1;
--- Verificar que se borrï¿½
+-- Verificar que se borró
 SELECT * FROM psn.Invitado WHERE cod_invitado = 1;
 
 -- CASO 1.3.2: Borrado de invitado inexistente
@@ -667,17 +667,17 @@ EXEC stp.borrarInvitado @cod_invitado = 9999;
 
 -- 3.1 INSERCION EN LA TABLA PROFESOR
 
--- Asegï¿½rate de que la tabla psn.Profesor existe antes de ejecutar las pruebas
+-- Asegúrate de que la tabla psn.Profesor existe antes de ejecutar las pruebas
 
 -- Limpiar la tabla para pruebas (solo si es seguro)
 DELETE FROM psn.Profesor
 DBCC CHECKIDENT ('psn.Profesor', RESEED, 0);
 
--- 3.1.1. Inserciï¿½n exitosa
+-- 3.1.1. Inserción exitosa
 EXEC stp.insertarProfesor 
     @dni = '12345678',
     @nombre = 'Juan',
-    @apellido = 'Pï¿½rez',
+    @apellido = 'Pérez',
     @email = 'juan.perez@email.com',
     @tel = '9876114321';
 
@@ -685,27 +685,27 @@ EXEC stp.insertarProfesor
 EXEC stp.insertarProfesor 
     @dni = '12345678',
     @nombre = 'Carlos',
-    @apellido = 'Ramï¿½rez',
+    @apellido = 'Ramírez',
     @email = 'carlos.ramirez@email.com',
     @tel = '12345678';
 
--- 3.1.3. DNI invï¿½lido (menos de 8 caracteres)
+-- 3.1.3. DNI inválido (menos de 8 caracteres)
 EXEC stp.insertarProfesor 
     @dni = '12345',
     @nombre = 'Ana',
-    @apellido = 'Lï¿½pez',
+    @apellido = 'López',
     @email = 'ana.lopez@email.com',
     @tel = '987654321';
 
--- 3.1.4. Email invï¿½lido
+-- 3.1.4. Email inválido
 EXEC stp.insertarProfesor 
     @dni = '87654321',
-    @nombre = 'Lucï¿½a',
-    @apellido = 'Gï¿½mez',
+    @nombre = 'Lucía',
+    @apellido = 'Gómez',
     @email = 'lucia#correo',
     @tel = '987654321';
 
--- 3.1.5. Telï¿½fono con caracteres no numï¿½ricos
+-- 3.1.5. Teléfono con caracteres no numéricos
 EXEC stp.insertarProfesor 
     @dni = '23456789',
     @nombre = 'Mario',
@@ -713,11 +713,11 @@ EXEC stp.insertarProfesor
     @email = 'mario.torres@email.com',
     @tel = '9876ABCD';
 
--- 6. Telï¿½fono demasiado corto
+-- 6. Teléfono demasiado corto
 EXEC stp.insertarProfesor 
     @dni = '34567890',
     @nombre = 'Laura',
-    @apellido = 'Martï¿½nez',
+    @apellido = 'Martínez',
     @email = 'laura.martinez@email.com',
     @tel = '123456';
 
@@ -725,7 +725,7 @@ EXEC stp.insertarProfesor
 EXEC stp.insertarProfesor 
     @dni = NULL,
     @nombre = 'Pedro',
-    @apellido = 'Jimï¿½nez',
+    @apellido = 'Jiménez',
     @email = 'pedro.jimenez@email.com',
     @tel = '12345678';
 
@@ -748,7 +748,7 @@ EXEC stp.insertarProfesor
     @email = 'juan.perez@correo.com',
     @tel = '1134667890';
 
--- CASO 3.2.1: Modificaciï¿½n vï¿½lida
+-- CASO 3.2.1: Modificación válida
 
 EXEC stp.modificarProfesor
     @cod_prof = 1,
@@ -764,21 +764,21 @@ EXEC stp.modificarProfesor
     @cod_prof = 999,
     @dni = '12345678',
     @nombre = 'Roberto',
-    @apellido = 'Garcï¿½a',
+    @apellido = 'García',
     @email = 'roberto.garcia@correo.com',
     @tel = '1122334455';
 
--- CASO 3.2.3: DNI invï¿½lido (menos de 8 dï¿½gitos, debe fallar)
+-- CASO 3.2.3: DNI inválido (menos de 8 dígitos, debe fallar)
 
 EXEC stp.modificarProfesor
     @cod_prof = 1,
-    @dni = '1234567', -- 7 dï¿½gitos
+    @dni = '1234567', -- 7 dígitos
     @nombre = 'Laura',
     @apellido = 'Martinez',
     @email = 'laura.martinez@correo.com',
     @tel = '1134567891';
 
--- CASO 3.2.4: Nombre con caracteres invï¿½lidos (debe fallar)
+-- CASO 3.2.4: Nombre con caracteres inválidos (debe fallar)
 
 EXEC stp.modificarProfesor
     @cod_prof = 1,
@@ -788,53 +788,53 @@ EXEC stp.modificarProfesor
     @email = 'ana.ramirez@correo.com',
     @tel = '1134567892';
 
--- CASO 3.2.5: Apellido con nï¿½meros (debe fallar)
+-- CASO 3.2.5: Apellido con números (debe fallar)
 
 EXEC stp.modificarProfesor
     @cod_prof = 1,
     @dni = '87654323',
-    @nombre = 'Lucï¿½a',
+    @nombre = 'Lucía',
     @apellido = 'Rami2ez',
     @email = 'lucia.ramirez@correo.com',
     @tel = '1134567893';
 
--- CASO 3.2.6: Email invï¿½lido (sin arroba, debe fallar)
+-- CASO 3.2.6: Email inválido (sin arroba, debe fallar)
 
 EXEC stp.modificarProfesor
     @cod_prof = 1,
     @dni = '87654324',
     @nombre = 'Diego',
     @apellido = 'Sosa',
-    @email = 'diego.sosaemail.com', -- invï¿½lido
+    @email = 'diego.sosaemail.com', -- inválido
     @tel = '1134567894';
 
--- CASO 3.2.7: Telï¿½fono con letras (debe fallar)
+-- CASO 3.2.7: Teléfono con letras (debe fallar)
 
 EXEC stp.modificarProfesor
     @cod_prof = 1,
     @dni = '87654325',
     @nombre = 'Paula',
-    @apellido = 'Fernï¿½ndez',
+    @apellido = 'Fernández',
     @email = 'paula.fernandez@correo.com',
-    @tel = '11345ABCD'; -- invï¿½lido
+    @tel = '11345ABCD'; -- inválido
 
--- CASO 3.2.8: Telï¿½fono muy corto (debe fallar)
+-- CASO 3.2.8: Teléfono muy corto (debe fallar)
 
 EXEC stp.modificarProfesor
     @cod_prof = 1,
     @dni = '87654326',
-    @nombre = 'Martï¿½n',
-    @apellido = 'Lï¿½pez',
+    @nombre = 'Martín',
+    @apellido = 'López',
     @email = 'martin.lopez@correo.com',
-    @tel = '123456'; -- menos de 10 dï¿½gitos
+    @tel = '123456'; -- menos de 10 dígitos
 
 -- CASO 3.2.9: Campo obligatorio NULL (debe fallar)
 
 EXEC stp.modificarProfesor
     @cod_prof = 1,
     @dni = NULL, -- campo nulo
-    @nombre = 'Verï¿½nica',
-    @apellido = 'Suï¿½rez',
+    @nombre = 'Verónica',
+    @apellido = 'Suárez',
     @email = 'veronica.suarez@correo.com',
     @tel = '1134567895';
 
@@ -853,11 +853,11 @@ DBCC CHECKIDENT ('psn.Profesor', RESEED, 0);
 EXEC stp.insertarProfesor
 	@dni = '99887236',
 	@nombre = 'Laura',
-	@apellido = 'Martï¿½nez',
+	@apellido = 'Martínez',
 	@email = 'laura.martinez@email.com',
 	@tel = '1123456789'
 
--- Verificar inserciï¿½n correcta
+-- Verificar inserción correcta
 
 SELECT * FROM psn.Profesor
 
@@ -865,7 +865,7 @@ SELECT * FROM psn.Profesor
 
 EXEC stp.borrarProfesor @cod_prof = 1;
 
--- Verificar que se borrï¿½
+-- Verificar que se borró
 
 SELECT * FROM psn.Profesor WHERE cod_prof = 1;
 
@@ -885,18 +885,18 @@ DBCC CHECKIDENT ('psn.Pago', RESEED, 0);
 
 
 
--- 4.1 PRUEBA DE INSERCIï¿½N DE PAGO
+-- 4.1 PRUEBA DE INSERCIÓN DE PAGO
 
 EXEC stp.insertarPago
 	@monto = 1500.00,
 	@fecha_pago = '2025-06-10',
 	@estado = 'Pagado',
-	@cod_socio = 1,  -- Asegurarse que este socio exista, sino darï¿½ error
+	@cod_socio = 1,  -- Asegurarse que este socio exista, sino dará error
 	@cod_invitado = NULL;
 GO
 
 select * from psn.Pago
--- 4.2 PRUEBA DE MODIFICACIï¿½N DE PAGO
+-- 4.2 PRUEBA DE MODIFICACIÓN DE PAGO
 
 EXEC stp.modificarPago
 	@cod_pago = 1,  -- Reemplazar con el ID real insertado
@@ -922,7 +922,7 @@ DELETE FROM psn.Responsable
 DBCC CHECKIDENT ('psn.Responsable', RESEED, 0);
 
 
--- 5.1 PRUEBA DE INSERCIï¿½N DE RESPONSABLE
+-- 5.1 PRUEBA DE INSERCIÓN DE RESPONSABLE
 
 EXEC stp.insertarResponsable
     @dni = '12345678',
@@ -935,13 +935,13 @@ EXEC stp.insertarResponsable
     @tel = '1134567890';
 GO
 
--- 5.2 PRUEBA DE MODIFICACIï¿½N DE RESPONSABLE
+-- 5.2 PRUEBA DE MODIFICACIÓN DE RESPONSABLE
 
 EXEC stp.modificarResponsable
     @cod_responsable = 1,     -- Reemplazar por el valor real
     @dni = '12345678',
     @nombre = 'Carlos',
-    @apellido = 'Ramï¿½rez',
+    @apellido = 'Ramírez',
     @email = 'cramirez@example.com',
     @parentezco = 'Padre',
     @fecha_nac = '1980-05-15',
@@ -968,16 +968,16 @@ EXEC stp.insertarReembolso
     @monto = 1500.00,
     @medio_Pago = 'Transferencia',
     @fecha = '2025-06-10',
-    @motivo = 'Consulta mï¿½dica'; 
+    @motivo = 'Consulta médica'; 
 
 -- 6.2 MODIFICACION
 
 EXEC stp.modificarReembolso
     @codReembolso = 1,
     @monto = 2000.00,
-    @medio_Pago = 'Tarjeta de crï¿½dito',
+    @medio_Pago = 'Tarjeta de crédito',
     @fecha = '2025-06-11',
-    @motivo = 'Estudios clï¿½nicos';
+    @motivo = 'Estudios clínicos';
 
 -- 6.3 BORRADO
 
@@ -993,9 +993,12 @@ DBCC CHECKIDENT ('psn.Categoria', RESEED, 0);
 
 -- 7.1 INSERTADO
 
+
+
 -- 7.2 MODIFICACION
 
 -- 7.3 BORRADO
+
 
 
 

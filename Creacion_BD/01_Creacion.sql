@@ -9,6 +9,7 @@ go
 USE Com5600G11
 go
 
+
 --Crear el esquema
 IF NOT EXISTS (SELECT * FROM sys.schemas WHERE name = 'psn')
 	BEGIN
@@ -24,7 +25,7 @@ go
 IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'Com5600G11.psn.Socio') AND type = N'U') -- 'U' tabla creada por el usuario 'N' es que sea unicode
 	BEGIN
 		CREATE TABLE psn.Socio (
-			cod_socio			INT IDENTITY(1,1) PRIMARY KEY,
+			cod_socio			VARCHAR(15) PRIMARY KEY CHECK (cod_socio LIKE 'SN-[0-9][0-9][0-9][0-9][0-9]'),
 			dni					CHAR(8) UNIQUE,
 			nombre				VARCHAR(50),
 			apellido			VARCHAR(50),
@@ -40,7 +41,7 @@ IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'Com5600G1
 			nro_afiliado		VARCHAR(50),
 			tel_cobertura		VARCHAR(15) check (tel_cobertura NOT LIKE '%[^0-9]%' and		
 													LEN(tel_cobertura) between 10 and 14),
-			cod_responsable		INT
+			cod_responsable		VARCHAR(15)
 		);
 		PRINT 'Tabla Socio creada correctamente.';
 	END 
@@ -50,10 +51,12 @@ ELSE
 	END;
 go
 
+-- TABLA INVITADO
+
 IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'Com5600G11.psn.Invitado') AND type = N'U') -- 'U' tabla creada por el usuario 'N' es que sea unicode
 	BEGIN
 		CREATE TABLE psn.Invitado (
-			cod_invitado		INT IDENTITY(1,1) PRIMARY KEY,
+			cod_invitado		VARCHAR(15) PRIMARY KEY CHECK (cod_invitado LIKE 'NS-[0-9][0-9][0-9][0-9][0-9]'),
 			dni					CHAR(8) UNIQUE,
 			nombre				VARCHAR(50),
 			apellido			VARCHAR(50),
@@ -69,7 +72,7 @@ IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'Com5600G1
 			nro_afiliado		VARCHAR(50),
 			tel_cobertura		VARCHAR(15) check (tel_cobertura NOT LIKE '%[^0-9]%' and		
 													LEN(tel_cobertura) between 10 and 14),		
-			cod_responsable		INT,
+			cod_responsable		VARCHAR(15),
 
 		);
 		PRINT 'Tabla Invitado creada correctamente.';
@@ -106,7 +109,9 @@ go
 IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'Com5600G11.psn.Responsable') AND type = N'U')
 	BEGIN
 		CREATE TABLE psn.Responsable (
-			cod_responsable		INT IDENTITY(1,1) PRIMARY KEY,
+			cod_responsable		VARCHAR(15) PRIMARY KEY CHECK (
+			cod_responsable LIKE 'SN-[0-9][0-9][0-9][0-9][0-9]' OR
+			cod_responsable LIKE 'NS-[0-9][0-9][0-9][0-9][0-9]'),
 			dni					CHAR(8) UNIQUE, 
 			nombre				VARCHAR(50),
 			apellido			VARCHAR(50),
@@ -156,7 +161,7 @@ IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'Com5600G1
 		CREATE TABLE psn.Suscripcion (
 		fecha_suscripcion	DATE,
 		fecha_vto			DATE,
-		cod_socio			INT,
+		cod_socio			VARCHAR(15),
 		cod_categoria		INT,
 		tiempoSuscr			CHAR(1),
 		constraint pk_suscripcion primary key (fecha_suscripcion,cod_socio,cod_categoria),
@@ -198,8 +203,8 @@ IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'Com5600G1
 			monto			DECIMAL(10,2),
 			fecha_pago		DATE,
 			estado			VARCHAR(15),
-			cod_socio		INT,
-			cod_invitado	INT
+			cod_socio		VARCHAR(15),
+			cod_invitado	VARCHAR(15)
 		);
 		PRINT 'Tabla Pago creada correctamente.';
 	END
@@ -221,7 +226,7 @@ IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'Com5600G1
 			fecha_seg_vto	DATE,
 			recargo			DECIMAL(10,2),
 			estado			VARCHAR(10) CHECK (estado IN ('Pendiente', 'Pagada','Vencida')),
-			cod_socio		INT
+			cod_socio		VARCHAR(15)
 		); 
 		PRINT 'Tabla Factura creada correctamente.';
 	END
@@ -260,8 +265,8 @@ IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'Com5600G1
 			fechahoraInicio		DATETIME,	
 			fechahoraFin		DATETIME,
 			piletaSUMcolonia	VARCHAR(50),
-			cod_socio			INT,
-			cod_invitado		INT
+			cod_socio			VARCHAR(15),
+			cod_invitado		VARCHAR (15)
 		);
 		PRINT 'Tabla Reserva creada correctamente.';
 	END
@@ -295,7 +300,7 @@ IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'Com5600G1
 		CREATE TABLE psn.Inscripto (
 		fecha_inscripcion		DATE NOT NULL,
 		estado					VARCHAR(50),
-		cod_socio				INT NOT NULL,
+		cod_socio				VARCHAR(15),
 		cod_clase				INT NOT NULL
 		);
 		PRINT 'Tabla Inscripto creada correctamente.';
@@ -312,7 +317,7 @@ IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'Com5600G1
 	BEGIN
 		CREATE TABLE psn.Asiste (
 		fecha		DATE NOT NULL,
-		cod_socio	INT NOT NULL,
+		cod_socio	VARCHAR(15),
 		cod_clase	INT NOT NULL
 		);
 		PRINT 'Tabla Asiste creada correctamente.';

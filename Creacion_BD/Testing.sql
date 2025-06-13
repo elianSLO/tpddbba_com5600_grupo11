@@ -9,6 +9,10 @@ GO
 
 -----------PRUEBA 1: TABLA SOCIO
 
+---- Limpiar la tabla para pruebas (solo si es seguro)
+DELETE FROM psn.Socio
+DBCC CHECKIDENT ('psn.Socio', RESEED, 0);
+
 ------ 1.1 INSERCION
 
 -- CASO 1.1.1: Inserción válida
@@ -26,7 +30,8 @@ EXEC stp.insertarSocio
 	@nombre_cobertura = 'OSDE',
 	@nro_afiliado = 'A12345',
 	@tel_cobertura = '1134567890',
-	@cod_responsable = 1;
+	@cod_responsable = 1; -- Debe haber un responsable insertado para que funcione
+
 
 -- CASO 1.1.2: DNI ya existente (debe fallar por duplicado)
 
@@ -162,12 +167,13 @@ EXEC stp.insertarSocio
 	@tel_cobertura = '1150000001',
 	@cod_responsable = 1;
 
+
 -- CASO 1.2.1: Modificación válida
 
 EXEC stp.modificarSocio
 	@cod_socio = 1,
 	@dni = '87654321',
-	@nombre = 'Carlos A.',
+	@nombre = 'Carlos A',
 	@apellido = 'Gutiérrez',
 	@fecha_nac = '1980-10-15',
 	@email = 'carlos.a.gutierrez@email.com',
@@ -466,7 +472,7 @@ EXEC stp.insertarInvitado
 
 SELECT * FROM psn.Invitado
 
------- 1.2 MODIFICACION DE LA TABLA INVITADOS
+------ 2.2 MODIFICACION DE LA TABLA INVITADOS
 
 -- Aseguramos que exista un invitado base para modificar
 -- Este debe coincidir con un `cod_invitado` que vayamos a usar en las pruebas
@@ -855,7 +861,7 @@ EXEC stp.insertarProfesor
 
 SELECT * FROM psn.Profesor
 
--- CASO 3.3.1: Borrado de socio existente
+-- CASO 3.3.1: Borrado de profesor existente
 
 EXEC stp.borrarProfesor @cod_prof = 1;
 
@@ -863,88 +869,139 @@ EXEC stp.borrarProfesor @cod_prof = 1;
 
 SELECT * FROM psn.Profesor WHERE cod_prof = 1;
 
--- CASO 3.3.2: Borrado de socio inexistente
+-- CASO 3.3.2: Borrado de profesor inexistente
 
 EXEC stp.borrarProfesor @cod_prof = 9999;
 
 
+------ 4. PAGO
 
-------------------------------------------------------------------------------------
+-- Limpiar la tabla para pruebas (solo si es seguro)
+DELETE FROM psn.Pago
+DBCC CHECKIDENT ('psn.Pago', RESEED, 0);
 
--- TABLA ACTIVIDAD 
-
--- CASO 4.1  --INSERCION
-
--- CASO 4.1.1: Inserción válida
-EXEC stp.insertarActividad 
-    @descripcion = 'Ajedrez',
-    @valor_mensual = 1500.00,
-    @vig_valor = GETDATE()  
-
--- CASO 4.1.2: Duplicación de descripción
-EXEC stp.insertarActividad 
-    @descripcion = 'Yoga',  -- ya existe
-    @valor_mensual = 1600.00,
-    @vig_valor = DATEADD(DAY, 5, GETDATE())
-
--- CASO 4.1.3: Valor mensual inválido
-EXEC stp.insertarActividad 
-    @descripcion = 'Pilates',
-    @valor_mensual = -500.00,  -- inválido
-    @vig_valor = DATEADD(DAY, 1, GETDATE());
-
--- CASO 4.1.4: Fecha de vigencia en el pasado
-EXEC stp.insertarActividad 
-    @descripcion = 'Zumba',
-    @valor_mensual = 1800.00,
-    @vig_valor = DATEADD(DAY, -2, GETDATE());
+-- Antes debo insertar Socio o Invitado para hacer las pruebas
 
 
--- CASO 4.2 - MODIFICACION 
 
--- CASO 4.2.1: Modificación válida
-EXEC stp.modificarActividad 
-    @descripcion = 'Yoga',
-    @valor_mensual = 2000.00,
-    @vig_valor = DATEADD(DAY, 3, GETDATE());
 
--- CASO 4.2.2: Actividad no existente
-EXEC stp.modificarActividad 
-    @descripcion = 'Crossfit',  -- no existe
-    @valor_mensual = 2500.00,
-    @vig_valor = DATEADD(DAY, 3, GETDATE());
+-- 4.1 PRUEBA DE INSERCIÓN DE PAGO
 
--- CASO 4.2.3: Valor mensual inválido
-EXEC stp.modificarActividad 
-    @descripcion = 'Yoga',
-    @valor_mensual = 0.00,  -- inválido
-    @vig_valor = DATEADD(DAY, 5, GETDATE());
+EXEC stp.insertarPago
+	@monto = 1500.00,
+	@fecha_pago = '2025-06-10',
+	@estado = 'Pagado',
+	@cod_socio = 1,  -- Asegurarse que este socio exista, sino dará error
+	@cod_invitado = NULL;
+GO
 
--- CASO 4.2.4: Fecha de vigencia inválida
-EXEC stp.modificarActividad 
-    @descripcion = 'Yoga',
-    @valor_mensual = 1800.00,
-    @vig_valor = DATEADD(DAY, -1, GETDATE());  -- pasada
+select * from psn.Pago
+-- 4.2 PRUEBA DE MODIFICACIÓN DE PAGO
 
--- 4.3 
+EXEC stp.modificarPago
+	@cod_pago = 1,  -- Reemplazar con el ID real insertado
+	@monto = 1800.00,
+	@fecha_pago = '2025-06-12',
+	@estado = 'Pendiente',
+	@cod_socio = 1,
+	@cod_invitado = NULL;  -- Asegurate que este invitado exista
+GO
 
--- Crear actividad de prueba
-INSERT INTO psn.Actividad (descripcion)
-VALUES ('Actividad de prueba');
+-- 4.3 PRUEBA DE BORRADO DE PAGO
 
--- Verificar que se haya insertado
-PRINT 'Antes de borrar:';
-SELECT * FROM psn.Actividad WHERE descripcion = 'Actividad de prueba';
+EXEC stp.borrarPago
+	@cod_pago = 1;
+GO
 
--- Ejecutar el SP para borrar la actividad
-EXEC stp.borrarActividad @descripcion = 'Actividad de prueba';
 
--- Verificar que se haya eliminado
-PRINT 'Después de borrar:';
-SELECT * FROM psn.Actividad WHERE descripcion = 'Actividad de prueba';
+-- 5. RESPONSABLE
 
--- Intentar borrar una actividad que no existe
-EXEC stp.borrarActividad @descripcion = 'No existe esta actividad';
+-- Limpiar la tabla para pruebas (solo si es seguro)
+
+DELETE FROM psn.Responsable
+DBCC CHECKIDENT ('psn.Responsable', RESEED, 0);
+
+
+-- 5.1 PRUEBA DE INSERCIÓN DE RESPONSABLE
+
+EXEC stp.insertarResponsable
+    @dni = '12345678',
+    @nombre = 'Carlos',
+    @apellido = 'Ramirez',
+    @email = 'carlos.ramirez@example.com',
+    @parentezco = 'Padre',
+    @fecha_nac = '1980-05-15',
+    @nro_socio = 101,        -- Socio existente
+    @tel = '1134567890';
+GO
+
+-- 5.2 PRUEBA DE MODIFICACIÓN DE RESPONSABLE
+
+EXEC stp.modificarResponsable
+    @cod_responsable = 1,     -- Reemplazar por el valor real
+    @dni = '12345678',
+    @nombre = 'Carlos',
+    @apellido = 'Ramírez',
+    @email = 'cramirez@example.com',
+    @parentezco = 'Padre',
+    @fecha_nac = '1980-05-15',
+    @nro_socio = 101,
+    @tel = '1134567899';
+GO
+
+-- 5.3 PRUEBA DE BORRADO DE RESPONSABLE
+
+EXEC stp.borrarResponsable
+    @cod_responsable = 1;
+GO
+
+----- 6. REEMBOLSO
+
+-- Limpiar la tabla para pruebas (solo si es seguro)
+
+DELETE FROM psn.Reembolso
+DBCC CHECKIDENT ('psn.Reembolso', RESEED, 0);
+
+-- 6.1 INSERCION
+
+EXEC stp.insertarReembolso
+    @monto = 1500.00,
+    @medio_Pago = 'Transferencia',
+    @fecha = '2025-06-10',
+    @motivo = 'Consulta médica'; 
+
+-- 6.2 MODIFICACION
+
+EXEC stp.modificarReembolso
+    @codReembolso = 1,
+    @monto = 2000.00,
+    @medio_Pago = 'Tarjeta de crédito',
+    @fecha = '2025-06-11',
+    @motivo = 'Estudios clínicos';
+
+-- 6.3 BORRADO
+
+EXEC stp.borrarReembolso @codReembolso = 1;
+
+-- 7. CATEGORIA
+
+-- Limpiar la tabla para pruebas (solo si es seguro)
+
+DELETE FROM psn.Categoria
+DBCC CHECKIDENT ('psn.Categoria', RESEED, 0);
+
+
+-- 7.1 INSERTADO
+
+-- 7.2 MODIFICACION
+
+-- 7.3 BORRADO
+
+
+
+
+
+
 
 
 

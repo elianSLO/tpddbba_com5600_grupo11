@@ -18,7 +18,6 @@ END;
 GO
 
 CREATE OR ALTER PROCEDURE stp.insertarCategoria
-	@cod_categoria		INT,
 	@descripcion		VARCHAR(50),
 	@valor_mensual		DECIMAL(10,2),
 	@vig_valor_mens		DATE,
@@ -452,7 +451,7 @@ BEGIN
     RETURN;
 	END
 
-		UPDATE Socio
+		UPDATE psn.Socio
 	SET
 		dni = @dni,
 		nombre = @nombre,

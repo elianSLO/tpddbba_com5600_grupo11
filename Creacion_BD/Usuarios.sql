@@ -34,4 +34,6 @@ alter role db_owner add member lucas
 alter role db_owner add member matias
 alter role db_owner add member josue
 
+select role from sys
+
 select name from sys.sql_logins

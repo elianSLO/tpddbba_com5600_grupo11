@@ -952,11 +952,10 @@ END;
 GO
 
 CREATE OR ALTER PROCEDURE stp.insertarPago
-	@monto			DECIMAL(10,2),
-	@fecha_pago		DATE,
-	@estado			VARCHAR(15),
-	@cod_socio		INT = NULL,
-	@cod_invitado	INT = NULL
+	@monto				DECIMAL(10,2),
+	@fecha_pago			DATE,
+	@estado				VARCHAR(15),
+	@responsable_pago	VARCHAR(15)
 AS
 BEGIN
 	SET NOCOUNT ON;
@@ -983,22 +982,16 @@ BEGIN
 	END
 
 	-- Validación: al menos uno de los códigos debe estar presente
-	IF @cod_socio IS NULL AND @cod_invitado IS NULL
+	IF @responsable_pago IS NULL 
 	BEGIN
 		PRINT 'Error: Debe especificar un código de socio o de invitado.';
 		RETURN;
 	END
 
-	-- Validación: no ambos códigos a la vez 
-	IF @cod_socio IS NOT NULL AND @cod_invitado IS NOT NULL
-	BEGIN
-		PRINT 'ERROR: Solo se debe especificar cod_socio o cod_invitado, no ambos.';
-		RETURN;
-	END
 
 	-- Inserción
-	INSERT INTO psn.Pago (monto, fecha_pago, estado, cod_socio, cod_invitado)
-	VALUES (@monto, @fecha_pago, @estado, @cod_socio, @cod_invitado);
+	INSERT INTO psn.Pago (monto, fecha_pago, estado, responsable_pago)
+	VALUES (@monto, @fecha_pago, @estado, @responsable_pago);
 
 	PRINT 'Pago insertado correctamente.';
 END;
@@ -1013,12 +1006,11 @@ END;
 GO
 
 CREATE OR ALTER PROCEDURE stp.modificarPago
-	@cod_pago		INT,
-	@monto			DECIMAL(10,2),
-	@fecha_pago		DATE,
-	@estado			VARCHAR(15),
-	@cod_socio		INT = NULL,
-	@cod_invitado	INT = NULL
+	@cod_pago			INT,
+	@monto				DECIMAL(10,2),
+	@fecha_pago			DATE,
+	@estado				VARCHAR(15),
+	@responsable_pago	VARCHAR(15)
 AS
 BEGIN
 	SET NOCOUNT ON;
@@ -1051,19 +1043,13 @@ BEGIN
 		RETURN;
 	END
 
-	-- Validación: al menos uno de los códigos debe estar presente
-	IF @cod_socio IS NULL AND @cod_invitado IS NULL
+	-- Validación: al menos un código debe estar presente
+	IF @responsable_pago IS NULL
 	BEGIN
 		PRINT 'ERROR: Debe especificar un código de socio o de invitado.';
 		RETURN;
 	END
 
-	-- Validación: no ambos códigos a la vez
-	IF @cod_socio IS NOT NULL AND @cod_invitado IS NOT NULL
-	BEGIN
-		PRINT 'ERROR: Solo se debe especificar cod_socio o cod_invitado, no ambos.';
-		RETURN;
-	END
 
 	-- Actualización
 	UPDATE Com5600G11.psn.Pago
@@ -1071,8 +1057,7 @@ BEGIN
 		monto = @monto,
 		fecha_pago = @fecha_pago,
 		estado = @estado,
-		cod_socio = @cod_socio,
-		cod_invitado = @cod_invitado
+		responsable_pago = @responsable_pago
 	WHERE cod_pago = @cod_pago;
 
 	PRINT 'Pago modificado correctamente.';

@@ -194,17 +194,16 @@ ELSE
 go
 
 
--- TABLA PAGO
 
 IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'Com5600G11.psn.Pago') AND type = N'U') 
 	BEGIN
 		CREATE TABLE psn.Pago (
-			cod_pago		INT IDENTITY(1,1) PRIMARY KEY,
-			monto			DECIMAL(10,2),
-			fecha_pago		DATE,
-			estado			VARCHAR(15),
-			cod_socio		VARCHAR(15),
-			cod_invitado	VARCHAR(15)
+			cod_pago			BIGINT IDENTITY(1,1) PRIMARY KEY,
+			monto				DECIMAL(10,2),
+			fecha_pago			DATE,
+			estado				VARCHAR(15),
+			responsable_pago	VARCHAR(15),
+			medio_pago			VARCHAR(15)
 		);
 		PRINT 'Tabla Pago creada correctamente.';
 	END
@@ -328,6 +327,8 @@ ELSE
 	END;
 go
 
+drop table psn.Item_Factura
+
 -- TABLA ITEM_FACTURA
 
 IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'Com5600G11.psn.Item_Factura') AND type = N'U') 
@@ -335,6 +336,7 @@ IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'Com5600G1
 		CREATE TABLE psn.Item_Factura (
 			cod_item	INT IDENTITY(1,1) PRIMARY KEY,
 			cod_Factura	INT,
+			monto		DECIMAL(10,2),
 		
       CONSTRAINT FK_ItemFactura_Factura FOREIGN KEY (cod_Factura)
       REFERENCES psn.Factura (cod_Factura)
@@ -347,6 +349,7 @@ ELSE
 		PRINT 'La tabla Item_Factura ya existe.';
 	END;
 GO
+
 
 -- Una vez creadas todas las tablas, defino claves.
 

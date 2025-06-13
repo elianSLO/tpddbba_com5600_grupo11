@@ -181,7 +181,7 @@ IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'Com5600G1
 	BEGIN
 		CREATE TABLE psn.Actividad (
 			cod_actividad INT IDENTITY(1,1) PRIMARY KEY,
-			descripcion VARCHAR(50),
+			nombre VARCHAR(50),
 			valor_mensual DECIMAL(10,2),
 			vig_valor DATE
 		);
@@ -315,9 +315,14 @@ go
 IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'Com5600G11.psn.Asiste') AND type = N'U') 
 	BEGIN
 		CREATE TABLE psn.Asiste (
-		fecha		DATE NOT NULL,
-		cod_socio	VARCHAR(15),
-		cod_clase	INT NOT NULL
+			fecha		DATE NOT NULL,
+			cod_socio	VARCHAR(15) CHECK (cod_socio LIKE 'SN-[0-9][0-9][0-9][0-9][0-9]'),
+			actividad VARCHAR(50),
+			estado		CHAR(1) CHECK (estado IN ('P', 'A', 'J')),
+			profesor 	VARCHAR(100),
+			CONSTRAINT fk_socio FOREIGN KEY (cod_socio) REFERENCES psn.Socio (cod_socio),
+			CONSTRAINT fk_actividad FOREIGN KEY (actividad) REFERENCES psn.Actividad(nombre)
+			CONSTRAINT fk_profesor FOREIGN KEY (profesor) REFERENCES psn.Profesor(nombre)
 		);
 		PRINT 'Tabla Asiste creada correctamente.';
 	END

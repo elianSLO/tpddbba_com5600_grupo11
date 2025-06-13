@@ -8,3 +8,6 @@ Trabajo práctico integrador de la materia Bases de Datos Aplicada de la Univers
 43779349 | Pizzi, Matías Nahuel
 
 42905229 | Módica, Elián Ariel
+
+Link al DER:
+https://drive.google.com/file/d/1uwrWhckUKhkNV3q1BU1_-nm29-MKYmjc/view?usp=sharing

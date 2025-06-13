@@ -158,6 +158,7 @@ IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'Com5600G1
 		fecha_vto			DATE,
 		cod_socio			INT,
 		cod_categoria		INT,
+		tiempoSuscr			CHAR(1),
 		constraint pk_suscripcion primary key (fecha_suscripcion,cod_socio,cod_categoria),
 		);
 		PRINT 'Tabla Suscripcion creada correctamente.';
@@ -213,7 +214,7 @@ go
 IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'Com5600G11.psn.Factura') AND type = N'U') 
 	BEGIN
 		CREATE TABLE psn.Factura (
-			codFactura		INT IDENTITY(1,1) PRIMARY KEY,
+			cod_Factura		INT IDENTITY(1,1) PRIMARY KEY,
 			monto			DECIMAL(10,2),
 			fecha_emision	DATE,
 			fecha_vto		DATE,
@@ -254,7 +255,7 @@ go
 IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'Com5600G11.psn.Reserva') AND type = N'U') 
 	BEGIN
 		CREATE TABLE psn.Reserva (
-			codReserva			INT IDENTITY(1,1) PRIMARY KEY,
+			cod_reserva			INT IDENTITY(1,1) PRIMARY KEY,
 			monto				DECIMAL(10,2),
 			fechahoraInicio		DATETIME,	
 			fechahoraFin		DATETIME,
@@ -329,6 +330,10 @@ IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'Com5600G1
 		CREATE TABLE psn.Item_Factura (
 			cod_item	INT IDENTITY(1,1) PRIMARY KEY,
 			cod_Factura	INT,
+		
+      CONSTRAINT FK_ItemFactura_Factura FOREIGN KEY (cod_Factura)
+      REFERENCES psn.Factura (cod_Factura)
+      ON DELETE CASCADE
 		);
 		PRINT 'Tabla Item_Factura creada correctamente.';
 	END
@@ -336,6 +341,7 @@ ELSE
 	BEGIN
 		PRINT 'La tabla Item_Factura ya existe.';
 	END;
+GO
 
 -- Una vez creadas todas las tablas, defino claves.
 

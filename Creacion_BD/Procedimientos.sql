@@ -476,7 +476,7 @@ BEGIN
     RETURN;
 	END
 
-		UPDATE Socio
+		UPDATE psn.Socio
 	SET
 		dni = @dni,
 		nombre = @nombre,

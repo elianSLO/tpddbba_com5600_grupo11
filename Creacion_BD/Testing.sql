@@ -9,10 +9,6 @@ GO
 
 -----------PRUEBA 1: TABLA SOCIO
 
----- Limpiar la tabla para pruebas (solo si es seguro)
-DELETE FROM psn.Socio
-DBCC CHECKIDENT ('psn.Socio', RESEED, 0);
-
 ------ 1.1 INSERCION
 
 -- CASO 1.1.1: Inserción válida
@@ -30,8 +26,7 @@ EXEC stp.insertarSocio
 	@nombre_cobertura = 'OSDE',
 	@nro_afiliado = 'A12345',
 	@tel_cobertura = '1134567890',
-	@cod_responsable = 1; -- Debe haber un responsable insertado para que funcione
-
+	@cod_responsable = 1;
 
 -- CASO 1.1.2: DNI ya existente (debe fallar por duplicado)
 
@@ -167,13 +162,12 @@ EXEC stp.insertarSocio
 	@tel_cobertura = '1150000001',
 	@cod_responsable = 1;
 
-
 -- CASO 1.2.1: Modificación válida
 
 EXEC stp.modificarSocio
 	@cod_socio = 1,
 	@dni = '87654321',
-	@nombre = 'Carlos A',
+	@nombre = 'Carlos A.',
 	@apellido = 'Gutiérrez',
 	@fecha_nac = '1980-10-15',
 	@email = 'carlos.a.gutierrez@email.com',
@@ -472,7 +466,7 @@ EXEC stp.insertarInvitado
 
 SELECT * FROM psn.Invitado
 
------- 2.2 MODIFICACION DE LA TABLA INVITADOS
+------ 1.2 MODIFICACION DE LA TABLA INVITADOS
 
 -- Aseguramos que exista un invitado base para modificar
 -- Este debe coincidir con un `cod_invitado` que vayamos a usar en las pruebas
@@ -504,7 +498,7 @@ EXEC stp.insertarInvitado
 EXEC stp.modificarInvitado
 	@cod_invitado = 2,
 	@dni = '87654321',
-	@nombre = 'Carlos A',
+	@nombre = 'Carlos A.',
 	@apellido = 'Gutiérrez',
 	@fecha_nac = '1980-10-15',
 	@email = 'carlos.a.gutierrez@email.com',
@@ -861,7 +855,7 @@ EXEC stp.insertarProfesor
 
 SELECT * FROM psn.Profesor
 
--- CASO 3.3.1: Borrado de profesor existente
+-- CASO 3.3.1: Borrado de socio existente
 
 EXEC stp.borrarProfesor @cod_prof = 1;
 
@@ -869,10 +863,9 @@ EXEC stp.borrarProfesor @cod_prof = 1;
 
 SELECT * FROM psn.Profesor WHERE cod_prof = 1;
 
--- CASO 3.3.2: Borrado de profesor inexistente
+-- CASO 3.3.2: Borrado de socio inexistente
 
 EXEC stp.borrarProfesor @cod_prof = 9999;
-
 
 ------ 4. PAGO
 
@@ -881,8 +874,6 @@ DELETE FROM psn.Pago
 DBCC CHECKIDENT ('psn.Pago', RESEED, 0);
 
 -- Antes debo insertar Socio o Invitado para hacer las pruebas
-
-
 
 
 -- 4.1 PRUEBA DE INSERCIÓN DE PAGO
@@ -993,20 +984,9 @@ DBCC CHECKIDENT ('psn.Categoria', RESEED, 0);
 
 -- 7.1 INSERTADO
 
-
-
 -- 7.2 MODIFICACION
 
 -- 7.3 BORRADO
-
-
-
-
-
-
-
-
-
 
 
 

@@ -12,3 +12,22 @@ IF NOT EXISTS (SELECT * FROM sys.schemas WHERE name = 'imp')
 		PRINT ' Schema creado exitosamente';
 	END;
 go
+
+-- SP para importar archivo excel Datos Socios
+
+IF EXISTS (SELECT * FROM sys.procedures WHERE name = 'importarSocios')
+BEGIN
+    DROP PROCEDURE imp.importarSocios;
+    PRINT 'SP Importar_ElectronicAccessories ya existe --> se borró';
+END;
+GO
+
+-- -- 3. Procedimiento para importar reporte meteorologico
+
+IF EXISTS (SELECT * FROM sys.procedures WHERE name = 'importarReporteMeteorologico') 
+BEGIN
+     DROP PROCEDURE imp.importarReporteMeteorologico;
+     PRINT 'SP importarReporteMeteorologico ya existe --> se borró';
+END;
+GO
+

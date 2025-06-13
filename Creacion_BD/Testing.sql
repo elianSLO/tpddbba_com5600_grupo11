@@ -26,7 +26,8 @@ EXEC stp.insertarSocio
 	@nombre_cobertura = 'OSDE',
 	@nro_afiliado = 'A12345',
 	@tel_cobertura = '1134567890',
-	@cod_responsable = 1;
+	@cod_responsable = 1; -- Debe haber un responsable insertado para que funcione
+
 
 -- CASO 1.1.2: DNI ya existente (debe fallar por duplicado)
 
@@ -868,9 +869,86 @@ SELECT * FROM psn.Profesor WHERE cod_prof = 1;
 EXEC stp.borrarProfesor @cod_prof = 9999;
 
 
+------ 4. PAGO
 
-------------------------------------------------------------------------------------
---CONTINUAR
+-- Limpiar la tabla para pruebas (solo si es seguro)
+DELETE FROM psn.Pago
+DBCC CHECKIDENT ('psn.Pago', RESEED, 0);
+
+-- 4.1 PRUEBA DE INSERCIÓN DE PAGO
+
+EXEC stp.insertarPago
+	@monto = 1500.00,
+	@fecha_pago = '2025-06-10',
+	@estado = 'Pagado',
+	@cod_socio = 1,  -- Asegurate que este socio exista
+	@cod_invitado = NULL;
+GO
+
+
+-- 4.2 PRUEBA DE MODIFICACIÓN DE PAGO
+
+EXEC stp.modificarPago
+	@cod_pago = 1,  -- Reemplazar con el ID real insertado
+	@monto = 1800.00,
+	@fecha_pago = '2025-06-12',
+	@estado = 'Pendiente',
+	@cod_socio = NULL,
+	@cod_invitado = 202;  -- Asegurate que este invitado exista
+GO
+
+-- 4.3 PRUEBA DE BORRADO DE PAGO
+
+EXEC stp.borrarPago
+	@cod_pago = 1;
+GO
+
+
+-- 5. RESPONSABLE
+
+-- Limpiar la tabla para pruebas (solo si es seguro)
+DELETE FROM psn.Responsable
+DBCC CHECKIDENT ('psn.Responsable', RESEED, 0);
+
+
+-- 5.1 PRUEBA DE INSERCIÓN DE RESPONSABLE
+
+EXEC stp.insertarResponsable
+    @dni = '12345678',
+    @nombre = 'Carlos',
+    @apellido = 'Ramirez',
+    @email = 'carlos.ramirez@example.com',
+    @parentezco = 'Padre',
+    @fecha_nac = '1980-05-15',
+    @nro_socio = 101,        -- Socio existente
+    @tel = '1134567890';
+GO
+
+-- 5.2 PRUEBA DE MODIFICACIÓN DE RESPONSABLE
+
+EXEC stp.modificarResponsable
+    @cod_responsable = 1,     -- Reemplazar por el valor real
+    @dni = '12345678',
+    @nombre = 'Carlos',
+    @apellido = 'Ramírez',
+    @email = 'cramirez@example.com',
+    @parentezco = 'Padre',
+    @fecha_nac = '1980-05-15',
+    @nro_socio = 101,
+    @tel = '1134567899';
+GO
+
+-- 5.3 PRUEBA DE BORRADO DE RESPONSABLE
+
+EXEC stp.borrarResponsable
+    @cod_responsable = 1;
+GO
+
+----- 6. 
+
+
+
+
 
 
 

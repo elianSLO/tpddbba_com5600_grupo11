@@ -861,7 +861,7 @@ BEGIN
 END;
 GO
 CREATE OR ALTER PROCEDURE stp.modificarInvitado
-    @cod_invitado       INT,
+    @cod_invitado       VARCHAR(15),
     @dni                CHAR(8),
     @nombre             VARCHAR(50),
     @apellido           VARCHAR(50),
@@ -980,7 +980,7 @@ BEGIN
 END;
 GO
 CREATE OR ALTER PROCEDURE stp.borrarInvitado
-    @cod_invitado INT
+    @cod_invitado VARCHAR(15)
 AS
 BEGIN
     SET NOCOUNT ON;
@@ -1795,7 +1795,7 @@ GO
 
 CREATE OR ALTER PROCEDURE stp.insertarReserva
     @cod_socio          VARCHAR(15) = NULL,
-    @cod_invitado       INT = NULL,
+    @cod_invitado       VARCHAR(15) = NULL,
     @monto              DECIMAL(10,2),
     @fechahoraInicio    DATETIME,
     @fechahoraFin       DATETIME,
@@ -1901,7 +1901,7 @@ GO
 CREATE OR ALTER PROCEDURE stp.modificarReserva
     @cod_reserva        INT,
     @cod_socio          VARCHAR(15) = NULL,
-    @cod_invitado       INT = NULL,
+    @cod_invitado       VARCHAR(15) = NULL,
     @monto              DECIMAL(10,2),
     @fechahoraInicio    DATETIME,
     @fechahoraFin       DATETIME,

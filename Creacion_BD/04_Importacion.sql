@@ -143,10 +143,10 @@ SELECT * FROM OPENQUERY(LinkerServer_EXCEL,
 
 
 
-
+	SELECT * FROM ##Temp
 -----------------------------------------------------------------------------------------------------------------------
 --	Importar Socios.
-	exec imp.Importar_Socios --'D:\repos\tpddbba_com5600_grupo11\Creacion_BD\import\Datos socios.xlsx';
+	exec imp.Importar_Socios 'D:\repos\tpddbba_com5600_grupo11\Creacion_BD\import\Datos socios.xlsx';
 	select * from psn.Socio
 IF EXISTS (SELECT * FROM sys.procedures WHERE name = 'Importar_Socios') 
 BEGIN
@@ -189,6 +189,10 @@ BEGIN
 
     EXEC sp_executesql @SQL;
 
+	--DELETE TOP (1) FROM ##Temp		--	No garantiza ser la primer fila.
+	DELETE FROM ##Temp WHERE cod_socio = 'Nro de Socio';		--	Elimino el encabezado.
+
+
     -- Cursor para insertar en tabla definitiva
     DECLARE 
         @cod_socio        VARCHAR(15),
@@ -224,7 +228,10 @@ BEGIN
             @tel_emerg = @tel_emerg,
             @nombre_cobertura = @nombre_cobertura,
             @nro_afiliado = @nro_afiliado,
-            @tel_cobertura = @tel_cobertura;
+            @tel_cobertura = @tel_cobertura,
+			@estado = 0,
+			@saldo = 0,
+			@cod_responsable = 'NS-0000';
 
         FETCH NEXT FROM cur INTO @cod_socio, @nombre, @apellido, @dni, @email, @fecha_nac, @tel, @tel_emerg, @nombre_cobertura, @nro_afiliado, @tel_cobertura;
     END
@@ -232,7 +239,7 @@ BEGIN
     CLOSE cur;
     DEALLOCATE cur;
 	
-    DROP TABLE ##Temp;
+    --DROP TABLE ##Temp;
 
     PRINT 'Importación completada correctamente.';
 END

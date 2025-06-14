@@ -26,20 +26,18 @@ go
 IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'Com5600G11.psn.Socio') AND type = N'U') -- 'U' tabla creada por el usuario 'N' es que sea unicode
 	BEGIN
 		CREATE TABLE psn.Socio (
-			cod_socio			VARCHAR(15) PRIMARY KEY CHECK (cod_socio LIKE 'SN-[0-9][0-9][0-9][0-9][0-9]'),
+			cod_socio			VARCHAR(15) PRIMARY KEY CHECK (cod_socio LIKE 'SN-[0-9][0-9][0-9][0-9][0-9]' OR 
+															   cod_socio LIKE 'SN-[0-9][0-9][0-9][0-9]'),
 			nombre				VARCHAR(50),
 			apellido			VARCHAR(50),
 			dni					CHAR(8) UNIQUE,
 			email				VARCHAR(100),
 			fecha_nac			DATE,
-			tel					VARCHAR(15) check (tel NOT LIKE '%[^0-9]%' and		
-													LEN(tel) between 10 and 14),
-			tel_emerg			VARCHAR(15) check (tel_emerg NOT LIKE '%[^0-9]%' and		
-													LEN(tel_emerg) between 10 and 14),
+			tel					VARCHAR(50) check (tel NOT LIKE '%[^0-9 -]%'),											
+			tel_emerg			VARCHAR(50) check (tel_emerg NOT LIKE '%[^0-9 -]%'),		
 			nombre_cobertura	VARCHAR(50),
 			nro_afiliado		VARCHAR(50),
-			tel_cobertura		VARCHAR(15) check (tel_cobertura NOT LIKE '%[^0-9]%' and		
-													LEN(tel_cobertura) between 10 and 14),
+			tel_cobertura		VARCHAR(50) check (tel_cobertura NOT LIKE '%[^0-9 -]%'),	
 			estado				BIT, -- 1 - Habilitado, 0 - No habilitado (Pago atrasado o impago)
 			saldo				DECIMAL(10,2),
 			cod_responsable		VARCHAR(15)
@@ -57,22 +55,20 @@ go
 IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'Com5600G11.psn.Invitado') AND type = N'U') -- 'U' tabla creada por el usuario 'N' es que sea unicode
 	BEGIN
 		CREATE TABLE psn.Invitado (
-			cod_invitado		VARCHAR(15) PRIMARY KEY CHECK (cod_invitado LIKE 'NS-[0-9][0-9][0-9][0-9][0-9]'),
+			cod_invitado		VARCHAR(15) PRIMARY KEY CHECK (cod_invitado LIKE 'NS-[0-9][0-9][0-9][0-9][0-9]' OR 
+																cod_invitado LIKE 'NS-[0-9][0-9][0-9][0-9]'),
 			dni					CHAR(8) UNIQUE,
 			nombre				VARCHAR(50),
 			apellido			VARCHAR(50),
 			fecha_nac			DATE,
 			email				VARCHAR(100),
-			tel					VARCHAR(15) check (tel NOT LIKE '%[^0-9]%' and		
-													LEN(tel) between 10 and 14),
-			tel_emerg			VARCHAR(15) check (tel_emerg NOT LIKE '%[^0-9]%' and		
-													LEN(tel_emerg) between 10 and 14),
+			tel					VARCHAR(50) check (tel NOT LIKE '%[^0-9 -]%'),		
+			tel_emerg			VARCHAR(50) check (tel_emerg NOT LIKE '%[^0-9 -]%'),		
 			estado				BIT, -- 1 - Habilitado, 0 - No habilitado (Pago atrasado o impago)
 			saldo				DECIMAL(10,2),
 			nombre_cobertura	VARCHAR(50),
 			nro_afiliado		VARCHAR(50),
-			tel_cobertura		VARCHAR(15) check (tel_cobertura NOT LIKE '%[^0-9]%' and		
-													LEN(tel_cobertura) between 10 and 14),		
+			tel_cobertura		VARCHAR(50) check (tel_cobertura NOT LIKE '%[^0-9 -]%'),				
 			cod_responsable		VARCHAR(15),
 
 		);
@@ -94,8 +90,7 @@ IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'Com5600G1
 			nombre				VARCHAR(50),
 			apellido			VARCHAR(50),
 			email				VARCHAR(100),
-			tel					VARCHAR(15) check (	tel NOT LIKE '%[^0-9]%' and		-- Solo numeros.
-													LEN(tel) between 10 and 14)		-- 2 a 4 digitos para prefijo + 6 a 8 para numero / 0800 incluidos
+			tel					VARCHAR(50) check (tel NOT LIKE '%[^0-9 -]%')
 		);
 		PRINT 'Tabla Profesor creada correctamente.';
 	END
@@ -119,9 +114,8 @@ IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'Com5600G1
 			email				VARCHAR(100),
 			parentezco			VARCHAR(50),
 			fecha_nac			DATE,
-			nro_socio			INT,				--VER
-			tel					VARCHAR(15) check (	tel NOT LIKE '%[^0-9]%' and		-- Solo numeros.
-													LEN(tel) between 10 and 14)		-- 2 a 4 digitos para prefijo + 6 a 8 para numero / 0800 incluidos
+			nro_socio			INT,				
+			tel					VARCHAR(50) check (	tel NOT LIKE '%[^0-9 -]%')
 		);
 		PRINT 'Tabla Responsable creada correctamente.';
 	END

@@ -27,7 +27,7 @@ SELECT servicename, service_account
 FROM sys.dm_server_services;
 
 select * from psn.Pago
-
+delete from psn.Pago
 IF EXISTS (SELECT * FROM sys.procedures WHERE name = 'Importar_Pagos') 
 BEGIN
     DROP PROCEDURE imp.Importar_Pagos;
@@ -67,28 +67,40 @@ BEGIN
     EXEC sp_executesql @SQL;
     PRINT 'Datos cargados en ##Temp.';
 
-    SET IDENTITY_INSERT psn.Pago ON;
+    DECLARE @cod_pago BIGINT,
+            @fecha_pago DATE,
+            @responsable_pago VARCHAR(15),
+            @monto DECIMAL(10,2),
+            @medio_pago VARCHAR(15);
 
-    INSERT INTO psn.Pago (cod_pago, monto, fecha_pago, estado, responsable_pago, medio_pago)
-    SELECT 
-        t.cod_pago,
-        t.monto,
-        t.fecha_pago,
-        'REALIZADO',
-        t.responsable_pago,
-        t.medio_pago
-    FROM ##Temp t
-    WHERE NOT EXISTS (
-        SELECT 1 FROM psn.Pago p WHERE p.cod_pago = t.cod_pago
-    );
+    DECLARE cur CURSOR LOCAL FOR
+    SELECT cod_pago, fecha_pago, responsable_pago, monto, medio_pago
+    FROM ##Temp;
 
-    SET IDENTITY_INSERT psn.Pago OFF;
+    OPEN cur;
 
-    PRINT 'Datos insertados en psn.Pago.';
+    FETCH NEXT FROM cur INTO @cod_pago, @fecha_pago, @responsable_pago, @monto, @medio_pago;
+
+    WHILE @@FETCH_STATUS = 0
+    BEGIN
+        -- Solo insertar si no existe
+        IF NOT EXISTS (SELECT 1 FROM psn.Pago p WHERE p.cod_pago = @cod_pago)
+        BEGIN
+            EXEC stp.insertarPago 
+                @monto = @monto,
+                @fecha_pago = @fecha_pago,
+                @estado = 'Pagado',  -- o 'REALIZADO' si quieres, pero stp espera 'Pagado', 'Pendiente' o 'Anulado'
+                @responsable_pago = @responsable_pago;
+        END
+
+        FETCH NEXT FROM cur INTO @cod_pago, @fecha_pago, @responsable_pago, @monto, @medio_pago;
+    END
+
+    CLOSE cur;
+    DEALLOCATE cur;
 
     DROP TABLE ##Temp;
     PRINT '##Temp eliminada.';
-
     PRINT 'Importación completada correctamente.';
 END;
 GO

@@ -257,7 +257,8 @@ BEGIN
     DROP PROCEDURE stp.insertarSocio;
 END;
 GO
-CREATE OR ALTER PROCEDURE stp.insertarSocio 
+CREATE OR ALTER PROCEDURE stp.insertarSocio
+	@cod_socio			VARCHAR(15),
 	@dni				CHAR(8),
 	@nombre				VARCHAR(50),
 	@apellido			VARCHAR(50),
@@ -275,7 +276,7 @@ AS
 BEGIN
 	SET NOCOUNT ON;
     -- Validación de que ningún campo sea NULL
-    IF @dni IS NULL OR @nombre IS NULL OR @apellido IS NULL OR 
+    IF @cod_socio IS NULL OR @dni IS NULL OR @nombre IS NULL OR @apellido IS NULL OR 
        @fecha_nac IS NULL OR @email IS NULL OR @tel IS NULL OR @tel_emerg IS NULL OR
 	   @estado IS NULL OR @saldo IS NULL OR @nombre_cobertura IS NULL OR @nro_afiliado IS NULL 
 	   OR @tel_cobertura IS NULL OR @cod_responsable IS NULL
@@ -283,7 +284,12 @@ BEGIN
         PRINT 'Error: Ningún campo puede ser NULL';
         RETURN;
     END;
-
+	-- Validación que el código de socio sea del tipo 'SN-XXXXX'
+	IF @cod_socio NOT LIKE 'SN-[0-9][0-9][0-9][0-9][0-9]'
+	BEGIN
+		PRINT 'El código de socio debe tener formato "SN-XXXX".'
+		RETURN;
+	END
     -- Validación de que el DNI tenga 8 dígitos
     IF LEN(@dni) < 8 or LEN(@dni) > 8
     BEGIN
@@ -356,14 +362,14 @@ BEGIN
 	END
 
     -- Insertar el socio
-	INSERT INTO psn.Socio (
+	INSERT INTO psn.Socio (cod_socio,
 	dni, nombre, apellido, fecha_nac, email,
 	tel, tel_emerg, estado, saldo,
 	nombre_cobertura, nro_afiliado, tel_cobertura,
 	cod_responsable
 	)
 	VALUES (
-	@dni, @nombre, @apellido, @fecha_nac, @email,
+	@cod_socio,@dni, @nombre, @apellido, @fecha_nac, @email,
 	@tel, @tel_emerg, @estado, @saldo,
 	@nombre_cobertura, @nro_afiliado, @tel_cobertura,
 	@cod_responsable
@@ -380,7 +386,7 @@ BEGIN
 END;
 GO
 CREATE OR ALTER PROCEDURE stp.modificarSocio
-	@cod_socio			INT,
+	@cod_socio			VARCHAR(15),
 	@dni				CHAR(8),
 	@nombre				VARCHAR(50),
 	@apellido			VARCHAR(50),
@@ -406,7 +412,12 @@ BEGIN
         PRINT 'Error: Ningún campo puede ser NULL';
         RETURN;
     END;
-
+	-- Validación de que el código del socio sea del tipo "SN-XXXXX"
+	IF @cod_socio NOT LIKE 'SN-[0-9][0-9][0-9][0-9][0-9]'
+	BEGIN
+		PRINT 'El código de socio debe tener formato "SN-XXXX".'
+		RETURN;
+	END
     -- Validación de que el socio se haya insertado
     IF NOT EXISTS (SELECT 1 FROM psn.Socio WHERE cod_socio = @cod_socio)
     BEGIN
@@ -506,10 +517,16 @@ BEGIN
 END;
 GO
 CREATE OR ALTER PROCEDURE stp.borrarSocio
-        @cod_socio INT
+        @cod_socio VARCHAR(15)
     AS
     BEGIN
         SET NOCOUNT ON;
+		-- Validación de que el código del socio sea del tipo "SN-XXXXX"
+		IF @cod_socio NOT LIKE 'SN-[0-9][0-9][0-9][0-9][0-9]'
+		BEGIN
+			PRINT 'El código de socio debe tener formato "SN-XXXX".'
+			RETURN;
+		END
         IF EXISTS (SELECT 1 FROM psn.Socio WHERE cod_socio = @cod_socio)
         BEGIN
             DELETE FROM psn.Socio WHERE cod_socio = @cod_socio;

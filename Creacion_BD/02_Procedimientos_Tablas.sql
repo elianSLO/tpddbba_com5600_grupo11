@@ -288,14 +288,18 @@ BEGIN
 	END;
 
 	-- Validaciones
-	IF @cod_socio NOT LIKE 'SN-[0-9][0-9][0-9][0-9][0-9]'
+	IF NOT (@cod_socio LIKE 'SN-[0-9][0-9][0-9][0-9][0-9]' OR
+            @cod_socio LIKE 'SN-[0-9][0-9][0-9][0-9]')
 	BEGIN
 		PRINT 'El código de socio debe tener formato "SN-XXXXX".';
 		RETURN;
 	END;
 
-	IF @cod_responsable NOT LIKE 'SN-[0-9][0-9][0-9][0-9][0-9]' AND 
-	   @cod_responsable NOT LIKE 'NS-[0-9][0-9][0-9][0-9][0-9]'
+	IF NOT (
+        @cod_responsable NOT LIKE 'SN-[0-9][0-9][0-9][0-9][0-9]' OR 
+        @cod_responsable NOT LIKE 'SN-[0-9][0-9][0-9][0-9]' OR 
+	    @cod_responsable NOT LIKE 'NS-[0-9][0-9][0-9][0-9][0-9]' OR
+        @cod_responsable NOT LIKE 'NS-[0-9][0-9][0-9][0-9]')
 	BEGIN
 		PRINT 'El código de responsable debe tener formato "SN-XXXXX" o "NS-XXXXX".';
 		RETURN;
@@ -344,7 +348,7 @@ BEGIN
 	END;
 
 	-- Solo se valida que no tenga letras
-	IF @tel LIKE '%[^0-9 -]%' OR @tel_emerg LIKE '%[^0-9 -]%' OR @tel_cobertura LIKE '%[^0-9 -]%'
+	IF @tel LIKE '%[^0-9]%' OR @tel_emerg LIKE '%[^0-9]%' OR @tel_cobertura LIKE '%[^0-9]%'
 	BEGIN
 		PRINT 'Error: Los teléfonos solo deben contener números.';
 		RETURN;
@@ -454,7 +458,7 @@ BEGIN
 	END;
 
 	-- Teléfonos: solo números
-	IF @tel LIKE '%[^0-9 -]%' OR @tel_emerg LIKE '%[^0-9 -]%' OR @tel_cobertura LIKE '%[^0-9 -]%'
+	IF @tel LIKE '%[^0-9]%' OR @tel_emerg LIKE '%[^0-9]%' OR @tel_cobertura LIKE '%[^0-9]%'
 	BEGIN
 		PRINT 'Error: Los teléfonos solo deben contener números.';
 		RETURN;
@@ -1800,6 +1804,22 @@ BEGIN
         RETURN;
     END;
 
+    IF @cod_socio IS NOT NULL AND NOT (
+        @cod_socio LIKE 'SN-[0-9][0-9][0-9][0-9]' OR
+        @cod_socio LIKE 'SN-[0-9][0-9][0-9][0-9][0-9]')
+    BEGIN
+        PRINT 'Error: Formato erróneo para @cod_socio.';
+        RETURN;
+    END
+
+    IF @cod_invitado IS NOT NULL AND NOT (
+        @cod_invitado LIKE 'NS-[0-9][0-9][0-9][0-9]' OR
+        @cod_invitado LIKE 'NS-[0-9][0-9][0-9][0-9]')
+    BEGIN
+        PRINT 'Error: Formato erróneo para cod_invitado.';
+        RETURN;
+    END
+
     IF @cod_socio IS NOT NULL AND NOT EXISTS (SELECT 1 FROM psn.Socio WHERE cod_socio = @cod_socio)
     BEGIN
         PRINT 'Error: El codigo de socio especificado no existe.';
@@ -1911,6 +1931,22 @@ BEGIN
         PRINT 'Error: Solo se debe especificar cod_socio o cod_invitado, no ambos.';
         RETURN;
     END;
+
+    IF @cod_socio IS NOT NULL AND NOT (
+        @cod_socio LIKE 'SN-[0-9][0-9][0-9][0-9]' OR
+        @cod_socio LIKE 'SN-[0-9][0-9][0-9][0-9][0-9]')
+    BEGIN
+        PRINT 'Error: Formato erróneo para @cod_socio.';
+        RETURN;
+    END
+
+    IF @cod_invitado IS NOT NULL AND NOT (
+        @cod_invitado LIKE 'NS-[0-9][0-9][0-9][0-9]' OR
+        @cod_invitado LIKE 'NS-[0-9][0-9][0-9][0-9]')
+    BEGIN
+        PRINT 'Error: Formato erróneo para cod_invitado.';
+        RETURN;
+    END
 
     IF @cod_socio IS NOT NULL AND NOT EXISTS (SELECT 1 FROM psn.Socio WHERE cod_socio = @cod_socio)
     BEGIN

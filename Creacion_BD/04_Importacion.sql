@@ -21,6 +21,25 @@ GO
 SELECT servicename, service_account			--Chequear nombre del servicio para  darle permiso de acceso a los directorios donde se guarda la información.
 FROM sys.dm_server_services;
 
+--	Listar hojas de un xls
+EXEC sp_addlinkedserver 
+    @server = 'EXCEL_IMPORT',
+    @srvproduct = 'ACE 12.0',
+    @provider = 'Microsoft.ACE.OLEDB.12.0',
+    @datasrc = 'D:\repos\tpddbba_com5600_grupo11\Creacion_BD\import\Datos socios.xlsx',
+    @provstr = 'Excel 12.0;HDR=YES';
+
+EXEC sp_tables_ex 'EXCEL_IMPORT';
+
+EXEC sp_dropserver 'EXCEL_IMPORT', 'droplogins';
+GO
+
+SELECT * FROM OPENROWSET(
+    'Microsoft.ACE.OLEDB.12.0',
+    'Excel 12.0;HDR=YES;Database=D:\repos\tpddbba_com5600_grupo11\Creacion_BD\import\Datos socios.xlsx',
+    'SELECT * FROM [Responsables de Pago$]'
+);
+GO
 -----------------------------------------------------------------------------------------------------------------------
 --	Crear el esquema de importacion.
 IF NOT EXISTS (SELECT * FROM sys.schemas WHERE name = 'imp')
@@ -29,8 +48,6 @@ IF NOT EXISTS (SELECT * FROM sys.schemas WHERE name = 'imp')
 		PRINT ' Schema creado exitosamente';
 	END;
 GO
-
-
 
 -----------------------------------------------------------------------------------------------------------------------
 --	Importar pagos.
@@ -50,24 +67,24 @@ BEGIN
     SET NOCOUNT ON;
 
     -- Eliminar tabla temporal si existe
-    IF OBJECT_ID('tempdb..##Temp') IS NOT NULL
-        DROP TABLE ##Temp;
+    IF OBJECT_ID('tempdb..#Temp') IS NOT NULL
+        DROP TABLE #Temp;
 
     -- Crear tabla temporal
-    CREATE TABLE ##Temp
+    CREATE TABLE #Temp
     (
-        cod_pago BIGINT,
-        fecha_pago DATE,
-        responsable_pago VARCHAR(15),
-        monto DECIMAL(10,2),
-        medio_pago VARCHAR(15)
+        cod_pago			BIGINT,
+        fecha_pago			DATE,
+        responsable_pago	VARCHAR(15),
+        monto				DECIMAL(10,2),
+        medio_pago			VARCHAR(15)
     );
 
     -- Armar SQL dinámico
     DECLARE @SQL NVARCHAR(MAX);
 
     SET @SQL = '
-    INSERT INTO ##Temp (cod_pago, fecha_pago, responsable_pago, monto, medio_pago)
+    INSERT INTO #Temp (cod_pago, fecha_pago, responsable_pago, monto, medio_pago)
     SELECT [Id de pago], [fecha], [Responsable de pago], [Valor], [Medio de pago]
     FROM OPENROWSET(
         ''Microsoft.ACE.OLEDB.12.0'',
@@ -76,18 +93,18 @@ BEGIN
     )';
 
     EXEC sp_executesql @SQL;
-    PRINT 'Datos cargados en ##Temp.';
+    PRINT 'Datos cargados en #Temp.';
 
     -- Recorrer ##Temp y llamar al SP
-    DECLARE @cod_pago BIGINT,
-            @fecha_pago DATE,
-            @responsable_pago VARCHAR(15),
-            @monto DECIMAL(10,2),
-            @medio_pago VARCHAR(15);
+    DECLARE @cod_pago			BIGINT,
+            @fecha_pago			DATE,
+            @responsable_pago	VARCHAR(15),
+            @monto				DECIMAL(10,2),
+            @medio_pago			VARCHAR(15);
 
     DECLARE cur CURSOR LOCAL FAST_FORWARD FOR
     SELECT cod_pago, fecha_pago, responsable_pago, monto, medio_pago
-    FROM ##Temp;
+    FROM #Temp;
 
     OPEN cur;
 
@@ -109,22 +126,131 @@ BEGIN
     DEALLOCATE cur;
 
     -- Eliminar ##Temp
-    DROP TABLE ##Temp;
-    PRINT '##Temp eliminada.';
+    DROP TABLE #Temp;
+    PRINT '#Temp eliminada.';
     PRINT 'Importación completada correctamente.';
 END
 GO
+-----------------------------------------------------------------------------------------------------------------------
+
+
+-----------------------------------------------------------------------------------------------------------------------
+--	Importar Socios.
+	exec imp.Importar_Socios 'D:\repos\tpddbba_com5600_grupo11\Creacion_BD\import\Datos socios.xlsx';
+
+IF EXISTS (SELECT * FROM sys.procedures WHERE name = 'Importar_Socios') 
+BEGIN
+    DROP PROCEDURE imp.Importar_Socios;
+    PRINT 'SP Importar_Socios ya existe --> se borró';
+END;
+GO
+
+CREATE OR ALTER PROCEDURE imp.Importar_Socios
+ -- Eliminar tabla temporal si existe
+    IF OBJECT_ID('tempdb..#Temp') IS NOT NULL
+        DROP TABLE #Temp;
+
+    -- Crear tabla temporal
+    CREATE TABLE #Temp
+    (
+        cod_socio			VARCHAR(15),
+		nombre				VARCHAR(50),
+		apellido			VARCHAR(50),
+		dni					CHAR(8),
+		email				VARCHAR(100),
+		fecha_nac			DATE,
+		tel					VARCHAR(15),
+		tel_emerg			VARCHAR(15),
+		nombre_cobertura	VARCHAR(50),
+		nro_afiliado		VARCHAR(50),
+		tel_cobertura		VARCHAR(15)--,
+		--estado				BIT,
+		--saldo				DECIMAL(10,2),
+		--cod_responsable		VARCHAR(15)
+    );
+
+    -- Armar SQL dinámico
+    DECLARE @SQL NVARCHAR(MAX);
+
+    SET @SQL = '
+INSERT INTO #Temp (cod_socio, nombre, apellido, dni, email, fecha_nac, tel, tel_emerg, nombre_cobertura, nro_afiliado, tel_cobertura)
+SELECT [Nro de Socio] AS cod_socio, [Nombre] AS nombre, [apellido] AS apellido, [DNI] AS dni, [email personal] AS email, 
+       [fecha de nacimiento] AS fecha_nac, [teléfono de contacto] AS tel, [teléfono de contacto emergencia] AS tel_emerg, 
+       [Nombre de la obra social o prepaga] AS nombre_cobertura, [nro. de socio obra social/prepaga ] AS nro_afiliado, [teléfono de contacto de emergencia ] AS tel_cobertura
+FROM OPENROWSET(''Microsoft.ACE.OLEDB.12.0'', ''Excel 12.0;HDR=YES;Database=' + @RutaArchivo + ''', 
+''SELECT [Nro de Socio], [Nombre], [apellido], [DNI], [email personal], [fecha de nacimiento], [teléfono de contacto], [teléfono de contacto emergencia], [Nombre de la obra social o prepaga], [nro. de socio obra social/prepaga ], [teléfono de contacto de emergencia ] FROM [Responsables de Pago$]'')
+';
+
+EXEC sp_executesql @SQL;
+
+    PRINT 'Datos cargados en #Temp.';
+
+    -- Recorrer ##Temp y llamar al SP
+    DECLARE @cod_socio        VARCHAR(15),
+			@dni              CHAR(8),
+			@nombre           VARCHAR(50),
+			@apellido         VARCHAR(50),
+			@fecha_nac        DATE,
+			@email            VARCHAR(100),
+			@tel              VARCHAR(15),
+			@tel_emerg        VARCHAR(15),
+			@nombre_cobertura VARCHAR(50),
+			@nro_afiliado     VARCHAR(50),
+			@tel_cobertura    VARCHAR(15);
+
+    DECLARE cur CURSOR LOCAL FAST_FORWARD FOR
+    SELECT cod_socio, dni, nombre, apellido, fecha_nac, email, tel, tel_emerg, nombre_cobertura, nro_afiliado, tel_cobertura
+    FROM #Temp;
+
+    OPEN cur;
+
+    FETCH NEXT FROM cur INTO @cod_socio, @dni, @nombre, @apellido, @fecha_nac, @email, @tel, @tel_emerg, @nombre_cobertura, @nro_afiliado, @tel_cobertura;
+		
+    WHILE @@FETCH_STATUS = 0
+    BEGIN
+        -- Llamar al SP con reglas de negocio
+        EXEC stp.insertarSocio
+            @cod_socio = @cod_socio,
+			@nombre = @nombre,
+			@apellido = @apellido,
+			@dni = @dni,
+			@email = @email,
+			@fecha_nac = @fecha_nac,
+			@tel = @tel,
+			@tel_emerg = @tel_emerg,
+			@nombre_cobertura = @nombre_cobertura,
+			@nro_afiliado = @nro_afiliado,
+			@tel_cobertura = @tel_cobertura
+
+        FETCH NEXT FROM cur INTO @cod_socio, @dni, @nombre, @apellido, @fecha_nac, @email, @tel, @tel_emerg, @nombre_cobertura, @nro_afiliado, @tel_cobertura;
+    END
+
+    CLOSE cur;
+    DEALLOCATE cur;
+
+    -- Eliminar ##Temp
+    DROP TABLE #Temp;
+    PRINT '#Temp eliminada.';
+    PRINT 'Importación completada correctamente.';
+	PRINT @SQL;
+END
+-----------------------------------------------------------------------------------------------------------------------
 
 
 
-SELECT * FROM OPENROWSET(
-    'Microsoft.ACE.OLEDB.12.0',
-    'Excel 12.0;HDR=YES;Database=D:\repos\tpddbba_com5600_grupo11\Creacion_BD\import\Datos socios.xlsx',
-    'SELECT * FROM [pago cuotas$]'
-);
 
 
 
+
+
+
+
+
+
+
+
+
+-----------------------------------------------------------------------------------------------------------------------
 -- Importacion Tarifas
 
 IF EXISTS (SELECT * FROM sys.procedures WHERE name = 'Importar_Tarifas') 
@@ -212,3 +338,6 @@ BEGIN
     PRINT 'Importación de tarifas completada correctamente.';
 END;
 GO
+
+-----------------------------------------------------------------------------------------------------------------------
+

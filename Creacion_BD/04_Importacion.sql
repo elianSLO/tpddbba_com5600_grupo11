@@ -123,3 +123,92 @@ SELECT * FROM OPENROWSET(
     'SELECT * FROM [pago cuotas$]'
 );
 
+
+
+-- Importacion Tarifas
+
+IF EXISTS (SELECT * FROM sys.procedures WHERE name = 'Importar_Tarifas') 
+BEGIN
+    DROP PROCEDURE imp.Importar_Tarifas;
+    PRINT 'SP Importar_Tarifas ya existe --> se borró';
+END;
+GO
+
+CREATE OR ALTER PROCEDURE imp.ImportarTarifas
+    @RutaArchivo NVARCHAR(255)
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    -- Tabla temporal: Actividad
+
+    IF OBJECT_ID('tempdb..##TempActividad') IS NOT NULL DROP TABLE ##TempActividad;
+
+    CREATE TABLE ##TempActividad (
+        nombre_actividad VARCHAR(50),
+        valor_mensual DECIMAL(10,2),
+        vig_valor DATE
+    );
+
+    -- Tabla temporal: Categoria
+   
+    IF OBJECT_ID('tempdb..##TempCategoria') IS NOT NULL DROP TABLE ##TempCategoria;
+
+    CREATE TABLE ##TempCategoria (
+        descripcion VARCHAR(50),
+        valor_mensual DECIMAL(10,2),
+        vig_valor_mens DATE
+    );
+
+    -- SQL dinámico: Actividad
+
+    DECLARE @SQL NVARCHAR(MAX);
+
+    SET @SQL = '
+    INSERT INTO ##TempActividad (nombre_actividad, valor_mensual, vig_valor)
+    SELECT [Actividad], [Valor por mes], CONVERT(DATE, [Vigente hasta], 103)
+    FROM OPENROWSET(
+        ''Microsoft.ACE.OLEDB.12.0'',
+        ''Excel 12.0;HDR=YES;Database=' + @RutaArchivo + ''',
+        ''SELECT * FROM [Hoja1$B2:D8]''
+    );';
+    EXEC(@SQL);
+    PRINT 'Datos cargados en ##TempActividad.';
+
+    -- SQL dinámico: Categoria
+    
+    SET @SQL = '
+    INSERT INTO ##TempCategoria (descripcion, valor_mensual, vig_valor_mens)
+    SELECT [Categoria socio], [Valor cuota], CONVERT(DATE, [Vigente hasta], 103)
+    FROM OPENROWSET(
+        ''Microsoft.ACE.OLEDB.12.0'',
+        ''Excel 12.0;HDR=YES;Database=' + @RutaArchivo + ''',
+        ''SELECT * FROM [Hoja1$B10:D13]''
+    );';
+    EXEC(@SQL);
+    PRINT 'Datos cargados en ##TempCategoria.';
+
+    -- Insertar en psn.Actividad -- USAR SP insertarActividad
+
+
+    INSERT INTO psn.Actividad (nombre,valor_mensual,vig_valor)
+    SELECT nombre_actividad, valor_mensual, vig_valor
+    FROM ##TempActividad;
+
+    -- Insertar en psn.Categoria -- USAR SP insertarCategoria
+ 
+    INSERT INTO psn.Categoria (
+        descripcion, edad_max, valor_mensual, vig_valor_mens,
+        valor_anual, vig_valor_anual
+    )
+    SELECT descripcion, NULL, valor_mensual, vig_valor_mens, NULL, NULL
+    FROM ##TempCategoria;
+
+    -- Limpiar temporales
+
+    DROP TABLE ##TempActividad;
+    DROP TABLE ##TempCategoria;
+
+    PRINT 'Importación de tarifas completada correctamente.';
+END;
+GO

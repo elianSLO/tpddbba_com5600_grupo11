@@ -9,13 +9,15 @@ IF NOT EXISTS (SELECT * FROM sys.schemas WHERE name = 'stp')
 go
 
 -- STORED PROCEDURES PARA CATEGORIA ----------------------------------------------------------------
--- INSERCION
+-- INSERCION DE CATEGORIA
 
 IF  EXISTS (SELECT * FROM sys.procedures WHERE name = 'insertarCategoria')
 BEGIN
     DROP PROCEDURE stp.insertarCategoria;
 END;
 GO
+
+
 
 CREATE OR ALTER PROCEDURE stp.insertarCategoria
 	@descripcion		VARCHAR(50),
@@ -25,18 +27,12 @@ CREATE OR ALTER PROCEDURE stp.insertarCategoria
 	@vig_valor_anual	DATE	
 AS
 BEGIN
-	--	Validar que no exista la categoria
-	IF EXISTS (SELECT 1 FROM psn.Categoria WHERE @cod_categoria = cod_categoria)
-		BEGIN
-			PRINT 'La categoria ya existe en la tabla.'
-            RETURN;
-        END;
 	--	Validar que descripcion no exista
-	IF EXISTS (SELECT 1 FROM psn.Categoria WHERE @descripcion = descripcion)
-		BEGIN
-			PRINT 'La categoria ya existe en la tabla.'
-            RETURN;
-        END;
+	 IF @descripcion COLLATE Modern_Spanish_CI_AI NOT IN ('cadete', 'mayor', 'menor')
+    BEGIN
+        PRINT 'La descripción debe ser cadete, mayor o menor.'
+        RETURN;
+    END
 		--	Validar que los montos no sean nulos o negativos
 		IF (@valor_mensual <= 0 or @valor_mensual IS NULL or @valor_anual <= 0 or @valor_anual IS NULL)
 		BEGIN
@@ -49,14 +45,14 @@ BEGIN
             RETURN;
 			END;
 		
-		INSERT INTO psn.Categoria(cod_categoria,descripcion,valor_mensual,vig_valor_mens,valor_anual,vig_valor_anual)
-        VALUES (@cod_categoria,@descripcion,@valor_mensual,@vig_valor_mens,@valor_anual,@vig_valor_anual);
+		INSERT INTO psn.Categoria(descripcion,valor_mensual,vig_valor_mens,valor_anual,vig_valor_anual)
+        VALUES (@descripcion,@valor_mensual,@vig_valor_mens,@valor_anual,@vig_valor_anual);
 		PRINT 'Categoria insertada correctamente'
 END
 GO
 
 ---------------------------------------------------------------------------------------------------------------
--- MODIFICAR
+-- SP PARA MODIFICAR CATEGORIA
 
 IF  EXISTS (SELECT * FROM sys.procedures WHERE name = 'modificarCategoria')
 BEGIN
@@ -108,7 +104,8 @@ BEGIN
 END
 GO
 
--- SP PARA BORRAR CATE
+-- SP PARA BORRAR CATEGORIA
+
 IF EXISTS (SELECT * FROM sys.procedures WHERE name = 'borrarCategoria')
 BEGIN
     DROP PROCEDURE stp.borrarCategoria;
@@ -134,18 +131,26 @@ GO
 ----------------------------------------------------------------------------------------------------------------
 --	STORED PROCEDURES PARA TABLA ACTIVIDAD
 
+
 CREATE OR ALTER PROCEDURE stp.insertarActividad
-	@descripcion		VARCHAR(50),
+	@nombre		VARCHAR(50),
 	@valor_mensual		DECIMAL(10,2),
 	@vig_valor			DATE
 AS
 BEGIN
-	--	Validar que no exista la misma descripción para otra actividad.
-	IF (EXISTS (SELECT 1 FROM psn.Actividad WHERE @descripcion = descripcion))
-		BEGIN
-			PRINT 'Ya existe esa actividad.'
-			RETURN;
-		END
+	 -- Validar el nombre de la actividad 
+	 IF @nombre COLLATE Modern_Spanish_CI_AI NOT IN (
+        'Futsal',
+        'Vóley',
+        'Taekwondo',
+        'Baile artístico',
+        'Natación',
+        'Ajedrez'
+    )
+	 BEGIN
+        PRINT 'El nombre de la actividad no es correcto.'
+        RETURN;
+    END
 	--	Validar que el valor mensual sea coherente
 	IF @valor_mensual <= 0
 		BEGIN
@@ -158,24 +163,31 @@ BEGIN
 			RETURN
 		END
 
-	INSERT INTO psn.Actividad (descripcion,valor_mensual,vig_valor)
-		VALUES(@descripcion,@valor_mensual,@vig_valor)
+	INSERT INTO psn.Actividad (nombre,valor_mensual,vig_valor)
+		VALUES(@nombre,@valor_mensual,@vig_valor)
 	PRINT 'Actividad agregada correctamente.'
 END
 GO
 
 CREATE OR ALTER PROCEDURE stp.modificarActividad
-	@descripcion		VARCHAR(50),
+	@nombre				VARCHAR(50),
 	@valor_mensual		DECIMAL(10,2),
 	@vig_valor			DATE
 AS
 BEGIN
-	-- Validar que exista la descripción de la actividad
-	IF NOT EXISTS (SELECT 1 FROM psn.Actividad WHERE descripcion = @descripcion)
-	BEGIN
-		PRINT 'No existe esa actividad.'
-		RETURN;
-	END
+	-- Validar que exista la actividad
+		 IF @nombre COLLATE Modern_Spanish_CI_AI NOT IN (
+        'Futsal',
+        'Vóley',
+        'Taekwondo',
+        'Baile artístico',
+        'Natación',
+        'Ajedrez'
+    )
+	 BEGIN
+        PRINT 'La actividad no existe.'
+        RETURN;
+    END
 
 	-- Validar que el valor mensual sea coherente
 	IF @valor_mensual <= 0
@@ -196,24 +208,24 @@ BEGIN
 	SET
 		valor_mensual = @valor_mensual,
 		vig_valor = @vig_valor
-	WHERE descripcion = @descripcion;
+	WHERE nombre = @nombre;
 
 	PRINT 'Actividad modificada correctamente.';
 END
 GO
 
 CREATE OR ALTER PROCEDURE stp.eliminarActividad
-	@descripcion VARCHAR(50)
+	@nombre VARCHAR(50)
 AS
 BEGIN
 	-- Validar que exista la descripción de la actividad
-	IF NOT EXISTS (SELECT 1 FROM psn.Actividad WHERE descripcion = @descripcion)
+	IF NOT EXISTS (SELECT 1 FROM psn.Actividad WHERE nombre = @nombre)
 	BEGIN
 		PRINT 'No existe esa actividad.'
 		RETURN;
 	END
 	DELETE FROM psn.Actividad
-	WHERE descripcion = @descripcion;
+	WHERE nombre = @nombre;
 
 	PRINT 'Actividad elimnada correctamente.';
 END

@@ -2266,7 +2266,7 @@ BEGIN
         RETURN;
     END
 
-    IF @cod_socio IS NULL OR @cod_socio <= 0
+    IF @cod_socio IS NULL OR @cod_socio NOT LIKE 'SN-[0-9][0-9][0-9][0-9][0-9]'
     BEGIN
         PRINT 'Error: El código de socio debe ser un número positivo.';
         RETURN;
@@ -2332,7 +2332,7 @@ BEGIN
         RETURN;
     END
 
-    IF @nuevo_cod_socio IS NULL OR @nuevo_cod_socio <= 0
+    IF @nuevo_cod_socio IS NULL OR @nuevo_cod_socio NOT LIKE 'SN-[0-9][0-9][0-9][0-9][0-9]'
     BEGIN
         PRINT 'Error: El nuevo código de socio debe ser un número positivo.';
         RETURN;
@@ -2435,7 +2435,7 @@ BEGIN
         RETURN;
     END
 
-    IF @cod_socio IS NULL OR @cod_socio <= 0
+    IF @cod_socio IS NULL OR @cod_socio NOT LIKE 'SN-[0-9][0-9][0-9][0-9][0-9]'
     BEGIN
         PRINT 'Error: El código de socio debe ser un número positivo.';
         RETURN;
@@ -2506,7 +2506,7 @@ BEGIN
         RETURN;
     END
 
-    IF @nuevo_cod_socio IS NULL OR @nuevo_cod_socio <= 0
+    IF @nuevo_cod_socio IS NULL OR @nuevo_cod_socio NOT LIKE 'SN-[0-9][0-9][0-9][0-9][0-9]'
     BEGIN
         PRINT 'Error: El nuevo código de socio debe ser un número positivo.';
         RETURN;

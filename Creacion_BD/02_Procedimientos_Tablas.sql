@@ -21,6 +21,7 @@ GO
 
 CREATE OR ALTER PROCEDURE stp.insertarCategoria
 	@descripcion		VARCHAR(50),
+	@edad_max			INT,
 	@valor_mensual		DECIMAL(10,2),
 	@vig_valor_mens		DATE,
 	@valor_anual		DECIMAL(10,2),
@@ -33,6 +34,12 @@ BEGIN
         PRINT 'La descripción debe ser Cadete, Mayor o Menor.'
         RETURN;
     END
+	--	Validar que la edad máxima sea mayor a 0
+		IF (@edad_max <= 0)
+		BEGIN
+			PRINT 'La edad máxima debe ser un número mayor a 0.'
+			RETURN;
+		END;
 		--	Validar que los montos no sean nulos o negativos
 		IF (@valor_mensual <= 0 or @valor_mensual IS NULL or @valor_anual <= 0 or @valor_anual IS NULL)
 		BEGIN
@@ -45,8 +52,8 @@ BEGIN
             RETURN;
 			END;
 		
-		INSERT INTO psn.Categoria(descripcion,valor_mensual,vig_valor_mens,valor_anual,vig_valor_anual)
-        VALUES (@descripcion,@valor_mensual,@vig_valor_mens,@valor_anual,@vig_valor_anual);
+		INSERT INTO psn.Categoria(descripcion,edad_max,valor_mensual,vig_valor_mens,valor_anual,vig_valor_anual)
+        VALUES (@descripcion,@edad_max,@valor_mensual,@vig_valor_mens,@valor_anual,@vig_valor_anual);
 		PRINT 'Categoria insertada correctamente'
 END
 GO
@@ -62,6 +69,7 @@ GO
 CREATE OR ALTER PROCEDURE stp.modificarCategoria
 	@cod_categoria		INT,
 	@descripcion		VARCHAR(50),
+	@edad_max			INT,
 	@valor_mensual		DECIMAL(10,2),
 	@vig_valor_mens		DATE,
 	@valor_anual		DECIMAL(10,2),
@@ -80,6 +88,12 @@ BEGIN
 			PRINT 'La categoria ya existe en la tabla.'
             RETURN;
         END;
+	--	Validar que la edad máxima sea mayor a 0
+		IF (@edad_max <= 0)
+		BEGIN
+			PRINT 'La edad máxima debe ser un número mayor a 0.'
+			RETURN;
+		END;
 		--	Validar que los montos no sean nulos o negativos
 		IF (@valor_mensual <= 0 or @valor_mensual IS NULL or @valor_anual <= 0 or @valor_anual IS NULL)
 		BEGIN
@@ -95,6 +109,7 @@ BEGIN
 		UPDATE psn.Categoria
 		SET
 			descripcion = ISNULL(@descripcion,descripcion),
+			edad_max = ISNULL(@edad_max,edad_max),
 			valor_mensual = ISNULL(@valor_mensual,valor_mensual),
 			vig_valor_mens = ISNULL(@vig_valor_mens, vig_valor_mens),
 			valor_anual = ISNULL(@valor_anual, valor_anual),

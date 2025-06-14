@@ -1,4 +1,5 @@
 --Crear la Base de datos
+drop database Com5600G11
 IF NOT EXISTS (SELECT * FROM sys.databases WHERE name = 'Com5600G11')
 	BEGIN
 		CREATE DATABASE Com5600G11;
@@ -26,21 +27,21 @@ IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'Com5600G1
 	BEGIN
 		CREATE TABLE psn.Socio (
 			cod_socio			VARCHAR(15) PRIMARY KEY CHECK (cod_socio LIKE 'SN-[0-9][0-9][0-9][0-9][0-9]'),
-			dni					CHAR(8) UNIQUE,
 			nombre				VARCHAR(50),
 			apellido			VARCHAR(50),
-			fecha_nac			DATE,
+			dni					CHAR(8) UNIQUE,
 			email				VARCHAR(100),
+			fecha_nac			DATE,
 			tel					VARCHAR(15) check (tel NOT LIKE '%[^0-9]%' and		
 													LEN(tel) between 10 and 14),
 			tel_emerg			VARCHAR(15) check (tel_emerg NOT LIKE '%[^0-9]%' and		
 													LEN(tel_emerg) between 10 and 14),
-			estado				BIT, -- 1 - Habilitado, 0 - No habilitado (Pago atrasado o impago)
-			saldo				DECIMAL(10,2),
 			nombre_cobertura	VARCHAR(50),
 			nro_afiliado		VARCHAR(50),
 			tel_cobertura		VARCHAR(15) check (tel_cobertura NOT LIKE '%[^0-9]%' and		
 													LEN(tel_cobertura) between 10 and 14),
+			estado				BIT, -- 1 - Habilitado, 0 - No habilitado (Pago atrasado o impago)
+			saldo				DECIMAL(10,2),
 			cod_responsable		VARCHAR(15)
 		);
 		PRINT 'Tabla Socio creada correctamente.';

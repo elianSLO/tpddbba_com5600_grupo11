@@ -265,19 +265,19 @@ CREATE OR ALTER PROCEDURE stp.insertarSocio
 	@apellido			VARCHAR(50),
 	@fecha_nac			DATE,
 	@email				VARCHAR(100),
-	@tel				VARCHAR(15),
-	@tel_emerg			VARCHAR(15),
+	@tel				VARCHAR(50),
+	@tel_emerg			VARCHAR(50),
 	@estado				BIT,
 	@saldo				DECIMAL(10,2),
 	@nombre_cobertura	VARCHAR(50),
 	@nro_afiliado		VARCHAR(50),
-	@tel_cobertura		VARCHAR(15),
-	@cod_responsable	VARCHAR(15) -- <== cambiado de INT a VARCHAR
+	@tel_cobertura		VARCHAR(50),
+	@cod_responsable	VARCHAR(15)
 AS
 BEGIN
 	SET NOCOUNT ON;
 
-	-- Validación de que ningún campo sea NULL
+	-- Validación de campos obligatorios
 	IF @cod_socio IS NULL OR @dni IS NULL OR @nombre IS NULL OR @apellido IS NULL OR 
 	   @fecha_nac IS NULL OR @email IS NULL OR @tel IS NULL OR @tel_emerg IS NULL OR
 	   @estado IS NULL OR @saldo IS NULL OR @nombre_cobertura IS NULL OR @nro_afiliado IS NULL 
@@ -287,14 +287,13 @@ BEGIN
 		RETURN;
 	END;
 
-	-- Validación que el código de socio sea del tipo 'SN-XXXXX'
+	-- Validaciones
 	IF @cod_socio NOT LIKE 'SN-[0-9][0-9][0-9][0-9][0-9]'
 	BEGIN
 		PRINT 'El código de socio debe tener formato "SN-XXXXX".';
 		RETURN;
 	END;
 
-	-- Validación que el código de responsable sea del tipo 'SN-XXXXX' o 'NS-XXXXX'
 	IF @cod_responsable NOT LIKE 'SN-[0-9][0-9][0-9][0-9][0-9]' AND 
 	   @cod_responsable NOT LIKE 'NS-[0-9][0-9][0-9][0-9][0-9]'
 	BEGIN
@@ -302,67 +301,52 @@ BEGIN
 		RETURN;
 	END;
 
-	-- Validación de DNI de 8 dígitos
 	IF LEN(@dni) <> 8
 	BEGIN
 		PRINT 'Error: El DNI debe ser de 8 dígitos';
 		RETURN;
 	END;
 
-	-- Validación de DNI único
 	IF EXISTS (SELECT 1 FROM psn.Socio WHERE dni = @dni)
 	BEGIN
 		PRINT 'Error: Ya existe un socio con ese DNI';
 		RETURN;
 	END;
 
-	-- Validaciones de nombre y apellido
 	IF @nombre LIKE '%[^a-zA-Z ]%'
 	BEGIN
 		PRINT 'Error: El nombre solo puede contener letras y espacios.';
 		RETURN;
 	END;
+
 	IF @apellido LIKE '%[^a-zA-Z ]%'
 	BEGIN
 		PRINT 'Error: El apellido solo puede contener letras y espacios.';
 		RETURN;
 	END;
 
-	-- Fecha de nacimiento no futura
 	IF @fecha_nac > GETDATE()
 	BEGIN
 		PRINT 'Error: La fecha de nacimiento no puede ser futura';
 		RETURN;
 	END;
 
-	-- Email válido
 	IF @email NOT LIKE '_%@_%._%'
 	BEGIN
 		PRINT 'Error: Email inválido. Debe tener formato ejemplo@dominio.com.';
 		RETURN;
 	END;
 
-	-- Saldo no negativo
 	IF @saldo < 0
 	BEGIN
 		PRINT 'Saldo inválido. No puede ser negativo.';
 		RETURN;
 	END;
 
-	-- Teléfonos válidos
-	IF (LEN(@tel) < 8 OR LEN(@tel) > 14 OR @tel LIKE '%[^0-9]%')
+	-- Solo se valida que no tenga letras
+	IF @tel LIKE '%[^0-9]%' OR @tel_emerg LIKE '%[^0-9]%' OR @tel_cobertura LIKE '%[^0-9]%'
 	BEGIN
-		PRINT 'Error: Teléfono inválido. Debe contener entre 8 y 14 dígitos numéricos.';
-		RETURN;
-	END;
-	IF (LEN(@tel_emerg) < 8 OR LEN(@tel_emerg) > 14 OR @tel_emerg LIKE '%[^0-9]%')
-	BEGIN
-		PRINT 'Error: Teléfono de emergencia inválido. Debe contener entre 8 y 14 dígitos numéricos.';
-		RETURN;
-	END;
-	IF (LEN(@tel_cobertura) < 8 OR LEN(@tel_cobertura) > 14 OR @tel_cobertura LIKE '%[^0-9]%')
-	BEGIN
-		PRINT 'Error: Teléfono de cobertura inválido. Debe contener entre 8 y 14 dígitos numéricos.';
+		PRINT 'Error: Los teléfonos solo deben contener números.';
 		RETURN;
 	END;
 
@@ -384,6 +368,7 @@ BEGIN
 END;
 GO
 
+
 -- SP PARA MODIFICAR SOCIO
 IF EXISTS (SELECT * FROM sys.procedures WHERE name = 'modificarSocio')
 BEGIN
@@ -398,19 +383,18 @@ CREATE OR ALTER PROCEDURE stp.modificarSocio
 	@apellido			VARCHAR(50),
 	@fecha_nac			DATE,
 	@email				VARCHAR(100),
-	@tel				VARCHAR(15),
-	@tel_emerg			VARCHAR(15),
+	@tel				VARCHAR(50),
+	@tel_emerg			VARCHAR(50),
 	@estado				BIT,
 	@saldo				DECIMAL(10,2),
 	@nombre_cobertura	VARCHAR(50),
 	@nro_afiliado		VARCHAR(50),
-	@tel_cobertura		VARCHAR(15),
-	@cod_responsable	VARCHAR(15) -- CAMBIO de INT a VARCHAR(15)
+	@tel_cobertura		VARCHAR(50),
+	@cod_responsable	VARCHAR(15)
 AS
 BEGIN
 	SET NOCOUNT ON;
 
-	-- Validación de que ningún campo sea NULL
 	IF @cod_socio IS NULL OR @dni IS NULL OR @nombre IS NULL OR @apellido IS NULL OR 
 	   @fecha_nac IS NULL OR @email IS NULL OR @tel IS NULL OR @tel_emerg IS NULL OR
 	   @estado IS NULL OR @saldo IS NULL OR @nombre_cobertura IS NULL OR @nro_afiliado IS NULL 
@@ -420,14 +404,12 @@ BEGIN
 		RETURN;
 	END;
 
-	-- Validación que el código de socio sea del tipo "SN-XXXXX"
 	IF @cod_socio NOT LIKE 'SN-[0-9][0-9][0-9][0-9][0-9]'
 	BEGIN
 		PRINT 'El código de socio debe tener formato "SN-XXXXX".';
 		RETURN;
 	END;
 
-	-- Validación del código de responsable: SN-XXXXX o NS-XXXXX
 	IF @cod_responsable NOT LIKE 'SN-[0-9][0-9][0-9][0-9][0-9]' AND 
 	   @cod_responsable NOT LIKE 'NS-[0-9][0-9][0-9][0-9][0-9]'
 	BEGIN
@@ -435,71 +417,50 @@ BEGIN
 		RETURN;
 	END;
 
-	-- Verificar que el socio exista
 	IF NOT EXISTS (SELECT 1 FROM psn.Socio WHERE cod_socio = @cod_socio)
 	BEGIN
 		PRINT 'Error: Socio no encontrado.';
 		RETURN;
 	END;
 
-	-- Validación de DNI
 	IF LEN(@dni) <> 8
 	BEGIN
 		PRINT 'Error: El DNI debe ser de 8 dígitos';
 		RETURN;
 	END;
 
-	-- Validaciones de nombre y apellido
-	IF @nombre LIKE '%[^a-zA-Z ]%'
+	IF @nombre LIKE '%[^a-zA-Z ]%' OR @apellido LIKE '%[^a-zA-Z ]%'
 	BEGIN
-		PRINT 'Error: El nombre solo puede contener letras y espacios.';
-		RETURN;
-	END;
-	IF @apellido LIKE '%[^a-zA-Z ]%'
-	BEGIN
-		PRINT 'Error: El apellido solo puede contener letras y espacios.';
+		PRINT 'Error: El nombre y apellido solo pueden contener letras y espacios.';
 		RETURN;
 	END;
 
-	-- Validación de fecha de nacimiento
 	IF @fecha_nac > GETDATE()
 	BEGIN
 		PRINT 'Error: La fecha de nacimiento no puede ser futura';
 		RETURN;
 	END;
 
-	-- Validación de email
 	IF @email NOT LIKE '_%@_%._%'
 	BEGIN
 		PRINT 'Error: Email inválido. Debe tener formato ejemplo@dominio.com.';
 		RETURN;
 	END;
 
-	-- Validación de saldo
 	IF @saldo < 0
 	BEGIN
 		PRINT 'Saldo inválido. No puede ser negativo.';
 		RETURN;
 	END;
 
-	-- Validaciones de teléfonos
-	IF (LEN(@tel) < 8 OR LEN(@tel) > 14 OR @tel LIKE '%[^0-9]%')
+	-- Teléfonos: solo números
+	IF @tel LIKE '%[^0-9]%' OR @tel_emerg LIKE '%[^0-9]%' OR @tel_cobertura LIKE '%[^0-9]%'
 	BEGIN
-		PRINT 'Error: Teléfono inválido. Debe contener entre 8 y 14 dígitos numéricos.';
-		RETURN;
-	END;
-	IF (LEN(@tel_emerg) < 8 OR LEN(@tel_emerg) > 14 OR @tel_emerg LIKE '%[^0-9]%')
-	BEGIN
-		PRINT 'Error: Teléfono de emergencia inválido. Debe contener entre 8 y 14 dígitos numéricos.';
-		RETURN;
-	END;
-	IF (LEN(@tel_cobertura) < 8 OR LEN(@tel_cobertura) > 14 OR @tel_cobertura LIKE '%[^0-9]%')
-	BEGIN
-		PRINT 'Error: Teléfono de cobertura inválido. Debe contener entre 8 y 14 dígitos numéricos.';
+		PRINT 'Error: Los teléfonos solo deben contener números.';
 		RETURN;
 	END;
 
-	-- Actualización
+	-- Update
 	UPDATE psn.Socio
 	SET
 		dni = @dni,
@@ -520,6 +481,7 @@ BEGIN
 	PRINT 'Socio modificado correctamente';
 END;
 GO
+
 
 
 -- SP PARA BORRAR SOCIO

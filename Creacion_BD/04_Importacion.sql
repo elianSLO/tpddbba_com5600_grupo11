@@ -21,23 +21,12 @@ RECONFIGURE;
 EXEC sp_MSset_oledb_prop N'Microsoft.ACE.OLEDB.12.0', N'AllowInProcess', 1;
 EXEC sp_MSset_oledb_prop N'Microsoft.ACE.OLEDB.12.0', N'DynamicParameters', 1;
 
-
-
-SELECT * FROM OPENROWSET(
-    'Microsoft.ACE.OLEDB.12.0',
-    'Excel 12.0;Database=C:\import\Hoja.xlsx;HDR=YES',
-    'SELECT * FROM [Hoja1$]'
-);
-
-SELECT @@VERSION;
-
-exec imp.Importar_Pagos 'C:\import\Datos socios.xlsx';
+exec imp.Importar_Pagos 'D:\repos\tpddbba_com5600_grupo11\Creacion_BD\import\Datos socios.xlsx';
 
 SELECT servicename, service_account 
 FROM sys.dm_server_services;
 
 select * from psn.Pago
-
 
 IF EXISTS (SELECT * FROM sys.procedures WHERE name = 'Importar_Pagos') 
 BEGIN

@@ -28,7 +28,7 @@ CREATE OR ALTER PROCEDURE stp.insertarCategoria
 	@vig_valor_anual	DATE	
 AS
 BEGIN
-	--	Validar que descripcion no exista
+	--	Validar que la descripcion exista
 	 IF @descripcion NOT IN ('Cadete', 'Mayor', 'Menor')
     BEGIN
         PRINT 'La descripción debe ser Cadete, Mayor o Menor.'
@@ -76,18 +76,18 @@ CREATE OR ALTER PROCEDURE stp.modificarCategoria
 	@vig_valor_anual	DATE	
 AS
 BEGIN
-	--	Validar que exista la categoria
+	--	Validar que exista el id de la categoria
 	IF NOT EXISTS (SELECT 1 FROM psn.Categoria WHERE @cod_categoria = cod_categoria)
 		BEGIN
 			PRINT 'La categoria no existe en la tabla.'
             RETURN;
         END;
-	--	Validar que descripcion no exista
-	IF EXISTS (SELECT 1 FROM psn.Categoria WHERE @descripcion = descripcion)
-		BEGIN
-			PRINT 'La categoria ya existe en la tabla.'
-            RETURN;
-        END;
+	--	Validar que descripcion la exista
+	 IF @descripcion NOT IN ('Cadete', 'Mayor', 'Menor')
+    BEGIN
+        PRINT 'La descripción debe ser Cadete, Mayor o Menor.'
+        RETURN;
+    END
 	--	Validar que la edad máxima sea mayor a 0
 		IF (@edad_max <= 0)
 		BEGIN

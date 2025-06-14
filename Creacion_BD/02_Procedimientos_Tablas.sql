@@ -747,6 +747,7 @@ BEGIN
 END;
 GO
 CREATE OR ALTER PROCEDURE stp.insertarInvitado
+    @cod_invitado       VARCHAR(15),
     @dni                CHAR(8),
     @nombre             VARCHAR(50),
     @apellido           VARCHAR(50),
@@ -759,12 +760,12 @@ CREATE OR ALTER PROCEDURE stp.insertarInvitado
     @nombre_cobertura   VARCHAR(50),
     @nro_afiliado       VARCHAR(50),
     @tel_cobertura      VARCHAR(15),
-    @cod_responsable    INT
+    @cod_responsable    VARCHAR(15)
 AS
 BEGIN
     SET NOCOUNT ON;
 
-    IF @dni IS NULL OR @nombre IS NULL OR @apellido IS NULL OR 
+    IF @cod_invitado IS NULL OR @dni IS NULL OR @nombre IS NULL OR @apellido IS NULL OR 
        @fecha_nac IS NULL OR @email IS NULL OR @tel IS NULL OR @tel_emerg IS NULL OR
        @estado IS NULL OR @saldo IS NULL OR @nombre_cobertura IS NULL OR @nro_afiliado IS NULL 
        OR @tel_cobertura IS NULL OR @cod_responsable IS NULL
@@ -772,6 +773,13 @@ BEGIN
         PRINT 'Error: Ningún campo puede ser NULL';
         RETURN;
     END;
+
+    IF NOT (@cod_invitado LIKE 'NS-[0-9][0-9][0-9][0-9]' OR
+        @cod_invitado LIKE 'NS-[0-9][0-9][0-9][0-9]')
+    BEGIN
+        PRINT 'Error: Formato erróneo para @cod_invitado.';
+        RETURN;
+    END
 
     IF LEN(@dni) <> 8
     BEGIN
@@ -836,13 +844,13 @@ BEGIN
     END;
 
     INSERT INTO psn.Invitado (
-        dni, nombre, apellido, fecha_nac, email,
+        cod_invitado, dni, nombre, apellido, fecha_nac, email,
         tel, tel_emerg, estado, saldo,
         nombre_cobertura, nro_afiliado, tel_cobertura,
         cod_responsable
     )
     VALUES (
-        @dni, @nombre, @apellido, @fecha_nac, @email,
+        @cod_invitado, @dni, @nombre, @apellido, @fecha_nac, @email,
         @tel, @tel_emerg, @estado, @saldo,
         @nombre_cobertura, @nro_afiliado, @tel_cobertura,
         @cod_responsable
@@ -887,6 +895,13 @@ BEGIN
         PRINT 'Error: Ningún campo puede ser NULL';
         RETURN;
     END;
+
+    IF NOT (@cod_invitado LIKE 'NS-[0-9][0-9][0-9][0-9]' OR
+        @cod_invitado LIKE 'NS-[0-9][0-9][0-9][0-9]')
+    BEGIN
+        PRINT 'Error: Formato erróneo para @cod_invitado.';
+        RETURN;
+    END
 
     IF NOT EXISTS (SELECT 1 FROM psn.Invitado WHERE cod_invitado = @cod_invitado)
     BEGIN
@@ -984,6 +999,13 @@ CREATE OR ALTER PROCEDURE stp.borrarInvitado
 AS
 BEGIN
     SET NOCOUNT ON;
+
+    IF NOT (@cod_invitado LIKE 'NS-[0-9][0-9][0-9][0-9]' OR
+        @cod_invitado LIKE 'NS-[0-9][0-9][0-9][0-9]')
+    BEGIN
+        PRINT 'Error: Formato erróneo para @cod_invitado.';
+        RETURN;
+    END
 
     IF EXISTS (SELECT 1 FROM psn.Invitado WHERE cod_invitado = @cod_invitado)
     BEGIN

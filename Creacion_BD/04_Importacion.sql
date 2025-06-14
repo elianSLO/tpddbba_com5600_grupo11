@@ -300,7 +300,7 @@ BEGIN
     FROM OPENROWSET(
         ''Microsoft.ACE.OLEDB.12.0'',
         ''Excel 12.0;HDR=YES;Database=' + @RutaArchivo + ''',
-        ''SELECT * FROM [Tarifas1$B2:D8]''
+        ''SELECT * FROM [Tarifas$B2:D8]''
     );';
     EXEC(@SQL);
     PRINT 'Datos cargados en ##TempActividad.';

@@ -7,328 +7,307 @@
 Use Com5600G11
 GO
 
+-- Prueba 1: SPs para Tabla Socio
+-- Prueba 2: SPs para Tabla Invitado
+-- Prueba 3: Sps para Tabla Profesor
+-- Prueba 4: SPs para Tabla Pago
+-- Prueba 5:
+-- Prueba 6:
+-- Prueba 7:
+
 -----------PRUEBA 1: TABLA SOCIO
 
------- 1.1 INSERCION
-
--- CASO 1.1.1: Inserción válida
-
-EXEC stp.insertarSocio
-	@dni = '12345678',
-	@nombre = 'Juan',
-	@apellido = 'Pérez',
-	@fecha_nac = '1990-05-20',
-	@email = 'juan.perez@email.com',
-	@tel = '1123456789',
-	@tel_emerg = '1198765432',
-	@estado = 1,
-	@saldo = 1000.00,
-	@nombre_cobertura = 'OSDE',
-	@nro_afiliado = 'A12345',
-	@tel_cobertura = '1134567890',
-	@cod_responsable = 1;
-
--- CASO 1.1.2: DNI ya existente (debe fallar por duplicado)
-
-EXEC stp.insertarSocio
-	@dni = '12345679', -- mismo DNI que antes
-	@nombre = 'Carlos',
-	@apellido = 'Gómez',
-	@fecha_nac = '1985-01-10',
-	@email = 'carlos.gomez@email.com',
-	@tel = '1134567891',
-	@tel_emerg = '1198765433',
-	@estado = 1,
-	@saldo = 200.00,
-	@nombre_cobertura = 'Swiss Medical',
-	@nro_afiliado = 'B67890',
-	@tel_cobertura = '1145678901',
-	@cod_responsable = 1;
-
--- CASO 1.1.3: Email inválido (debe fallar por validación)
-
-EXEC stp.insertarSocio
-	@dni = '87654321',
-	@nombre = 'Ana',
-	@apellido = 'Martínez',
-	@fecha_nac = '1992-11-15',
-	@email = 'ana.martinez-email.com', -- sin @
-	@tel = '1134567892',
-	@tel_emerg = '1198765434',
-	@estado = 1,
-	@saldo = 500.00,
-	@nombre_cobertura = 'Medifé',
-	@nro_afiliado = 'C54321',
-	@tel_cobertura = '1156789012',
-	@cod_responsable = 1;
-
--- CASO 1.1.4: Fecha de nacimiento futura (debe fallar)
-
-EXEC stp.insertarSocio
-	@dni = '23456789',
-	@nombre = 'Lucía',
-	@apellido = 'Fernández',
-	@fecha_nac = '2100-01-01',
-	@email = 'lucia.fernandez@email.com',
-	@tel = '1134567893',
-	@tel_emerg = '1198765435',
-	@estado = 1,
-	@saldo = 300.00,
-	@nombre_cobertura = 'Galeno',
-	@nro_afiliado = 'D98765',
-	@tel_cobertura = '1167890123',
-	@cod_responsable = 1;
-
--- CASO 1.1.5: Saldo negativo (debe fallar)
-
-EXEC stp.insertarSocio
-	@dni = '34567890',
-	@nombre = 'Pedro',
-	@apellido = 'López',
-	@fecha_nac = '1980-07-07',
-	@email = 'pedro.lopez@email.com',
-	@tel = '1134567894',
-	@tel_emerg = '1198765436',
-	@estado = 1,
-	@saldo = -100.00,
-	@nombre_cobertura = 'IOMA',
-	@nro_afiliado = 'E11223',
-	@tel_cobertura = '1178901234',
-	@cod_responsable = 1;
-
--- CASO 1.1.6: Teléfono con letras (debe fallar)
--- Nota: Se utiliza la misma validación para teléfono auxiliar y teléfono de cobertura
-
-EXEC stp.insertarSocio
-	@dni = '45678901',
-	@nombre = 'Sofía',
-	@apellido = 'Ramírez',
-	@fecha_nac = '1995-09-30',
-	@email = 'sofia.ramirez@email.com',
-	@tel = '444A5678', -- contiene letra
-	@tel_emerg = '1198765437',
-	@estado = 1,
-	@saldo = 0.00,
-	@nombre_cobertura = 'Osdepym',
-	@nro_afiliado = 'F33445',
-	@tel_cobertura = '1189012345',
-	@cod_responsable = 1;
-
--- CASO 1.1.7: Campo obligatorio NULL (debe fallar)
-
-EXEC stp.insertarSocio
-	@dni = NULL,
-	@nombre = 'Marta',
-	@apellido = 'Suárez',
-	@fecha_nac = '1988-03-25',
-	@email = 'marta.suarez@email.com',
-	@tel = '1134567895',
-	@tel_emerg = '1198765438',
-	@estado = 1,
-	@saldo = 100.00,
-	@nombre_cobertura = 'Accord Salud',
-	@nro_afiliado = 'G55667',
-	@tel_cobertura = '1190123456',
-	@cod_responsable = 1;
-
--- CONSULTA FINAL: Ver los datos reales insertados
-
--- SOCIOS INSERTADOS CORRECTAMENTE 
-SELECT * FROM psn.Socio
-
------- 1.2 MODIFICACION DE LA TABLA SOCIO
-
--- Limpiar la tabla para pruebas (solo si es seguro)
 DELETE FROM psn.Socio
-DBCC CHECKIDENT ('psn.Socio', RESEED, 0);
 
--- Aseguramos que exista un socio base para modificar
--- Este debe coincidir con un 'cod_socio' que vayamos a usar en las pruebas
+-- CASO 1.1 INSERCION
 
--- Inserción de socio para pruebas
+-- CASO 1.1.1 Inserción válida
 
 EXEC stp.insertarSocio
-	@dni = '87654329',
-	@nombre = 'Carlos',
-	@apellido = 'Gutiérrez',
-	@fecha_nac = '1980-10-15',
-	@email = 'carlos.gutierrez@email.com',
-	@tel = '1130000001',
-	@tel_emerg = '1140000001',
-	@estado = 1,
-	@saldo = 300.00,
-	@nombre_cobertura = 'OSDE',
-	@nro_afiliado = 'X12345',
-	@tel_cobertura = '1150000001',
-	@cod_responsable = 1;
+    @cod_socio = 'SN-00001',
+    @dni = '12345678',
+    @nombre = 'Juan',
+    @apellido = 'Pérez',
+    @fecha_nac = '1990-05-15',
+    @email = 'juan.perez@mail.com',
+    @tel = '1122334455',
+    @tel_emerg = '1133445566',
+    @estado = 1,
+    @saldo = 0,
+    @nombre_cobertura = 'OSDE',
+    @nro_afiliado = 'OS12345678',
+    @tel_cobertura = '1144556677',
+    @cod_responsable = 'NS-00001';
 
--- CASO 1.2.1: Modificación válida
-
-EXEC stp.modificarSocio
-	@cod_socio = 1,
-	@dni = '87654321',
-	@nombre = 'Carlos A.',
-	@apellido = 'Gutiérrez',
-	@fecha_nac = '1980-10-15',
-	@email = 'carlos.a.gutierrez@email.com',
-	@tel = '1130000002',
-	@tel_emerg = '1140000002',
-	@estado = 1,
-	@saldo = 500.00,
-	@nombre_cobertura = 'Swiss Medical',
-	@nro_afiliado = 'X12345-2',
-	@tel_cobertura = '1150000002',
-	@cod_responsable = 1;
-
--- CASO 1.2.2: Código de socio no existente (debe fallar)
-
-EXEC stp.modificarSocio
-	@cod_socio = 9999,
-	@dni = '12345678',
-	@nombre = 'Inexistente',
-	@apellido = 'Socio',
-	@fecha_nac = '1990-01-01',
-	@email = 'test@email.com',
-	@tel = '1131231234',
-	@tel_emerg = '1143214321',
-	@estado = 1,
-	@saldo = 100.00,
-	@nombre_cobertura = 'Medife',
-	@nro_afiliado = 'Z00000',
-	@tel_cobertura = '1177777777',
-	@cod_responsable = 1;
-
--- CASO 1.2.3: Fecha de nacimiento futura (debe fallar)
-
-EXEC stp.modificarSocio
-	@cod_socio = 1,
-	@dni = '87654321',
-	@nombre = 'Carlos',
-	@apellido = 'Gutiérrez',
-	@fecha_nac = '2100-01-01',
-	@email = 'carlos@email.com',
-	@tel = '1130000003',
-	@tel_emerg = '1140000003',
-	@estado = 1,
-	@saldo = 100.00,
-	@nombre_cobertura = 'OSDE',
-	@nro_afiliado = 'X54321',
-	@tel_cobertura = '1150000003',
-	@cod_responsable = 1;
-
--- CASO 1.2.4: Email inválido (debe fallar)
-
-EXEC stp.modificarSocio
-	@cod_socio = 1,
-	@dni = '87654321',
-	@nombre = 'Carlos',
-	@apellido = 'Gutiérrez',
-	@fecha_nac = '1980-10-15',
-	@email = 'carlos.email.com', -- sin @
-	@tel = '1130000004',
-	@tel_emerg = '1140000004',
-	@estado = 1,
-	@saldo = 100.00,
-	@nombre_cobertura = 'OSDE',
-	@nro_afiliado = 'X54321',
-	@tel_cobertura = '1150000004',
-	@cod_responsable = 1;
-
--- CASO 1.2.5: Teléfono con letras (debe fallar)
-
-EXEC stp.modificarSocio
-	@cod_socio = 1,
-	@dni = '87654321',
-	@nombre = 'Carlos',
-	@apellido = 'Gutiérrez',
-	@fecha_nac = '1980-10-15',
-	@email = 'carlos@email.com',
-	@tel = '11A34567',
-	@tel_emerg = '1140000005',
-	@estado = 1,
-	@saldo = 100.00,
-	@nombre_cobertura = 'OSDE',
-	@nro_afiliado = 'X54321',
-	@tel_cobertura = '1150000005',
-	@cod_responsable = 1;
-
-
--- CASO 1.2.6: Saldo negativo (debe fallar)
-
-EXEC stp.modificarSocio
-	@cod_socio = 1,
-	@dni = '87654321',
-	@nombre = 'Carlos',
-	@apellido = 'Gutiérrez',
-	@fecha_nac = '1980-10-15',
-	@email = 'carlos@email.com',
-	@tel = '1130000006',
-	@tel_emerg = '1140000006',
-	@estado = 1,
-	@saldo = -50.00,
-	@nombre_cobertura = 'OSDE',
-	@nro_afiliado = 'X54321',
-	@tel_cobertura = '1150000006',
-	@cod_responsable = 1;
-
-
--- CASO 1.2.7: Campo obligatorio en NULL (debe fallar)
-
-EXEC stp.modificarSocio
-	@cod_socio = 1,
-	@dni = NULL,
-	@nombre = 'Carlos',
-	@apellido = 'Gutiérrez',
-	@fecha_nac = '1980-10-15',
-	@email = 'carlos@email.com',
-	@tel = '1130000007',
-	@tel_emerg = '1140000007',
-	@estado = 1,
-	@saldo = 100.00,
-	@nombre_cobertura = 'OSDE',
-	@nro_afiliado = 'X54321',
-	@tel_cobertura = '1150000007',
-	@cod_responsable = 1;
-
-
--- CONSULTA FINAL: Ver el socio modificado
-
-SELECT * FROM psn.Socio WHERE cod_socio = 1;
-
----- 1.3 BORRADO DE TABLA SOCIO
-
--- Limpiar la tabla para pruebas (solo si es seguro)
-DELETE FROM psn.Socio
-DBCC CHECKIDENT ('psn.Socio', RESEED, 0);
-
--- Insertar socio para borrar
+-- CASO 1.1.2. DNI repetido (12345678 ya existe)
 
 EXEC stp.insertarSocio
-	@dni = '99887236',
-	@nombre = 'Laura',
-	@apellido = 'Martínez',
-	@fecha_nac = '1992-03-05',
-	@email = 'laura.martinez@email.com',
-	@tel = '1123456789',
-	@tel_emerg = '1134567890',
-	@estado = 1,
-	@saldo = 150.00,
-	@nombre_cobertura = 'OSDE',
-	@nro_afiliado = 'LM123456',
-	@tel_cobertura = '1145678901',
-	@cod_responsable = 1;
+    @cod_socio = 'SN-00002',
+    @dni = '12345678',
+    @nombre = 'Carlos',
+    @apellido = 'Gómez',
+    @fecha_nac = '1985-01-20',
+    @email = 'carlos@mail.com',
+    @tel = '12345678',
+    @tel_emerg = '12345678',
+    @estado = 1,
+    @saldo = 100,
+    @nombre_cobertura = 'Swiss Medical',
+    @nro_afiliado = 'SM87654321',
+    @tel_cobertura = '12345678',
+    @cod_responsable = 'SN-00002';
 
--- CASO 1.3.1: Borrado de socio existente
+-- CASO 1.1.3. Código de socio con formato incorrecto
 
-EXEC stp.borrarSocio @cod_socio = 1;
+EXEC stp.insertarSocio
+    @cod_socio = 'S-00003',
+    @dni = '23456789',
+    @nombre = 'Ana',
+    @apellido = 'López',
+    @fecha_nac = '1992-08-12',
+    @email = 'ana@mail.com',
+    @tel = '1123456789',
+    @tel_emerg = '1134567890',
+    @estado = 1,
+    @saldo = 200,
+    @nombre_cobertura = 'Medife',
+    @nro_afiliado = 'MD12345678',
+    @tel_cobertura = '1156789012',
+    @cod_responsable = 'SN-00003';
 
--- Verificar que se borró
+-- 1.1.4. Código de responsable con formato inválido
 
-SELECT * FROM psn.Socio WHERE cod_socio = 1;
+EXEC stp.insertarSocio
+    @cod_socio = 'SN-00004',
+    @dni = '34567890',
+    @nombre = 'Lucía',
+    @apellido = 'Martínez',
+    @fecha_nac = '1988-03-30',
+    @email = 'lucia@mail.com',
+    @tel = '1145678912',
+    @tel_emerg = '1167890123',
+    @estado = 1,
+    @saldo = 150,
+    @nombre_cobertura = 'Galeno',
+    @nro_afiliado = 'GL123456',
+    @tel_cobertura = '1189012345',
+    @cod_responsable = 'XSN-00001'; -- inválido
 
--- CASO 1.3.2: Borrado de socio inexistente
+-- 1.1.5. Teléfono con letras
 
-EXEC stp.borrarSocio @cod_socio = 9999;
+EXEC stp.insertarSocio
+    @cod_socio = 'SN-00005',
+    @dni = '45678901',
+    @nombre = 'Pedro',
+    @apellido = 'Ramírez',
+    @fecha_nac = '1995-09-10',
+    @email = 'pedro@mail.com',
+    @tel = '11ABC67890', -- inválido
+    @tel_emerg = '1122334455',
+    @estado = 1,
+    @saldo = 80,
+    @nombre_cobertura = 'PAMI',
+    @nro_afiliado = 'PM123456',
+    @tel_cobertura = '1133445566',
+    @cod_responsable = 'SN-00005';
+
+-- 1.1.6. Email inválido
+
+EXEC stp.insertarSocio
+    @cod_socio = 'SN-00006',
+    @dni = '56789012',
+    @nombre = 'María',
+    @apellido = 'Suárez',
+    @fecha_nac = '1993-11-25',
+    @email = 'maria.mail.com', -- inválido
+    @tel = '1155667788',
+    @tel_emerg = '1122334455',
+    @estado = 1,
+    @saldo = 50,
+    @nombre_cobertura = 'IOMA',
+    @nro_afiliado = 'IO987654',
+    @tel_cobertura = '1144556677',
+    @cod_responsable = 'SN-00006';
+
+-- 1.1.7. Fecha de nacimiento futura
+
+EXEC stp.insertarSocio
+    @cod_socio = 'SN-00007',
+    @dni = '67890123',
+    @nombre = 'Esteban',
+    @apellido = 'Sosa',
+    @fecha_nac = '2099-01-01', -- inválido
+    @email = 'esteban@mail.com',
+    @tel = '1122446688',
+    @tel_emerg = '1133557799',
+    @estado = 1,
+    @saldo = 70,
+    @nombre_cobertura = 'Osde',
+    @nro_afiliado = 'OS998877',
+    @tel_cobertura = '1177889900',
+    @cod_responsable = 'NS-00007';
+
+-- 1.1.8. Saldo negativo
+
+EXEC stp.insertarSocio
+    @cod_socio = 'SN-00008',
+    @dni = '78901234',
+    @nombre = 'Joaquín',
+    @apellido = 'Nieto',
+    @fecha_nac = '1991-04-18',
+    @email = 'joaquin@mail.com',
+    @tel = '1199887766',
+    @tel_emerg = '1122446688',
+    @estado = 1,
+    @saldo = -100, -- inválido
+    @nombre_cobertura = 'Medicus',
+    @nro_afiliado = 'MD654321',
+    @tel_cobertura = '1166778899',
+    @cod_responsable = 'SN-00008';
+
+
+-- CASO 1.2 MODIFICACION
+
+-- CASO 1.2.1 - Modificacion Valida
+
+EXEC stp.modificarSocio
+    @cod_socio = 'SN-00001',
+    @dni = '11112222',
+    @nombre = 'Juan',
+    @apellido = 'González',
+    @fecha_nac = '1985-12-10',
+    @email = 'juan.gonzalez@mail.com',
+    @tel = '1199887766',
+    @tel_emerg = '1133445566',
+    @estado = 0,
+    @saldo = 100,
+    @nombre_cobertura = 'OSDE',
+    @nro_afiliado = 'OS123456',
+    @tel_cobertura = '1144556677',
+    @cod_responsable = 'SN-00001';
+
+-- CASO 1.2.2. Código de socio inexistente
+EXEC stp.modificarSocio
+    @cod_socio = 'SN-99999', -- no existe
+    @dni = '12345678',
+    @nombre = 'Carlos',
+    @apellido = 'Rodríguez',
+    @fecha_nac = '1991-05-20',
+    @email = 'carlos@mail.com',
+    @tel = '1133221100',
+    @tel_emerg = '1122334455',
+    @estado = 1,
+    @saldo = 50,
+    @nombre_cobertura = 'Galeno',
+    @nro_afiliado = 'GL001122',
+    @tel_cobertura = '1177889900',
+    @cod_responsable = 'NS-00002';
+
+-- CASO 1.2.3. Código de responsable inválido
+EXEC stp.modificarSocio
+    @cod_socio = 'SN-00001',
+    @dni = '11112222',
+    @nombre = 'María',
+    @apellido = 'Pérez',
+    @fecha_nac = '1993-03-25',
+    @email = 'maria@mail.com',
+    @tel = '1144556677',
+    @tel_emerg = '1133557799',
+    @estado = 1,
+    @saldo = 200,
+    @nombre_cobertura = 'Medicus',
+    @nro_afiliado = 'MD123456',
+    @tel_cobertura = '1166778899',
+    @cod_responsable = 'XX-00001'; -- inválido
+
+-- CASO 1.2.4. Email inválido
+
+EXEC stp.modificarSocio
+    @cod_socio = 'SN-00001',
+    @dni = '11112222',
+    @nombre = 'Pedro',
+    @apellido = 'Sosa',
+    @fecha_nac = '1980-06-18',
+    @email = 'pedro.mail.com', -- mal formato
+    @tel = '1144556677',
+    @tel_emerg = '1122334455',
+    @estado = 1,
+    @saldo = 0,
+    @nombre_cobertura = 'IOMA',
+    @nro_afiliado = 'IO555666',
+    @tel_cobertura = '1177889900',
+    @cod_responsable = 'NS-00002';
+
+-- CASO 1.2.5. Teléfono con letras
+
+EXEC stp.modificarSocio
+    @cod_socio = 'SN-00001',
+    @dni = '11112222',
+    @nombre = 'Lucía',
+    @apellido = 'García',
+    @fecha_nac = '1999-02-15',
+    @email = 'lucia@mail.com',
+    @tel = '11A234567', -- letras
+    @tel_emerg = '1144556677',
+    @estado = 1,
+    @saldo = 300,
+    @nombre_cobertura = 'OMINT',
+    @nro_afiliado = 'OM998877',
+    @tel_cobertura = '1133445566',
+    @cod_responsable = 'SN-00002';
+
+-- CASO 1.2.6. Fecha de nacimiento futura
+
+EXEC stp.modificarSocio
+    @cod_socio = 'SN-00001',
+    @dni = '11112222',
+    @nombre = 'Esteban',
+    @apellido = 'Martínez',
+    @fecha_nac = '2099-01-01', -- futura
+    @email = 'esteban@mail.com',
+    @tel = '1122334455',
+    @tel_emerg = '1122334455',
+    @estado = 1,
+    @saldo = 100,
+    @nombre_cobertura = 'Galeno',
+    @nro_afiliado = 'GL123123',
+    @tel_cobertura = '1144556677',
+    @cod_responsable = 'SN-00001';
+
+-- CASO 1.2.7. Saldo negativo
+EXEC stp.modificarSocio
+    @cod_socio = 'SN-00001',
+    @dni = '11112222',
+    @nombre = 'Joaquín',
+    @apellido = 'Sánchez',
+    @fecha_nac = '1984-11-11',
+    @email = 'joaquin@mail.com',
+    @tel = '1133557799',
+    @tel_emerg = '1177889900',
+    @estado = 1,
+    @saldo = -100, -- inválido
+    @nombre_cobertura = 'Medife',
+    @nro_afiliado = 'MF123123',
+    @tel_cobertura = '1188997766',
+    @cod_responsable = 'SN-00003';
+
+-- CASO 1.3 BORRADO
+
+-- 1.3.1.  Borrado válido (el socio SN-00001 debería existir si ejecutaste las pruebas anteriores)
+EXEC stp.borrarSocio @cod_socio = 'SN-00001';
+
+-- 1.3.2. Socio inexistente
+EXEC stp.borrarSocio @cod_socio = 'SN-99999';
+
+-- 1.3.3. Formato de código inválido (letra de más)
+EXEC stp.borrarSocio @cod_socio = 'SNN-12345';
+
+-- 1.3.4. Formato de código inválido (faltan números)
+EXEC stp.borrarSocio @cod_socio = 'SN-123';
+
+-- 1.3.5. Código vacío
+EXEC stp.borrarSocio @cod_socio = '';
+
 
 -------------------------------------------------------------------------------------------------
 
@@ -972,7 +951,14 @@ EXEC stp.modificarReembolso
 
 -- 6.3 BORRADO
 
+-- 6.3.1 Borrado Exitoso
+
 EXEC stp.borrarReembolso @codReembolso = 1;
+
+-- 6.3.2 Borrado Fallido
+
+EXEC stp.borrarReembolso @codReembolso = 99;
+
 
 -- 7. CATEGORIA
 
@@ -982,11 +968,187 @@ DELETE FROM psn.Categoria
 DBCC CHECKIDENT ('psn.Categoria', RESEED, 0);
 
 
--- 7.1 INSERTADO
+-- 7.1.1 INSERCION VALIDA
 
--- 7.2 MODIFICACION
+EXEC stp.insertarCategoria 
+    @descripcion = 'Mayor',
+	@edad_max = 40,
+    @valor_mensual = 1000.00, 
+    @vig_valor_mens = '10-05-2026', 
+    @valor_anual = 10000.00, 
+    @vig_valor_anual = '10-05-2025';
 
--- 7.3 BORRADO
+-- Verificación de inserción
+
+SELECT * FROM psn.Categoria WHERE descripcion = 'Mayor';
+
+-- 7.1.2 Valor incorrecto en Descripcion (debe dar error)
+
+EXEC stp.insertarCategoria 
+    @descripcion = 'Adulto', -- debe ser 'Cadete','Mayor' o 'Menor'
+	@edad_max = 40,
+    @valor_mensual = 1500.00,
+    @vig_valor_mens = '2025-07-01',
+    @valor_anual = 16000.00,
+    @vig_valor_anual = '2025-07-01';
+
+-- 7.1.3 Valor de la suscripción negativo (debe dar error)
+
+EXEC stp.insertarCategoria 
+    @descripcion = 'Menor',
+	@edad_max = 15,
+    @valor_mensual = -100.00,  -- Negativo
+    @vig_valor_mens = '2025-07-01',
+    @valor_anual = 16000.00,
+    @vig_valor_anual = '2025-07-01';
+
+-- 7.1.4 Valor anual nulo (debe dar error)
+
+EXEC stp.insertarCategoria 
+    @descripcion = 'Cadete',
+	@edad_max = 20,
+    @valor_mensual = 1200.00,
+    @vig_valor_mens = '2025-07-01',
+    @valor_anual = NULL,  -- Nulo
+    @vig_valor_anual = '2025-07-01';
+
+-- 7.1.5 Fecha pasada (debe dar error) 
+
+EXEC stp.insertarCategoria 
+    @descripcion = 'Mayor',
+	@edad_max = 40,
+    @valor_mensual = 1200.00,
+    @vig_valor_mens = '2023-01-01',  -- Fecha en el pasado
+    @valor_anual = 15000.00,
+    @vig_valor_anual = '2025-07-01';
+
+-- 7.1.6 Fecha pasada anual (Debe dar error)
+
+EXEC stp.insertarCategoria 
+    @descripcion = 'Menor',
+	@edad_max = 12,
+    @valor_mensual = 1300.00,
+    @vig_valor_mens = '2025-07-01',
+    @valor_anual = 14000.00,
+    @vig_valor_anual = '2023-01-01';  -- Fecha en el pasado
+
+-- 7.1.7 Edad incorrecta
+
+EXEC stp.insertarCategoria 
+    @descripcion = 'Mayor',
+	@edad_max = -19,
+    @valor_mensual = 1500.00,
+    @vig_valor_mens = '2025-07-01',
+    @valor_anual = 16000.00,
+    @vig_valor_anual = '2025-07-01';
+
+
+-- 7.2 MODIFICACION 
+
+-- 7.2.1 MODIFICACIÓN VÁLIDA
+
+EXEC stp.modificarCategoria 
+    @cod_categoria = 1,
+    @descripcion = 'Cadete',
+    @edad_max = 35,
+    @valor_mensual = 1100.00,
+    @vig_valor_mens = '12-31-2025',
+    @valor_anual = 12000.00,
+    @vig_valor_anual = '12-31-2025';
+
+--  7.2.2 Categoría no existente
+
+EXEC stp.modificarCategoria 
+    @cod_categoria = 999,
+    @descripcion = 'Mayor',
+    @edad_max = 40,
+    @valor_mensual = 1100.00,
+    @vig_valor_mens = '2026-06-01',
+    @valor_anual = 12000.00,
+    @vig_valor_anual = '10-02-2025';
+
+--  7.2.3 Descripción inválida
+
+EXEC stp.modificarCategoria 
+    @cod_categoria = 1,
+    @descripcion = 'Senior', -- inválido
+    @edad_max = 40,
+    @valor_mensual = 1100.00,
+    @vig_valor_mens = '2026-06-01',
+    @valor_anual = 12000.00,
+    @vig_valor_anual = '2025-06-01';
+
+--  7.2.4 Edad máxima <= 0
+
+EXEC stp.modificarCategoria 
+    @cod_categoria = 1,
+    @descripcion = 'Mayor',
+    @edad_max = 0,
+    @valor_mensual = 1100.00,
+    @vig_valor_mens = '2026-06-01',
+    @valor_anual = 12000.00,
+    @vig_valor_anual = '2025-06-01';
+
+--  7.2.5 Valor mensual <= 0
+
+EXEC stp.modificarCategoria 
+    @cod_categoria = 1,
+    @descripcion = 'Menor',
+    @edad_max = 40,
+    @valor_mensual = 0, -- inválido
+    @vig_valor_mens = '2026-06-01',
+    @valor_anual = 12000.00,
+    @vig_valor_anual = '2025-06-01';
+
+--  7.2.6 Valor anual nulo
+
+EXEC stp.modificarCategoria 
+    @cod_categoria = 1,
+    @descripcion = 'Menor',
+    @edad_max = 40,
+    @valor_mensual = 1100.00,
+    @vig_valor_mens = '2026-06-01',
+    @valor_anual = NULL, -- inválido
+    @vig_valor_anual = '2025-06-01';
+
+-- 7.2.7 Fecha de vigencia mensual pasada
+
+EXEC stp.modificarCategoria 
+    @cod_categoria = 1,
+    @descripcion = 'Cadete',
+    @edad_max = 40,
+    @valor_mensual = 1100.00,
+    @vig_valor_mens = '2020-01-01', -- pasada
+    @valor_anual = 12000.00,
+    @vig_valor_anual = '2025-06-01';
+
+--- 7.2.8 Fecha de vigencia anual pasada
+
+EXEC stp.modificarCategoria 
+    @cod_categoria = 1,
+    @descripcion = 'Mayor',
+    @edad_max = 40,
+    @valor_mensual = 1100.00,
+    @vig_valor_mens = '2026-06-01',
+    @valor_anual = 12000.00,
+    @vig_valor_anual = '2020-01-01'; -- pasada
+
+
+----------- 7.3 BORADO DE CATEGORIA
+
+-- 7.3.1 Borrado Exitoso
+
+EXEC stp.borrarCategoria @cod_categoria = 1;
+
+-- 7.3.2 Borrado Fallido
+
+EXEC stp.borrarCategoria @cod_categoria = 999;
+
+---------------------------------------------------------------------------------
+
+
+
+
 
 
 

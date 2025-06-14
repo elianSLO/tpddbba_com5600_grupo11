@@ -28,9 +28,9 @@ CREATE OR ALTER PROCEDURE stp.insertarCategoria
 AS
 BEGIN
 	--	Validar que descripcion no exista
-	 IF @descripcion COLLATE Modern_Spanish_CI_AI NOT IN ('cadete', 'mayor', 'menor')
+	 IF @descripcion NOT IN ('Cadete', 'Mayor', 'Menor')
     BEGIN
-        PRINT 'La descripción debe ser cadete, mayor o menor.'
+        PRINT 'La descripción debe ser Cadete, Mayor o Menor.'
         RETURN;
     END
 		--	Validar que los montos no sean nulos o negativos

@@ -294,7 +294,7 @@ IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'Com5600G1
 		CREATE TABLE psn.Inscripto (
 		fecha_inscripcion		DATE NOT NULL,
 		estado					VARCHAR(50),
-		cod_socio				VARCHAR(15),
+		cod_socio				VARCHAR(15) NOT NULL,
 		cod_clase				INT NOT NULL
 		);
 		PRINT 'Tabla Inscripto creada correctamente.';
@@ -310,14 +310,14 @@ go
 IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'Com5600G11.psn.Asiste') AND type = N'U') 
 	BEGIN
 		CREATE TABLE psn.Asiste (
-			fecha		DATE NOT NULL,
-			cod_socio	VARCHAR(15) CHECK (cod_socio LIKE 'SN-[0-9][0-9][0-9][0-9][0-9]'),
-			actividad VARCHAR(50),
-			estado		CHAR(1) CHECK (estado IN ('P','PP','A','J')),
-			profesor 	VARCHAR(100),
+			fecha			DATE NOT NULL,
+			cod_socio		VARCHAR(15) CHECK (cod_socio LIKE 'SN-[0-9][0-9][0-9][0-9][0-9]'),
+			cod_actividad	INT,
+			estado			CHAR(1) CHECK (estado IN ('P','PP','A','J')),
+			cod_profesor	INT,
 			CONSTRAINT fk_socio FOREIGN KEY (cod_socio) REFERENCES psn.Socio (cod_socio),
-			CONSTRAINT fk_actividad FOREIGN KEY (actividad) REFERENCES psn.Actividad(nombre)
-			CONSTRAINT fk_profesor FOREIGN KEY (profesor) REFERENCES psn.Profesor(nombre)
+			CONSTRAINT fk_actividad FOREIGN KEY (cod_actividad) REFERENCES psn.Actividad(cod_actividad),
+			CONSTRAINT fk_profesor FOREIGN KEY (cod_profesor) REFERENCES psn.Profesor(cod_prof)
 		);	
 		PRINT 'Tabla Asiste creada correctamente.';
 	END
@@ -326,8 +326,6 @@ ELSE
 		PRINT 'La tabla Asiste ya existe.';
 	END;
 go
-
-drop table psn.Item_Factura
 
 -- TABLA ITEM_FACTURA
 

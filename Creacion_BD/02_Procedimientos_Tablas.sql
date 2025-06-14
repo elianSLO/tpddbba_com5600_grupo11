@@ -344,7 +344,7 @@ BEGIN
 	END;
 
 	-- Solo se valida que no tenga letras
-	IF @tel LIKE '%[^0-9]%' OR @tel_emerg LIKE '%[^0-9]%' OR @tel_cobertura LIKE '%[^0-9]%'
+	IF @tel LIKE '%[^0-9 -]%' OR @tel_emerg LIKE '%[^0-9 -]%' OR @tel_cobertura LIKE '%[^0-9 -]%'
 	BEGIN
 		PRINT 'Error: Los teléfonos solo deben contener números.';
 		RETURN;
@@ -454,7 +454,7 @@ BEGIN
 	END;
 
 	-- Teléfonos: solo números
-	IF @tel LIKE '%[^0-9]%' OR @tel_emerg LIKE '%[^0-9]%' OR @tel_cobertura LIKE '%[^0-9]%'
+	IF @tel LIKE '%[^0-9 -]%' OR @tel_emerg LIKE '%[^0-9 -]%' OR @tel_cobertura LIKE '%[^0-9 -]%'
 	BEGIN
 		PRINT 'Error: Los teléfonos solo deben contener números.';
 		RETURN;

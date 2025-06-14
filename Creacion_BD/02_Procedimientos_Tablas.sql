@@ -1543,6 +1543,7 @@ END;
 GO
 
 CREATE OR ALTER PROCEDURE stp.insertarResponsable
+    @cod_responsable VARCHAR(15),
     @dni         CHAR(8),
     @nombre      VARCHAR(50),
     @apellido    VARCHAR(50),
@@ -1559,6 +1560,15 @@ BEGIN
     IF @dni IS NULL OR LEN(@dni) != 8 OR @dni NOT LIKE '%[0-9]%'
     BEGIN
         PRINT 'Error: El DNI debe contener exactamente 8 dígitos numéricos.';
+        RETURN;
+    END
+
+    IF NOT (@cod_responsable LIKE 'SN-[0-9][0-9][0-9][0-9]' OR
+        @cod_responsable LIKE 'SN-[0-9][0-9][0-9][0-9][0-9]' OR
+        @cod_responsable LIKE 'NS-[0-9][0-9][0-9][0-9]' OR
+        @cod_responsable LIKE 'NS-[0-9][0-9][0-9][0-9][0-9]')
+    BEGIN
+        PRINT 'Error: Formato erróneo para cod_responsable.';
         RETURN;
     END
 
@@ -1630,7 +1640,7 @@ END;
 GO
 
 CREATE OR ALTER PROCEDURE stp.modificarResponsable
-    @cod_responsable INT,
+    @cod_responsable VARCHAR(15),
     @dni             CHAR(8),
     @nombre          VARCHAR(50),
     @apellido        VARCHAR(50),
@@ -1642,6 +1652,15 @@ CREATE OR ALTER PROCEDURE stp.modificarResponsable
 AS
 BEGIN
     SET NOCOUNT ON;
+
+    IF NOT (@cod_responsable LIKE 'SN-[0-9][0-9][0-9][0-9]' OR
+        @cod_responsable LIKE 'SN-[0-9][0-9][0-9][0-9][0-9]' OR
+        @cod_responsable LIKE 'NS-[0-9][0-9][0-9][0-9]' OR
+        @cod_responsable LIKE 'NS-[0-9][0-9][0-9][0-9][0-9]')
+    BEGIN
+        PRINT 'Error: Formato erróneo para cod_responsable.';
+        RETURN;
+    END
 
     -- Validar existencia
     IF NOT EXISTS (SELECT 1 FROM psn.Responsable WHERE cod_responsable = @cod_responsable)
@@ -1712,6 +1731,7 @@ BEGIN
     -- Actualización
     UPDATE psn.Responsable
     SET dni = @dni,
+        cod_responsable = @cod_responsable,
         nombre = @nombre,
         apellido = @apellido,
         email = @email,
@@ -1733,10 +1753,19 @@ END;
 GO
 
 CREATE OR ALTER PROCEDURE stp.borrarResponsable
-    @cod_responsable INT
+    @cod_responsable VARCHAR(15)
 AS
 BEGIN
     SET NOCOUNT ON;
+
+    IF NOT (@cod_responsable LIKE 'SN-[0-9][0-9][0-9][0-9]' OR
+        @cod_responsable LIKE 'SN-[0-9][0-9][0-9][0-9][0-9]' OR
+        @cod_responsable LIKE 'NS-[0-9][0-9][0-9][0-9]' OR
+        @cod_responsable LIKE 'NS-[0-9][0-9][0-9][0-9][0-9]')
+    BEGIN
+        PRINT 'Error: Formato erróneo para cod_responsable.';
+        RETURN;
+    END
 
     -- Validar existencia
     IF NOT EXISTS (SELECT 1 FROM psn.Responsable WHERE cod_responsable = @cod_responsable)

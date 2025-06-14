@@ -1163,7 +1163,7 @@ END
 GO
 
 CREATE OR ALTER PROCEDURE stp.suscribirSocio
-	@cod_socio INT,
+	@cod_socio VARCHAR(15),
 	@tipoSuscripcion CHAR(1), --Si es anual A, si es mensual M
 	@cod_categoria INT
 AS
@@ -1208,7 +1208,7 @@ END
 GO
 
 CREATE OR ALTER PROCEDURE stp.modificarSuscripcion
-	@cod_socio INT,
+	@cod_socio VARCHAR(15),
 	@nueva_cat INT,
 	@tiempo CHAR(1)
 AS
@@ -1248,7 +1248,7 @@ END;
 GO
 
 CREATE OR ALTER PROCEDURE stp.borrarSuscripcion
-    @cod_socio INT
+    @cod_socio VARCHAR(15)
 AS
 BEGIN
     SET NOCOUNT ON;
@@ -1278,7 +1278,7 @@ GO
 
 
 CREATE OR ALTER PROCEDURE stp.emitirFactura
-	@cod_socio		INT
+	@cod_socio		VARCHAR(15)
 AS
 BEGIN
 	IF NOT EXISTS (SELECT 1 FROM psn.Socio WHERE cod_socio = @cod_socio)
@@ -1317,7 +1317,7 @@ GO
 
 
 CREATE OR ALTER PROCEDURE stp.modificarFactura
-	@cod_socio		INT,
+	@cod_socio		VARCHAR(15),
 	@cod_Factura	INT
 AS
 BEGIN
@@ -1765,7 +1765,7 @@ END;
 GO
 
 CREATE OR ALTER PROCEDURE stp.insertarReserva
-    @cod_socio          INT = NULL,
+    @cod_socio          VARCHAR(15) = NULL,
     @cod_invitado       INT = NULL,
     @monto              DECIMAL(10,2),
     @fechahoraInicio    DATETIME,
@@ -1871,7 +1871,7 @@ GO
 
 CREATE OR ALTER PROCEDURE stp.modificarReserva
     @cod_reserva        INT,
-    @cod_socio          INT = NULL,
+    @cod_socio          VARCHAR(15) = NULL,
     @cod_invitado       INT = NULL,
     @monto              DECIMAL(10,2),
     @fechahoraInicio    DATETIME,
@@ -2253,7 +2253,7 @@ GO
 
 CREATE PROCEDURE stp.insertarAsiste
     @fecha      DATE,
-    @cod_socio  INT,
+    @cod_socio  VARCHAR(15),
     @cod_clase  INT
 AS
 BEGIN
@@ -2306,10 +2306,10 @@ GO
 
 CREATE PROCEDURE stp.modificarAsiste
     @fecha_original     DATE,
-    @cod_socio_original INT,
+    @cod_socio_original VARCHAR(15),
     @cod_clase_original INT,
     @nueva_fecha        DATE,
-    @nuevo_cod_socio    INT,
+    @nuevo_cod_socio    VARCHAR(15),
     @nuevo_cod_clase    INT
 AS
 BEGIN
@@ -2380,7 +2380,7 @@ GO
 
 CREATE PROCEDURE stp.borrarAsiste
     @fecha      DATE,
-    @cod_socio  INT,
+    @cod_socio  VARCHAR(15),
     @cod_clase  INT
 AS
 BEGIN
@@ -2416,7 +2416,7 @@ GO
 CREATE PROCEDURE stp.insertarInscripto
     @fecha_inscripcion DATE,
     @estado            VARCHAR(50),
-    @cod_socio         INT,
+    @cod_socio         VARCHAR(15),
     @cod_clase         INT
 AS
 BEGIN
@@ -2473,11 +2473,11 @@ GO
 
 CREATE PROCEDURE stp.modificarInscripto
     @fecha_original     DATE,
-    @cod_socio_original INT,
+    @cod_socio_original VARCHAR(15),
     @cod_clase_original INT,
     @nueva_fecha        DATE,
     @nuevo_estado       VARCHAR(50),
-    @nuevo_cod_socio    INT,
+    @nuevo_cod_socio    VARCHAR(15),
     @nuevo_cod_clase    INT
 AS
 BEGIN
@@ -2556,7 +2556,7 @@ GO
 
 CREATE PROCEDURE stp.borrarInscripto
     @fecha_inscripcion DATE,
-    @cod_socio         INT,
+    @cod_socio         VARCHAR(15),
     @cod_clase         INT
 AS
 BEGIN

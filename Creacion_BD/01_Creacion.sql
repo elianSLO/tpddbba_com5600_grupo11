@@ -314,12 +314,12 @@ IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'Com5600G1
 	BEGIN
 		CREATE TABLE psn.Asiste (
 			fecha			DATE NOT NULL,
-			cod_socio		VARCHAR(15) CHECK (cod_socio LIKE 'SN-[0-9][0-9][0-9][0-9][0-9]'),
-			cod_actividad	INT,
+			cod_socio		VARCHAR(15) NOT NULL CHECK (cod_socio LIKE 'SN-[0-9][0-9][0-9][0-9][0-9]'),
+			cod_clase		INT NOT NULL,
 			estado			CHAR(1) CHECK (estado IN ('P','PP','A','J')),
 			cod_profesor	INT,
 			CONSTRAINT fk_socio FOREIGN KEY (cod_socio) REFERENCES psn.Socio (cod_socio),
-			CONSTRAINT fk_actividad FOREIGN KEY (cod_actividad) REFERENCES psn.Actividad(cod_actividad),
+			CONSTRAINT fk_clase FOREIGN KEY (cod_clase) REFERENCES psn.Clase(cod_clase),
 			CONSTRAINT fk_profesor FOREIGN KEY (cod_profesor) REFERENCES psn.Profesor(cod_prof)
 		);	
 		PRINT 'Tabla Asiste creada correctamente.';
@@ -361,8 +361,8 @@ alter table psn.Suscripcion add
 	constraint fk_cat_sus foreign key (cod_categoria) references psn.Categoria(cod_categoria);
 
 alter table psn.Pago add 		
-	constraint fk_socio_pago foreign key (cod_socio) references psn.Socio(cod_socio),
-	constraint fk_invit_pago foreign key (cod_invitado) references psn.Invitado(cod_invitado);
+	constraint fk_socio_pago foreign key (paga_socio) references psn.Socio(cod_socio),
+	constraint fk_invit_pago foreign key (paga_invitado) references psn.Invitado(cod_invitado);
 
 alter table psn.Factura add 		
 	constraint fk_socio_fact foreign key (cod_socio) references psn.Socio(cod_socio);

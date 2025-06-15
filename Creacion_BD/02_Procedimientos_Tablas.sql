@@ -2271,26 +2271,143 @@ BEGIN
 END;
 GO
 
-CREATE PROCEDURE stp.insertarItem_factura
+CREATE OR ALTER PROCEDURE stp.insertarItem_factura
     @cod_Factura INT
 AS
 BEGIN
     SET NOCOUNT ON;
 
-    -- Validación: cod_Factura debe ser mayor a 0
-    IF @cod_Factura IS NULL OR @cod_Factura <= 0
+    -- Validar que la factura exista
+    IF NOT EXISTS (SELECT 1 FROM psn.Factura WHERE cod_Factura = @cod_Factura)
     BEGIN
-        PRINT 'Error: El código de factura debe ser un número positivo.';
+        PRINT 'La factura no existe.';
         RETURN;
     END
 
-    -- Inserción
-    INSERT INTO psn.Item_Factura (cod_Factura)
-    VALUES (@cod_Factura);
+    DECLARE @cod_socio VARCHAR(15);
+    SELECT @cod_socio = cod_socio FROM psn.Factura WHERE cod_Factura = @cod_Factura;
 
-    PRINT 'Item de factura insertado correctamente.';
+    IF @cod_socio IS NULL
+    BEGIN
+        PRINT 'No se encontró el socio vinculado a la factura.';
+        RETURN;
+    END
+
+    -- 1. ÍTEM POR CATEGORÍA (SN-)
+    
+    IF @cod_socio LIKE 'SN-%'
+    BEGIN
+        DECLARE @cod_categoria INT,
+                @tiempo CHAR(1),
+                @monto_categoria DECIMAL(10,2),
+                @descripcion_categoria VARCHAR(50),
+                @anio_actual INT = YEAR(GETDATE()),
+                @ya_facturada_anual BIT = 0;
+
+        SELECT TOP 1
+            @cod_categoria = cod_categoria,
+            @tiempo = tiempoSuscr
+        FROM psn.Suscripcion
+        WHERE cod_socio = @cod_socio
+        ORDER BY fecha_suscripcion DESC;
+
+        IF @tiempo = 'A'
+        BEGIN
+            -- Verificar si ya se facturó ese valor anual en el año
+            IF EXISTS (
+                SELECT 1
+                FROM psn.Factura f
+                JOIN psn.Item_Factura i ON f.cod_Factura = i.cod_Factura
+                WHERE f.cod_socio = @cod_socio
+                  AND YEAR(f.fecha_emision) = @anio_actual
+                  AND i.monto BETWEEN 
+                      (SELECT valor_anual - 0.01 FROM psn.Categoria WHERE cod_categoria = @cod_categoria)
+                      AND 
+                      (SELECT valor_anual + 0.01 FROM psn.Categoria WHERE cod_categoria = @cod_categoria)
+            )
+            BEGIN
+                SET @ya_facturada_anual = 1;
+            END
+        END
+
+        -- Obtener monto según tipo y asignar descripción
+        IF @tiempo = 'A' AND @ya_facturada_anual = 0
+        BEGIN
+            SELECT @monto_categoria = valor_anual FROM psn.Categoria WHERE cod_categoria = @cod_categoria;
+            SET @descripcion_categoria = 'CATEGORIA ANUAL';
+        END
+        ELSE IF @tiempo = 'M'
+        BEGIN
+            SELECT @monto_categoria = valor_mensual FROM psn.Categoria WHERE cod_categoria = @cod_categoria;
+            SET @descripcion_categoria = 'CATEGORIA MENSUAL';
+        END
+
+        -- Insertar ítem si corresponde
+        IF @monto_categoria IS NOT NULL
+        BEGIN
+            INSERT INTO psn.Item_Factura (cod_Factura, monto, descripcion)
+            VALUES (@cod_Factura, @monto_categoria, @descripcion_categoria);
+        END
+    END
+
+    
+    -- 2. ÍTEMS POR ACTIVIDADES
+    
+    DECLARE @cant_actividades INT,
+            @factor_actividad DECIMAL(5,2);
+
+    SET @factor_actividad = CASE
+        WHEN @cod_socio LIKE 'NS-%' THEN 0.25 -- invitado
+        ELSE 1.0 -- socio
+    END;
+
+    SELECT @cant_actividades = COUNT(DISTINCT c.cod_actividad)
+    FROM psn.Inscripto i
+    JOIN psn.Clase c ON i.cod_clase = c.cod_clase
+    WHERE i.cod_socio = @cod_socio;
+
+    IF @cant_actividades > 1
+    BEGIN
+        -- Insertar actividades con descuento 10%
+        INSERT INTO psn.Item_Factura (cod_Factura, monto, descripcion)
+        SELECT 
+            @cod_Factura,
+            ROUND(a.valor_mensual * @factor_actividad * 0.9, 2),
+            'ACTIVIDAD ' + a.nombre
+        FROM psn.Inscripto i
+        JOIN psn.Clase c ON i.cod_clase = c.cod_clase
+        JOIN psn.Actividad a ON c.cod_actividad = a.cod_actividad
+        WHERE i.cod_socio = @cod_socio;
+    END
+    ELSE
+    BEGIN
+        -- Sin descuento
+        INSERT INTO psn.Item_Factura (cod_Factura, monto, descripcion)
+        SELECT 
+            @cod_Factura,
+            ROUND(a.valor_mensual * @factor_actividad, 2),
+            'ACTIVIDAD ' + a.nombre
+        FROM psn.Inscripto i
+        JOIN psn.Clase c ON i.cod_clase = c.cod_clase
+        JOIN psn.Actividad a ON c.cod_actividad = a.cod_actividad
+        WHERE i.cod_socio = @cod_socio;
+    END
+
+    
+    -- 3. ÍTEMS POR RESERVAS
+    
+    INSERT INTO psn.Item_Factura (cod_Factura, monto, descripcion)
+    SELECT 
+        @cod_Factura,
+        r.monto,
+        'RESERVA'
+    FROM psn.Reserva r
+    WHERE r.cod_socio = @cod_socio OR r.cod_invitado = @cod_socio;
+
+    PRINT 'Items insertados correctamente en la factura.';
 END;
 GO
+
 
 
 -- MODIFICACION ITEM_FACTURA

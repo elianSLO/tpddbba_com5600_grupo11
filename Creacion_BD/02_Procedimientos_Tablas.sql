@@ -999,7 +999,9 @@ CREATE OR ALTER PROCEDURE stp.insertarPago
 	@monto				DECIMAL(10,2),
 	@fecha_pago			DATE,
 	@estado				VARCHAR(15),
-	@responsable_pago	VARCHAR(15)
+	@paga_socio			VARCHAR(15) = NULL,
+	@paga_invitado		VARCHAR(15) = NULL,
+	@medio_pago			VARCHAR(15)
 AS
 BEGIN
 	SET NOCOUNT ON;
@@ -1012,69 +1014,7 @@ BEGIN
 	END
 
 	-- Validación: fecha de pago no puede ser futura
-	IF @fecha_pago > GETDATE()
-	BEGIN
-		PRINT 'ERROR: La fecha de pago no puede ser futura.';
-		RETURN;
-	END
-
-	-- Validación: estado permitido
-	IF @estado NOT IN ('Pendiente', 'Pagado', 'Anulado')
-	BEGIN
-		PRINT 'Error: El estado debe ser: Pendiente, Pagado o Anulado.';
-		RETURN;
-	END
-
-	-- Validación: al menos uno de los códigos debe estar presente
-	IF @responsable_pago IS NULL 
-	BEGIN
-		PRINT 'Error: Debe especificar un código de socio o de invitado.';
-		RETURN;
-	END
-
-
-	-- Inserción
-	INSERT INTO psn.Pago (monto, fecha_pago, estado, responsable_pago)
-	VALUES (@monto, @fecha_pago, @estado, @responsable_pago);
-
-	PRINT 'Pago insertado correctamente.';
-END;
-GO
-
------------ STORED PROCEDURE PARA MODIFICACION DE PAGO
-
-IF EXISTS (SELECT * FROM sys.procedures WHERE name = 'modificarPago')
-BEGIN
-    DROP PROCEDURE stp.modificarPago;
-END;
-GO
-
-CREATE OR ALTER PROCEDURE stp.modificarPago
-	@cod_pago			INT,
-	@monto				DECIMAL(10,2),
-	@fecha_pago			DATE,
-	@estado				VARCHAR(15),
-	@responsable_pago	VARCHAR(15)
-AS
-BEGIN
-	SET NOCOUNT ON;
-
-	-- Validación: existencia del pago
-	IF NOT EXISTS (SELECT 1 FROM psn.Pago WHERE cod_pago = @cod_pago)
-	BEGIN
-		PRINT 'ERROR: No existe un pago con ese código.';
-		RETURN;
-	END
-
-	-- Validación: monto > 0
-	IF @monto <= 0
-	BEGIN
-		PRINT 'ERROR: El monto debe ser mayor a cero.';
-		RETURN;
-	END
-
-	-- Validación: fecha de pago no puede ser futura
-	IF @fecha_pago > GETDATE()
+	IF @fecha_pago > CAST(GETDATE() AS DATE)
 	BEGIN
 		PRINT 'ERROR: La fecha de pago no puede ser futura.';
 		RETURN;
@@ -1087,26 +1027,93 @@ BEGIN
 		RETURN;
 	END
 
-	-- Validación: al menos un código debe estar presente
-	IF @responsable_pago IS NULL
+	-- Validación: exactamente uno de los dos debe estar presente
+	IF (@paga_socio IS NULL AND @paga_invitado IS NULL) OR
+	   (@paga_socio IS NOT NULL AND @paga_invitado IS NOT NULL)
 	BEGIN
-		PRINT 'ERROR: Debe especificar un código de socio o de invitado.';
+		PRINT 'ERROR: Debe especificar solo uno entre paga_socio o paga_invitado.';
 		RETURN;
 	END
 
+	-- Inserción
+	INSERT INTO psn.Pago (monto, fecha_pago, estado, paga_socio, paga_invitado, medio_pago)
+	VALUES (@monto, @fecha_pago, @estado, @paga_socio, @paga_invitado, @medio_pago);
+
+	PRINT 'Pago insertado correctamente.';
+END;
+GO
+
+
+----------- STORED PROCEDURE PARA MODIFICACION DE PAGO
+
+IF EXISTS (SELECT * FROM sys.procedures WHERE name = 'modificarPago')
+BEGIN
+    DROP PROCEDURE stp.modificarPago;
+END;
+GO
+
+CREATE OR ALTER PROCEDURE stp.modificarPago
+	@cod_pago			BIGINT,
+	@monto				DECIMAL(10,2),
+	@fecha_pago			DATE,
+	@estado				VARCHAR(15),
+	@paga_socio			VARCHAR(15) = NULL,
+	@paga_invitado		VARCHAR(15) = NULL,
+	@medio_pago			VARCHAR(15)
+AS
+BEGIN
+	SET NOCOUNT ON;
+
+	-- Validación: existencia del pago
+	IF NOT EXISTS (SELECT 1 FROM psn.Pago WHERE cod_pago = @cod_pago)
+	BEGIN
+		PRINT 'ERROR: No existe un pago con el código especificado.';
+		RETURN;
+	END
+
+	-- Validación: monto > 0
+	IF @monto <= 0
+	BEGIN
+		PRINT 'ERROR: El monto debe ser mayor a cero.';
+		RETURN;
+	END
+
+	-- Validación: fecha de pago no puede ser futura
+	IF @fecha_pago > CAST(GETDATE() AS DATE)
+	BEGIN
+		PRINT 'ERROR: La fecha de pago no puede ser futura.';
+		RETURN;
+	END
+
+	-- Validación: estado permitido
+	IF @estado NOT IN ('Pendiente', 'Pagado', 'Anulado')
+	BEGIN
+		PRINT 'ERROR: El estado debe ser: Pendiente, Pagado o Anulado.';
+		RETURN;
+	END
+
+	-- Validación: solo uno de los dos debe estar informado
+	IF (@paga_socio IS NULL AND @paga_invitado IS NULL) OR
+	   (@paga_socio IS NOT NULL AND @paga_invitado IS NOT NULL)
+	BEGIN
+		PRINT 'ERROR: Debe especificar solo uno entre paga_socio o paga_invitado.';
+		RETURN;
+	END
 
 	-- Actualización
-	UPDATE Com5600G11.psn.Pago
-	SET
-		monto = @monto,
+	UPDATE psn.Pago
+	SET monto = @monto,
 		fecha_pago = @fecha_pago,
 		estado = @estado,
-		responsable_pago = @responsable_pago
+		paga_socio = @paga_socio,
+		paga_invitado = @paga_invitado,
+		medio_pago = @medio_pago
 	WHERE cod_pago = @cod_pago;
 
 	PRINT 'Pago modificado correctamente.';
 END;
 GO
+
 
 
 ----------- STORED PROCEDURE PARA BORRAR PAGO

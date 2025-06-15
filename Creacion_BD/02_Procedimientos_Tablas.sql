@@ -66,8 +66,8 @@ BEGIN
     DROP PROCEDURE stp.modificarCategoria;
 END;
 GO
-CREATE OR ALTER PROCEDURE stp.modificarCategoria
-	@cod_categoria		INT,
+
+CREATE OR ALTER PROCEDURE stp.insertarCategoria
 	@descripcion		VARCHAR(50),
 	@edad_max			INT,
 	@valor_mensual		DECIMAL(10,2),
@@ -76,48 +76,50 @@ CREATE OR ALTER PROCEDURE stp.modificarCategoria
 	@vig_valor_anual	DATE	
 AS
 BEGIN
-	--	Validar que exista el id de la categoria
-	IF NOT EXISTS (SELECT 1 FROM psn.Categoria WHERE @cod_categoria = cod_categoria)
-		BEGIN
-			PRINT 'La categoria no existe en la tabla.'
-            RETURN;
-        END;
-	--	Validar que descripcion la exista
-	 IF @descripcion NOT IN ('Cadete', 'Mayor', 'Menor')
-    BEGIN
-        PRINT 'La descripción debe ser Cadete, Mayor o Menor.'
-        RETURN;
-    END
-	--	Validar que la edad máxima sea mayor a 0
-		IF (@edad_max <= 0)
-		BEGIN
-			PRINT 'La edad máxima debe ser un número mayor a 0.'
-			RETURN;
-		END;
-		--	Validar que los montos no sean nulos o negativos
-		IF (@valor_mensual <= 0 or @valor_mensual IS NULL or @valor_anual <= 0 or @valor_anual IS NULL)
-		BEGIN
-			PRINT 'El valor de la suscripcion debe ser mayor a cero'
-			RETURN;
-		END;
-		IF (@vig_valor_mens < GETDATE() or @vig_valor_anual < GETDATE())
-			BEGIN
-				PRINT 'Fecha de vigencia invalida'
-            RETURN;
-			END;
-		
-		UPDATE psn.Categoria
-		SET
-			descripcion = ISNULL(@descripcion,descripcion),
-			edad_max = ISNULL(@edad_max,edad_max),
-			valor_mensual = ISNULL(@valor_mensual,valor_mensual),
-			vig_valor_mens = ISNULL(@vig_valor_mens, vig_valor_mens),
-			valor_anual = ISNULL(@valor_anual, valor_anual),
-			vig_valor_anual = ISNULL(@vig_valor_anual, vig_valor_anual)
-		where cod_categoria = @cod_categoria;
-		PRINT 'Categoria actualizada correctamente'
+	SET NOCOUNT ON;
+
+	-- Validar que la descripcion sea válida
+	IF @descripcion NOT IN ('Cadete', 'Mayor', 'Menor')
+	BEGIN
+		PRINT 'La descripción debe ser Cadete, Mayor o Menor.'
+		RETURN;
+	END
+
+	-- Validar que no exista ya una categoria con la misma descripcion
+	IF EXISTS (SELECT 1 FROM psn.Categoria WHERE descripcion = @descripcion)
+	BEGIN
+		PRINT 'Ya existe una categoría con esa descripción.'
+		RETURN;
+	END
+
+	-- Validar que la edad máxima sea mayor a 0
+	IF (@edad_max <= 0)
+	BEGIN
+		PRINT 'La edad máxima debe ser un número mayor a 0.'
+		RETURN;
+	END
+
+	-- Validar que los montos no sean nulos o negativos
+	IF (@valor_mensual <= 0 OR @valor_mensual IS NULL OR @valor_anual <= 0 OR @valor_anual IS NULL)
+	BEGIN
+		PRINT 'El valor de la suscripción debe ser mayor a cero'
+		RETURN;
+	END
+
+	-- Validar que las fechas de vigencia no sean anteriores a hoy
+	IF (@vig_valor_mens < CAST(GETDATE() AS DATE) OR @vig_valor_anual < CAST(GETDATE() AS DATE))
+	BEGIN
+		PRINT 'Fecha de vigencia inválida'
+		RETURN;
+	END
+
+	INSERT INTO psn.Categoria(descripcion,edad_max,valor_mensual,vig_valor_mens,valor_anual,vig_valor_anual)
+	VALUES (@descripcion,@edad_max,@valor_mensual,@vig_valor_mens,@valor_anual,@vig_valor_anual);
+
+	PRINT 'Categoría insertada correctamente'
 END
 GO
+
 
 -- SP PARA BORRAR CATEGORIA
 
@@ -148,13 +150,15 @@ GO
 
 
 CREATE OR ALTER PROCEDURE stp.insertarActividad
-	@nombre		VARCHAR(50),
-	@valor_mensual		DECIMAL(10,2),
-	@vig_valor			DATE
+    @nombre         VARCHAR(50),
+    @valor_mensual  DECIMAL(10,2),
+    @vig_valor      DATE
 AS
 BEGIN
-	 -- Validar el nombre de la actividad 
-	 IF @nombre COLLATE Modern_Spanish_CI_AI NOT IN (
+    SET NOCOUNT ON;
+
+    -- Validar el nombre de la actividad 
+    IF @nombre COLLATE Modern_Spanish_CI_AI NOT IN (
         'Futsal',
         'Vóley',
         'Taekwondo',
@@ -162,27 +166,39 @@ BEGIN
         'Natación',
         'Ajedrez'
     )
-	 BEGIN
+    BEGIN
         PRINT 'El nombre de la actividad no es correcto.'
         RETURN;
     END
-	--	Validar que el valor mensual sea coherente
-	IF @valor_mensual <= 0
-		BEGIN
-			PRINT 'Error en el valor mensual.'
-			RETURN
-		END
-	IF @vig_valor < GETDATE()
-		BEGIN
-			PRINT 'Fecha de vigencia invalida.'
-			RETURN
-		END
 
-	INSERT INTO psn.Actividad (nombre,valor_mensual,vig_valor)
-		VALUES(@nombre,@valor_mensual,@vig_valor)
-	PRINT 'Actividad agregada correctamente.'
+    -- Validar que no exista ya una actividad con el mismo nombre
+    IF EXISTS (SELECT 1 FROM psn.Actividad WHERE nombre = @nombre)
+    BEGIN
+        PRINT 'La actividad ya existe y no se puede insertar nuevamente.'
+        RETURN;
+    END
+
+    -- Validar que el valor mensual sea coherente
+    IF @valor_mensual <= 0
+    BEGIN
+        PRINT 'Error en el valor mensual.'
+        RETURN
+    END
+
+    -- Validar fecha de vigencia
+    IF @vig_valor < CAST(GETDATE() AS DATE)
+    BEGIN
+        PRINT 'Fecha de vigencia invalida.'
+        RETURN
+    END
+
+    INSERT INTO psn.Actividad (nombre, valor_mensual, vig_valor)
+    VALUES (@nombre, @valor_mensual, @vig_valor)
+
+    PRINT 'Actividad agregada correctamente.'
 END
 GO
+
 
 CREATE OR ALTER PROCEDURE stp.modificarActividad
 	@nombre				VARCHAR(50),

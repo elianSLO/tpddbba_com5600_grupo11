@@ -35,35 +35,39 @@ EXEC stp.insertarSocio
 -- Verifico que se insertó correctamente.
 SELECT * FROM psn.Socio
 
--- CASO 1. Pruebo emitirFactura
+-- CASO 10.1.1 Pruebo emitirFactura con socio existente
 EXEC stp.emitirFactura @cod_socio = 'SN-00001' 
 
 -- Verifico que se insertó correctamente.
 SELECT * from psn.Factura
 
+-- CASO 10.1.2 Pruebo emitirFactura con socio inexistente
+
+EXEC stp.emitirFactura @cod_socio = 'SN-00002' 
+
 
 
 -- CASO 10.2  PRUEBA modificarFactura
 
--- Estado inválido
+-- 10.2.1 Estado inválido
 EXEC stp.modificarFactura @cod_socio = 'SN-00001', @cod_Factura = 1, @nuevo_estado = 'PENDIENTE';
 
--- Factura no existente
+-- 10.2.2 Factura no existente
 EXEC stp.modificarFactura @cod_socio = 'SN-00001', @cod_Factura = 9999, @nuevo_estado = 'PAGADA';
 
--- Marcar como PAGADA
+-- 10.2.3 Marcar como PAGADA
 EXEC stp.modificarFactura @cod_socio = 'SN-00001', @cod_Factura = 1, @nuevo_estado = 'PAGADA';
 
 -- Verifico que se actualizó:
 SELECT * FROM psn.Factura
 
--- Marcar como VENCIDA (Si está vencida luego la segunda fecha)
+-- 10.2.4 Marcar como VENCIDA (Si está vencida luego la segunda fecha)
 EXEC stp.modificarFactura @cod_socio = 'SN-00001', @cod_Factura = 1, @nuevo_estado = 'VENCIDA';
 
 -- Verifico que se actualizó:
 SELECT * from psn.Factura
 
--- Marcar como ANULADA
+-- 10.2.5 Marcar como ANULADA
 EXEC stp.modificarFactura @cod_socio = 'SN-00001', @cod_Factura = 1, @nuevo_estado = 'ANULADA';
 
 -- Verifico que se actualizó (ver que el monto pasa a ser 0.00):
@@ -74,15 +78,15 @@ SELECT * from psn.Factura
 
 -- CASO 10.3 PRUEBA borrarFactura
 
--- Borro factura existente
+-- 10.3.1 Borro factura existente
 
 EXEC stp.borrarFactura @cod_Factura = 1
 
--- Borro la misma factura devuelta y verifico que ya no existe
+-- 10.3.2 Borro la misma factura devuelta y verifico que ya no existe
 
 EXEC stp.borrarFactura @cod_Factura = 1
 
--- Ahora intento borrar factura inexistente 
+-- 10.3.3 Borro factura inexistente 
 
 EXEC stp.borrarFactura @cod_Factura = 999
 

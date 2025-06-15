@@ -2277,7 +2277,6 @@ AS
 BEGIN
     SET NOCOUNT ON;
 
-    -- Validar que la factura exista
     IF NOT EXISTS (SELECT 1 FROM psn.Factura WHERE cod_Factura = @cod_Factura)
     BEGIN
         PRINT 'La factura no existe.';
@@ -2293,8 +2292,9 @@ BEGIN
         RETURN;
     END
 
-    -- 1. ÍTEM POR CATEGORÍA (SN-)
-    
+    DECLARE @prox_item INT;
+
+    -- 1. ÍTEM POR CATEGORÍA
     IF @cod_socio LIKE 'SN-%'
     BEGIN
         DECLARE @cod_categoria INT,
@@ -2313,7 +2313,6 @@ BEGIN
 
         IF @tiempo = 'A'
         BEGIN
-            -- Verificar si ya se facturó ese valor anual en el año
             IF EXISTS (
                 SELECT 1
                 FROM psn.Factura f
@@ -2330,7 +2329,6 @@ BEGIN
             END
         END
 
-        -- Obtener monto según tipo y asignar descripción
         IF @tiempo = 'A' AND @ya_facturada_anual = 0
         BEGIN
             SELECT @monto_categoria = valor_anual FROM psn.Categoria WHERE cod_categoria = @cod_categoria;
@@ -2342,23 +2340,22 @@ BEGIN
             SET @descripcion_categoria = 'CATEGORIA MENSUAL';
         END
 
-        -- Insertar ítem si corresponde
         IF @monto_categoria IS NOT NULL
         BEGIN
-            INSERT INTO psn.Item_Factura (cod_Factura, monto, descripcion)
-            VALUES (@cod_Factura, @monto_categoria, @descripcion_categoria);
+            SELECT @prox_item = ISNULL(MAX(cod_item), 0) + 1 FROM psn.Item_Factura WHERE cod_Factura = @cod_Factura;
+
+            INSERT INTO psn.Item_Factura (cod_item, cod_Factura, monto, descripcion)
+            VALUES (@prox_item, @cod_Factura, @monto_categoria, @descripcion_categoria);
         END
     END
 
-    
-    -- 2. ÍTEMS POR ACTIVIDADES
-    
+    -- 2. ÍTEMS POR ACTIVIDAD
     DECLARE @cant_actividades INT,
             @factor_actividad DECIMAL(5,2);
 
     SET @factor_actividad = CASE
-        WHEN @cod_socio LIKE 'NS-%' THEN 0.25 -- invitado
-        ELSE 1.0 -- socio
+        WHEN @cod_socio LIKE 'NS-%' THEN 0.25
+        ELSE 1.0
     END;
 
     SELECT @cant_actividades = COUNT(DISTINCT c.cod_actividad)
@@ -2368,41 +2365,71 @@ BEGIN
 
     IF @cant_actividades > 1
     BEGIN
-        -- Insertar actividades con descuento 10%
-        INSERT INTO psn.Item_Factura (cod_Factura, monto, descripcion)
-        SELECT 
-            @cod_Factura,
-            ROUND(a.valor_mensual * @factor_actividad * 0.9, 2),
-            'ACTIVIDAD ' + a.nombre
+        DECLARE actividad_cursor CURSOR FOR
+        SELECT a.nombre, ROUND(a.valor_mensual * @factor_actividad * 0.9, 2)
         FROM psn.Inscripto i
         JOIN psn.Clase c ON i.cod_clase = c.cod_clase
         JOIN psn.Actividad a ON c.cod_actividad = a.cod_actividad
         WHERE i.cod_socio = @cod_socio;
+
+        DECLARE @nombre_act VARCHAR(50), @monto_act DECIMAL(10,2);
+
+        OPEN actividad_cursor;
+        FETCH NEXT FROM actividad_cursor INTO @nombre_act, @monto_act;
+
+        WHILE @@FETCH_STATUS = 0
+        BEGIN
+            SELECT @prox_item = ISNULL(MAX(cod_item), 0) + 1 FROM psn.Item_Factura WHERE cod_Factura = @cod_Factura;
+
+            INSERT INTO psn.Item_Factura (cod_item, cod_Factura, monto, descripcion)
+            VALUES (@prox_item, @cod_Factura, @monto_act, 'ACTIVIDAD ' + @nombre_act);
+
+            FETCH NEXT FROM actividad_cursor INTO @nombre_act, @monto_act;
+        END
+
+        CLOSE actividad_cursor;
+        DEALLOCATE actividad_cursor;
     END
     ELSE
     BEGIN
-        -- Sin descuento
-        INSERT INTO psn.Item_Factura (cod_Factura, monto, descripcion)
-        SELECT 
-            @cod_Factura,
-            ROUND(a.valor_mensual * @factor_actividad, 2),
-            'ACTIVIDAD ' + a.nombre
+        SELECT @nombre_act = a.nombre,
+               @monto_act = ROUND(a.valor_mensual * @factor_actividad, 2)
         FROM psn.Inscripto i
         JOIN psn.Clase c ON i.cod_clase = c.cod_clase
         JOIN psn.Actividad a ON c.cod_actividad = a.cod_actividad
         WHERE i.cod_socio = @cod_socio;
+
+        IF @nombre_act IS NOT NULL
+        BEGIN
+            SELECT @prox_item = ISNULL(MAX(cod_item), 0) + 1 FROM psn.Item_Factura WHERE cod_Factura = @cod_Factura;
+
+            INSERT INTO psn.Item_Factura (cod_item, cod_Factura, monto, descripcion)
+            VALUES (@prox_item, @cod_Factura, @monto_act, 'ACTIVIDAD ' + @nombre_act);
+        END
     END
 
-    
     -- 3. ÍTEMS POR RESERVAS
-    
-    INSERT INTO psn.Item_Factura (cod_Factura, monto, descripcion)
-    SELECT 
-        @cod_Factura,
-        r.monto,
-        'RESERVA'
+    DECLARE @monto_reserva DECIMAL(10,2);
+    DECLARE reserva_cursor CURSOR FOR
+    SELECT r.monto
     FROM psn.Reserva r
     WHERE r.cod_socio = @cod_socio OR r.cod_invitado = @cod_socio;
+
+    OPEN reserva_cursor;
+    FETCH NEXT FROM reserva_cursor INTO @monto_reserva;
+
+    WHILE @@FETCH_STATUS = 0
+    BEGIN
+        SELECT @prox_item = ISNULL(MAX(cod_item), 0) + 1 FROM psn.Item_Factura WHERE cod_Factura = @cod_Factura;
+
+        INSERT INTO psn.Item_Factura (cod_item, cod_Factura, monto, descripcion)
+        VALUES (@prox_item, @cod_Factura, @monto_reserva, 'RESERVA');
+
+        FETCH NEXT FROM reserva_cursor INTO @monto_reserva;
+    END
+
+    CLOSE reserva_cursor;
+    DEALLOCATE reserva_cursor;
 
     PRINT 'Items insertados correctamente en la factura.';
 END;
@@ -2418,35 +2445,38 @@ BEGIN
 END;
 GO
 
-CREATE PROCEDURE stp.modificarItem_factura
-    @cod_item     INT,
-    @cod_Factura  INT
+CREATE OR ALTER PROCEDURE stp.modificarItem_Factura
+    @cod_Factura INT,
+    @cod_item INT,
+    @monto DECIMAL(10,2),
+    @descripcion VARCHAR(50)
 AS
 BEGIN
     SET NOCOUNT ON;
 
-    -- Validar existencia de cod_item
-    IF NOT EXISTS (SELECT 1 FROM psn.Item_Factura WHERE cod_item = @cod_item)
+    -- Validar que el item exista
+    IF NOT EXISTS (
+        SELECT 1
+        FROM psn.Item_Factura
+        WHERE cod_Factura = @cod_Factura
+          AND cod_item = @cod_item
+    )
     BEGIN
-        PRINT 'Error: No existe un ítem de factura con ese código.';
+        PRINT 'El item de factura no existe.';
         RETURN;
     END
 
-    -- Validación: cod_Factura debe ser mayor a 0
-    IF @cod_Factura IS NULL OR @cod_Factura <= 0
-    BEGIN
-        PRINT 'Error: El código de factura debe ser un número positivo.';
-        RETURN;
-    END
-
-    -- Actualización
+    -- Actualizar los datos del item
     UPDATE psn.Item_Factura
-    SET cod_Factura = @cod_Factura
-    WHERE cod_item = @cod_item;
+    SET monto = @monto,
+        descripcion = @descripcion
+    WHERE cod_Factura = @cod_Factura
+      AND cod_item = @cod_item;
 
     PRINT 'Item de factura modificado correctamente.';
 END;
 GO
+
 
 -- BORRADO ITEM_FACTURA
 IF EXISTS (SELECT * FROM sys.procedures WHERE name = 'borrarItem_factura')

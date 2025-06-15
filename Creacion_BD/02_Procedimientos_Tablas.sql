@@ -2347,25 +2347,46 @@ BEGIN
         END
     END
 
-    -- 2. ÍTEMS POR ACTIVIDAD 
-    DECLARE @factor_actividad DECIMAL(5,2) = CASE WHEN @cod_socio LIKE 'NS-%' THEN 0.25 ELSE 1.0 END;
-
-    INSERT INTO psn.Item_Factura (cod_item, cod_Factura, monto, descripcion)
-    SELECT
-        ROW_NUMBER() OVER (ORDER BY a.nombre) 
-        + ISNULL((SELECT MAX(cod_item) FROM psn.Item_Factura WHERE cod_Factura = @cod_Factura), 0) AS cod_item,
-        @cod_Factura,
-        ROUND(a.valor_mensual * @factor_actividad, 2) AS monto,
-        'ACTIVIDAD ' + a.nombre AS descripcion
+    -- 2. ÍTEMS POR ACTIVIDAD
+    DECLARE @cant_actividades INT;
+    SELECT @cant_actividades = COUNT(DISTINCT a.cod_actividad)
     FROM psn.Inscripto i
     JOIN psn.Clase c ON i.cod_clase = c.cod_clase
     JOIN psn.Actividad a ON c.cod_actividad = a.cod_actividad
     WHERE i.cod_socio = @cod_socio;
 
+    IF @cant_actividades > 1
+    BEGIN
+        INSERT INTO psn.Item_Factura (cod_item, cod_Factura, monto, descripcion)
+        SELECT
+            ROW_NUMBER() OVER (ORDER BY a.nombre)
+            + ISNULL((SELECT MAX(cod_item) FROM psn.Item_Factura WHERE cod_Factura = @cod_Factura), 0) AS cod_item,
+            @cod_Factura,
+            ROUND(a.valor_mensual * 0.9, 2) AS monto, -- Aplica 10% descuento
+            'ACTIVIDAD ' + a.nombre AS descripcion
+        FROM psn.Inscripto i
+        JOIN psn.Clase c ON i.cod_clase = c.cod_clase
+        JOIN psn.Actividad a ON c.cod_actividad = a.cod_actividad
+        WHERE i.cod_socio = @cod_socio;
+    END
+    ELSE
+    BEGIN
+        INSERT INTO psn.Item_Factura (cod_item, cod_Factura, monto, descripcion)
+        SELECT
+            ISNULL((SELECT MAX(cod_item) FROM psn.Item_Factura WHERE cod_Factura = @cod_Factura), 0) + 1 AS cod_item,
+            @cod_Factura,
+            ROUND(a.valor_mensual, 2) AS monto,
+            'ACTIVIDAD ' + a.nombre AS descripcion
+        FROM psn.Inscripto i
+        JOIN psn.Clase c ON i.cod_clase = c.cod_clase
+        JOIN psn.Actividad a ON c.cod_actividad = a.cod_actividad
+        WHERE i.cod_socio = @cod_socio;
+    END
+
     -- 3. ÍTEMS POR RESERVAS
     INSERT INTO psn.Item_Factura (cod_item, cod_Factura, monto, descripcion)
     SELECT
-        ROW_NUMBER() OVER (ORDER BY r.monto) 
+        ROW_NUMBER() OVER (ORDER BY r.monto)
         + ISNULL((SELECT MAX(cod_item) FROM psn.Item_Factura WHERE cod_Factura = @cod_Factura), 0) AS cod_item,
         @cod_Factura,
         r.monto,
@@ -2385,6 +2406,7 @@ BEGIN
     PRINT 'Items insertados correctamente y monto actualizado en la factura.';
 END;
 GO
+
 
 
 

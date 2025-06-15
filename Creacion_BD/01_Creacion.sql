@@ -338,6 +338,7 @@ IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'Com5600G1
 			cod_item	INT IDENTITY(1,1) PRIMARY KEY,
 			cod_Factura	INT,
 			monto		DECIMAL(10,2),
+			descripcion VARCHAR(50)
 		
       CONSTRAINT FK_ItemFactura_Factura FOREIGN KEY (cod_Factura)
       REFERENCES psn.Factura (cod_Factura)

@@ -59,72 +59,94 @@ BEGIN
 END;
 GO
 
---'D:\repos\tpddbba_com5600_grupo11\Creacion_BD\import\Datos socios.xlsx'
-
 CREATE OR ALTER PROCEDURE imp.Importar_Pagos
     @RutaArchivo NVARCHAR(255)
 AS
 BEGIN
-	SET NOCOUNT ON;
-	-- Eliminar tabla temporal si existe
-	IF OBJECT_ID('tempdb..##Temp') IS NOT NULL
-		DROP TABLE ##Temp;
-	-- Crear tabla temporal global. Mientras algun ´proceso la requeriera existira.
-	CREATE TABLE ##Temp
-	(
-		tcod_pago			VARCHAR(100),
-		tfecha_pago			VARCHAR(100),
-		tresponsable_pago	VARCHAR(100),
-		tmonto				VARCHAR(100),
-		tmedio_pago			VARCHAR(100),
-	);
-	-- Armar consulta dinámica.
-	DECLARE @SQL NVARCHAR(MAX);
-	SET @SQL = '
-		INSERT INTO ##Temp
-		SELECT * FROM OPENROWSET(
-		''Microsoft.ACE.OLEDB.12.0'',
-		''Excel 12.0;HDR=YES;Database=' + @RutaArchivo + ''',
-		''SELECT * FROM [pago cuotas$]''
-		);
-	';
-	EXEC sp_executesql @SQL;
-	PRINT 'Datos cargados en ##Temp.';
+    SET NOCOUNT ON;
 
-    -- Formateo lo leido en ##Temp y ejecuto sp para insertar.
-    DECLARE @vcod_pago				BIGINT,
+    IF OBJECT_ID('tempdb..##Temp') IS NOT NULL
+        DROP TABLE ##Temp;
+
+    CREATE TABLE ##Temp
+    (
+        tcod_pago			VARCHAR(100),
+        tfecha_pago			VARCHAR(100),	
+        tresponsable_pago	VARCHAR(100),
+        tmonto				VARCHAR(100),
+        tmedio_pago			VARCHAR(100)
+    );
+
+    DECLARE @SQL NVARCHAR(MAX);
+    SET @SQL = '
+    INSERT INTO ##Temp 
+    SELECT *
+    FROM OPENROWSET(
+        ''Microsoft.ACE.OLEDB.12.0'',
+        ''Excel 12.0;HDR=YES;Database=' + @RutaArchivo + ''',
+        ''SELECT * FROM [pago cuotas$]''
+    )';
+    EXEC sp_executesql @SQL;
+    PRINT 'Datos cargados en ##Temp.';
+
+	DECLARE @vcod_pago				BIGINT,
             @vfecha_pago			DATE,
             @vresponsable_pago		VARCHAR(15),
             @vmonto					DECIMAL(10,2),
-            @vmedio_pago			VARCHAR(15);
+            @vmedio_pago			VARCHAR(15),
 
-    DECLARE cur CURSOR LOCAL FAST_FORWARD FOR
-    SELECT cod_pago, fecha_pago, responsable_pago, monto, medio_pago
+			@ttcod_pago				VARCHAR(100),
+			@ttfecha_pago			VARCHAR(100),	
+			@ttresponsable_pago		VARCHAR(100),
+			@ttmonto				VARCHAR(100),
+			@ttmedio_pago			VARCHAR(100),
+
+			@filas_importadas		INT = 0,
+			@filas_ignoradas		INT = 0;
+
+    DECLARE cur CURSOR LOCAL FOR
+    SELECT tcod_pago, tfecha_pago, tresponsable_pago, tmonto, tmedio_pago
     FROM ##Temp;
 
-    OPEN cur;
-    FETCH NEXT FROM cur INTO @vcod_pago, @vfecha_pago, @vresponsable_pago, @vmonto, @vmedio_pago;
+	OPEN cur;
+	FETCH NEXT FROM cur INTO @ttcod_pago, @ttfecha_pago, @ttresponsable_pago, @ttmonto, @ttmedio_pago;
 
-    WHILE @@FETCH_STATUS = 0
+	WHILE @@FETCH_STATUS = 0
     BEGIN
-        -- Llamar al SP con reglas de negocio
-        EXEC stp.insertarPago 
-			@cod_pago			= @vcod_pago,
-            @monto				= @vmonto,
-            @fecha_pago			= @vfecha_pago,
-            @estado				= 'Pagado',
-            @responsable_pago	= @vresponsable_pago;
+		SET @vcod_pago = TRY_CAST(@ttcod_pago AS BIGINT);
+		SET @vfecha_pago = TRY_CAST(@ttfecha_pago AS DATE);
+        SET @vresponsable_pago = LEFT(@ttresponsable_pago, 15);
+        SET @vmonto = TRY_CAST(@ttmonto AS DECIMAL(10,2));
+        SET @vmedio_pago = LEFT(@ttmedio_pago, 15);
 
-        FETCH NEXT FROM cur INTO @cod_pago, @fecha_pago, @responsable_pago, @monto, @medio_pago;
+		IF @vcod_pago IS NOT NULL AND @vfecha_pago IS NOT NULL AND @vmonto IS NOT NULL
+		BEGIN
+			IF NOT EXISTS (SELECT 1 FROM psn.Pago p WHERE p.cod_pago = @vcod_pago)
+			BEGIN
+				EXEC stp.insertarPago 
+					@cod_pago = @vcod_pago,
+					@monto = @vmonto,
+					@fecha_pago = @vfecha_pago,
+					@estado = 'Pagado',  
+					@responsable_pago = @vresponsable_pago;
+				SET @filas_importadas += 1;
+			END
+		END
+		ELSE
+		BEGIN
+			SET @filas_ignoradas += 1;
+		END
+        FETCH NEXT FROM cur INTO @ttcod_pago, @ttfecha_pago, @ttresponsable_pago, @ttmonto, @ttmedio_pago;
     END
 
     CLOSE cur;
     DEALLOCATE cur;
-
-    -- Eliminar ##Temp
     DROP TABLE ##Temp;
+
     PRINT '##Temp eliminada.';
-    PRINT 'Importación completada correctamente.';
+    PRINT CONCAT('Filas importadas: ', @filas_importadas);
+    PRINT CONCAT('Filas ignoradas: ', @filas_ignoradas);
+    PRINT 'Importe completo.';
 END
 GO
 

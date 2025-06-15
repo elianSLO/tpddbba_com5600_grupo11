@@ -2458,26 +2458,48 @@ BEGIN
 END;
 GO
 
-CREATE PROCEDURE stp.borrarItem_factura
-    @cod_item INT
+CREATE OR ALTER PROCEDURE stp.borrarItem_factura
+    @cod_item INT,
+    @cod_factura INT
 AS
 BEGIN
     SET NOCOUNT ON;
 
-    -- Validar existencia
-    IF NOT EXISTS (SELECT 1 FROM psn.Item_Factura WHERE cod_item = @cod_item)
+    -- Validar que exista la factura
+    IF NOT EXISTS (SELECT 1 FROM psn.Factura WHERE cod_Factura = @cod_Factura)
     BEGIN
-        PRINT 'Error: No existe un ítem de factura con ese código.';
+        PRINT 'La factura no existe.';
         RETURN;
     END
 
-    -- Eliminación
-    DELETE FROM psn.Item_Factura
-    WHERE cod_item = @cod_item;
+    -- Validar que exista el ítem en esa factura
+    IF NOT EXISTS (
+        SELECT 1
+        FROM psn.Item_Factura
+        WHERE cod_Factura = @cod_Factura AND cod_item = @cod_item
+    )
+    BEGIN
+        PRINT 'El ítem no existe en la factura especificada.';
+        RETURN;
+    END
 
-    PRINT 'Item de factura eliminado correctamente.';
+    -- Eliminar el ítem
+    DELETE FROM psn.Item_Factura
+    WHERE cod_Factura = @cod_Factura AND cod_item = @cod_item;
+
+    -- Actualizar el monto total de la factura
+    UPDATE psn.Factura
+    SET monto = (
+        SELECT ISNULL(SUM(monto), 0)
+        FROM psn.Item_Factura
+        WHERE cod_Factura = @cod_Factura
+    )
+    WHERE cod_Factura = @cod_Factura;
+
+    PRINT 'Ítem eliminado y monto actualizado en la factura.';
 END;
 GO
+
 
 
 ----------------------- SPs ASISTE

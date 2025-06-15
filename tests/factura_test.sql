@@ -61,7 +61,7 @@ EXEC stp.modificarFactura @cod_socio = 'SN-00001', @cod_Factura = 1, @nuevo_esta
 -- Verifico que se actualizó:
 SELECT * FROM psn.Factura
 
--- 10.2.4 Marcar como VENCIDA (Si está vencida luego la segunda fecha)
+-- 10.2.4 Marcar como VENCIDA (Si está vencida luego la segunda fecha aplica recargo)
 EXEC stp.modificarFactura @cod_socio = 'SN-00001', @cod_Factura = 1, @nuevo_estado = 'VENCIDA';
 
 -- Verifico que se actualizó:

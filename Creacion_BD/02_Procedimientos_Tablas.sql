@@ -1014,7 +1014,7 @@ BEGIN
 	END
 
 	-- Validación: fecha de pago no puede ser futura
-	IF @fecha_pago > CAST(GETDATE() AS DATE)
+	IF @fecha_pago > GETDATE()
 	BEGIN
 		PRINT 'ERROR: La fecha de pago no puede ser futura.';
 		RETURN;
@@ -1079,7 +1079,7 @@ BEGIN
 	END
 
 	-- Validación: fecha de pago no puede ser futura
-	IF @fecha_pago > CAST(GETDATE() AS DATE)
+	IF @fecha_pago > GETDATE()
 	BEGIN
 		PRINT 'ERROR: La fecha de pago no puede ser futura.';
 		RETURN;

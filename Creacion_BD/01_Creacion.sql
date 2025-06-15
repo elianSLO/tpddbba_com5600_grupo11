@@ -341,7 +341,7 @@ IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'Com5600G1
 			descripcion VARCHAR(50)
 		
       CONSTRAINT FK_ItemFactura_Factura FOREIGN KEY (cod_Factura)
-      REFERENCES psn.Factura (cod_Factura)
+      REFERENCES psn.Factura (cod_Factura) -- Clave primaria compuesta, cada codigo de factura con sus respectivos items
       ON DELETE CASCADE
 		);
 		PRINT 'Tabla Item_Factura creada correctamente.';

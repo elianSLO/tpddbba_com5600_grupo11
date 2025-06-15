@@ -1020,28 +1020,24 @@ AS
 BEGIN
 	SET NOCOUNT ON;
 
-	-- Validación: monto > 0
 	IF @monto <= 0
 	BEGIN
 		PRINT 'ERROR: El monto debe ser mayor a cero.';
 		RETURN;
 	END
 
-	-- Validación: fecha de pago no puede ser futura
 	IF @fecha_pago > GETDATE()
 	BEGIN
 		PRINT 'ERROR: La fecha de pago no puede ser futura.';
 		RETURN;
 	END
 
-	-- Validación: estado permitido
 	IF @estado NOT IN ('Pendiente', 'Pagado', 'Anulado')
 	BEGIN
 		PRINT 'ERROR: El estado debe ser: Pendiente, Pagado o Anulado.';
 		RETURN;
 	END
 
-	-- Validación: exactamente uno de los dos debe estar presente
 	IF (@paga_socio IS NULL AND @paga_invitado IS NULL) OR
 	   (@paga_socio IS NOT NULL AND @paga_invitado IS NOT NULL)
 	BEGIN
@@ -1049,7 +1045,24 @@ BEGIN
 		RETURN;
 	END
 
-	-- Inserción
+	IF @medio_pago IS NULL OR LEN(@medio_pago) = 0
+	BEGIN
+		PRINT 'ERROR: El medio de pago debe ser informado.';
+		RETURN;
+	END
+
+	IF @paga_socio IS NOT NULL AND NOT EXISTS (SELECT 1 FROM psn.Socio WHERE cod_socio = @paga_socio)
+	BEGIN
+		PRINT 'ERROR: El código de socio especificado no existe.';
+		RETURN;
+	END
+
+	IF @paga_invitado IS NOT NULL AND NOT EXISTS (SELECT 1 FROM psn.Invitado WHERE cod_invitado = @paga_invitado)
+	BEGIN
+		PRINT 'ERROR: El código de invitado especificado no existe.';
+		RETURN;
+	END
+
 	INSERT INTO psn.Pago (monto, fecha_pago, estado, paga_socio, paga_invitado, medio_pago)
 	VALUES (@monto, @fecha_pago, @estado, @paga_socio, @paga_invitado, @medio_pago);
 
@@ -1078,35 +1091,30 @@ AS
 BEGIN
 	SET NOCOUNT ON;
 
-	-- Validación: existencia del pago
 	IF NOT EXISTS (SELECT 1 FROM psn.Pago WHERE cod_pago = @cod_pago)
 	BEGIN
 		PRINT 'ERROR: No existe un pago con el código especificado.';
 		RETURN;
 	END
 
-	-- Validación: monto > 0
 	IF @monto <= 0
 	BEGIN
 		PRINT 'ERROR: El monto debe ser mayor a cero.';
 		RETURN;
 	END
 
-	-- Validación: fecha de pago no puede ser futura
 	IF @fecha_pago > GETDATE()
 	BEGIN
 		PRINT 'ERROR: La fecha de pago no puede ser futura.';
 		RETURN;
 	END
 
-	-- Validación: estado permitido
 	IF @estado NOT IN ('Pendiente', 'Pagado', 'Anulado')
 	BEGIN
 		PRINT 'ERROR: El estado debe ser: Pendiente, Pagado o Anulado.';
 		RETURN;
 	END
 
-	-- Validación: solo uno de los dos debe estar informado
 	IF (@paga_socio IS NULL AND @paga_invitado IS NULL) OR
 	   (@paga_socio IS NOT NULL AND @paga_invitado IS NOT NULL)
 	BEGIN
@@ -1114,7 +1122,24 @@ BEGIN
 		RETURN;
 	END
 
-	-- Actualización
+	IF @medio_pago IS NULL OR LEN(@medio_pago) = 0
+	BEGIN
+		PRINT 'ERROR: El medio de pago debe ser informado.';
+		RETURN;
+	END
+
+	IF @paga_socio IS NOT NULL AND NOT EXISTS (SELECT 1 FROM psn.Socio WHERE cod_socio = @paga_socio)
+	BEGIN
+		PRINT 'ERROR: El código de socio especificado no existe.';
+		RETURN;
+	END
+
+	IF @paga_invitado IS NOT NULL AND NOT EXISTS (SELECT 1 FROM psn.Invitado WHERE cod_invitado = @paga_invitado)
+	BEGIN
+		PRINT 'ERROR: El código de invitado especificado no existe.';
+		RETURN;
+	END
+
 	UPDATE psn.Pago
 	SET monto = @monto,
 		fecha_pago = @fecha_pago,

@@ -2330,12 +2330,12 @@ BEGIN
         IF @tiempo = 'A' AND @ya_facturada_anual = 0
         BEGIN
             SELECT @monto_categoria = valor_anual FROM psn.Categoria WHERE cod_categoria = @cod_categoria;
-            SET @descripcion_categoria = 'CATEGORIA ANUAL';
+            SET @descripcion_categoria = 'CUOTA ANUAL';
         END
         ELSE IF @tiempo = 'M'
         BEGIN
             SELECT @monto_categoria = valor_mensual FROM psn.Categoria WHERE cod_categoria = @cod_categoria;
-            SET @descripcion_categoria = 'CATEGORIA MENSUAL';
+            SET @descripcion_categoria = 'CUOTA MENSUAL';
         END
 
         IF @monto_categoria IS NOT NULL
@@ -2362,8 +2362,8 @@ BEGIN
             ROW_NUMBER() OVER (ORDER BY a.nombre)
             + ISNULL((SELECT MAX(cod_item) FROM psn.Item_Factura WHERE cod_Factura = @cod_Factura), 0) AS cod_item,
             @cod_Factura,
-            ROUND(a.valor_mensual * 0.9, 2) AS monto, -- Aplica 10% descuento
-            'ACTIVIDAD ' + a.nombre AS descripcion
+            a.valor_mensual * 0.9 AS monto, -- Aplica 10% descuento
+            'ACTIVIDAD: ' + a.nombre AS descripcion
         FROM psn.Inscripto i
         JOIN psn.Clase c ON i.cod_clase = c.cod_clase
         JOIN psn.Actividad a ON c.cod_actividad = a.cod_actividad
@@ -2375,8 +2375,8 @@ BEGIN
         SELECT
             ISNULL((SELECT MAX(cod_item) FROM psn.Item_Factura WHERE cod_Factura = @cod_Factura), 0) + 1 AS cod_item,
             @cod_Factura,
-            ROUND(a.valor_mensual, 2) AS monto,
-            'ACTIVIDAD ' + a.nombre AS descripcion
+            a.valor_mensual AS monto,
+            'ACTIVIDAD: ' + a.nombre AS descripcion
         FROM psn.Inscripto i
         JOIN psn.Clase c ON i.cod_clase = c.cod_clase
         JOIN psn.Actividad a ON c.cod_actividad = a.cod_actividad
@@ -2406,7 +2406,6 @@ BEGIN
     PRINT 'Items insertados correctamente y monto actualizado en la factura.';
 END;
 GO
-
 
 
 

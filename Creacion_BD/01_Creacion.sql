@@ -188,7 +188,7 @@ ELSE
 	END;
 go
 
-
+-- PAGO
 
 IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'Com5600G11.psn.Pago') AND type = N'U') 
 	BEGIN
@@ -197,7 +197,10 @@ IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'Com5600G1
 			monto				DECIMAL(10,2),
 			fecha_pago			DATE,
 			estado				VARCHAR(15),
-			responsable_pago	VARCHAR(15),
+			paga_socio			VARCHAR(15) CHECK (paga_socio LIKE 'SN-[0-9][0-9][0-9][0-9][0-9]' OR 
+												   paga_socio LIKE 'SN-[0-9][0-9][0-9][0-9]'),
+			paga_invitado		VARCHAR(15) CHECK (paga_invitado LIKE 'NS-[0-9][0-9][0-9][0-9][0-9]' OR 
+												   paga_invitado LIKE 'NS-[0-9][0-9][0-9][0-9]'),
 			medio_pago			VARCHAR(15)
 		);
 		PRINT 'Tabla Pago creada correctamente.';

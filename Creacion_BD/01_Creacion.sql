@@ -222,7 +222,7 @@ IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'Com5600G1
 			fecha_vto		DATE,
 			fecha_seg_vto	DATE,
 			recargo			DECIMAL(10,2),
-			estado			VARCHAR(10) CHECK (estado IN ('Pendiente', 'Pagada','Vencida')),
+			estado			VARCHAR(10) CHECK (estado IN ('Pendiente', 'Pagada','Vencida','Anulada')),
 			cod_socio		VARCHAR(15)
 		); 
 		PRINT 'Tabla Factura creada correctamente.';

@@ -335,8 +335,8 @@ go
 IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'Com5600G11.psn.Item_Factura') AND type = N'U') 
 	BEGIN
 		CREATE TABLE psn.Item_Factura (
-			cod_item	INT IDENTITY(1,1) PRIMARY KEY,
-			cod_Factura	INT,
+			cod_item	INT NOT NULL, -- No puede ser auotincremental 
+			cod_Factura	INT NOT NULL,
 			monto		DECIMAL(10,2),
 			descripcion VARCHAR(50)
 		

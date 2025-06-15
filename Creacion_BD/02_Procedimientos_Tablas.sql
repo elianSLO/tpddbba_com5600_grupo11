@@ -17,56 +17,6 @@ BEGIN
 END;
 GO
 
-
-
-CREATE OR ALTER PROCEDURE stp.insertarCategoria
-	@descripcion		VARCHAR(50),
-	@edad_max			INT,
-	@valor_mensual		DECIMAL(10,2),
-	@vig_valor_mens		DATE,
-	@valor_anual		DECIMAL(10,2),
-	@vig_valor_anual	DATE	
-AS
-BEGIN
-	--	Validar que la descripcion exista
-	 IF @descripcion NOT IN ('Cadete', 'Mayor', 'Menor')
-    BEGIN
-        PRINT 'La descripción debe ser Cadete, Mayor o Menor.'
-        RETURN;
-    END
-	--	Validar que la edad máxima sea mayor a 0
-		IF (@edad_max <= 0)
-		BEGIN
-			PRINT 'La edad máxima debe ser un número mayor a 0.'
-			RETURN;
-		END;
-		--	Validar que los montos no sean nulos o negativos
-		IF (@valor_mensual <= 0 or @valor_mensual IS NULL or @valor_anual <= 0 or @valor_anual IS NULL)
-		BEGIN
-			PRINT 'El valor de la suscripcion debe ser mayor a cero'
-			RETURN;
-		END;
-		IF (@vig_valor_mens < GETDATE() or @vig_valor_anual < GETDATE())
-			BEGIN
-				PRINT 'Fecha de vigencia invalida'
-            RETURN;
-			END;
-		
-		INSERT INTO psn.Categoria(descripcion,edad_max,valor_mensual,vig_valor_mens,valor_anual,vig_valor_anual)
-        VALUES (@descripcion,@edad_max,@valor_mensual,@vig_valor_mens,@valor_anual,@vig_valor_anual);
-		PRINT 'Categoria insertada correctamente'
-END
-GO
-
----------------------------------------------------------------------------------------------------------------
--- SP PARA MODIFICAR CATEGORIA
-
-IF  EXISTS (SELECT * FROM sys.procedures WHERE name = 'modificarCategoria')
-BEGIN
-    DROP PROCEDURE stp.modificarCategoria;
-END;
-GO
-
 CREATE OR ALTER PROCEDURE stp.insertarCategoria
 	@descripcion		VARCHAR(50),
 	@edad_max			INT,
@@ -120,6 +70,84 @@ BEGIN
 END
 GO
 
+-- SP PARA MODIFICAR CATEGORIA
+
+IF  EXISTS (SELECT * FROM sys.procedures WHERE name = 'modificarCategoria')
+BEGIN
+    DROP PROCEDURE stp.modificarCategoria;
+END;
+GO
+
+CREATE OR ALTER PROCEDURE stp.modificarCategoria
+    @cod_categoria      INT,
+    @descripcion        VARCHAR(50),
+    @edad_max           INT,
+    @valor_mensual      DECIMAL(10,2),
+    @vig_valor_mens     DATE,
+    @valor_anual        DECIMAL(10,2),
+    @vig_valor_anual    DATE
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    -- Validar que la categoría exista por código
+    IF NOT EXISTS (SELECT 1 FROM psn.Categoria WHERE cod_categoria = @cod_categoria)
+    BEGIN
+        PRINT 'No existe una categoría con ese código para modificar.'
+        RETURN;
+    END
+
+    -- Validar que la descripción sea válida
+    IF @descripcion NOT IN ('Cadete', 'Mayor', 'Menor')
+    BEGIN
+        PRINT 'La descripción debe ser Cadete, Mayor o Menor.'
+        RETURN;
+    END
+
+    -- Validar que la nueva descripción no esté en uso por otra categoría diferente
+    IF EXISTS (
+        SELECT 1 FROM psn.Categoria
+        WHERE descripcion = @descripcion AND cod_categoria <> @cod_categoria
+    )
+    BEGIN
+        PRINT 'Otra categoría ya tiene esa descripción.'
+        RETURN;
+    END
+
+    -- Validar que la edad máxima sea mayor a 0
+    IF (@edad_max <= 0)
+    BEGIN
+        PRINT 'La edad máxima debe ser un número mayor a 0.'
+        RETURN;
+    END
+
+    -- Validar que los montos no sean nulos o negativos
+    IF (@valor_mensual <= 0 OR @valor_mensual IS NULL OR @valor_anual <= 0 OR @valor_anual IS NULL)
+    BEGIN
+        PRINT 'El valor de la suscripción debe ser mayor a cero.'
+        RETURN;
+    END
+
+    -- Validar que las fechas de vigencia no sean anteriores a hoy
+    IF (@vig_valor_mens < CAST(GETDATE() AS DATE) OR @vig_valor_anual < CAST(GETDATE() AS DATE))
+    BEGIN
+        PRINT 'Fecha de vigencia inválida.'
+        RETURN;
+    END
+
+    -- Actualizar la categoría
+    UPDATE psn.Categoria
+    SET descripcion = @descripcion,
+        edad_max = @edad_max,
+        valor_mensual = @valor_mensual,
+        vig_valor_mens = @vig_valor_mens,
+        valor_anual = @valor_anual,
+        vig_valor_anual = @vig_valor_anual
+    WHERE cod_categoria = @cod_categoria;
+
+    PRINT 'Categoría modificada correctamente.';
+END
+GO
 
 -- SP PARA BORRAR CATEGORIA
 

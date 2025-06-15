@@ -2419,8 +2419,8 @@ END;
 GO
 
 CREATE OR ALTER PROCEDURE stp.modificarItem_Factura
-    @cod_Factura INT,
     @cod_item INT,
+    @cod_Factura INT,
     @monto DECIMAL(10,2),
     @descripcion VARCHAR(50)
 AS

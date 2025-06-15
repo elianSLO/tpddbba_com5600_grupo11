@@ -1351,42 +1351,62 @@ BEGIN
 END;
 GO
 
-
 CREATE OR ALTER PROCEDURE stp.modificarFactura
-	@cod_socio		VARCHAR(15),
-	@cod_Factura	INT
+    @cod_socio     VARCHAR(15),
+    @cod_Factura   INT,
+    @nuevo_estado  VARCHAR(10) -- 'VENCIDA', 'ANULADA' o 'PAGADA'
 AS
 BEGIN
-	IF NOT EXISTS (SELECT 1 FROM psn.Factura WHERE @cod_socio = cod_socio)
-		BEGIN
-			PRINT 'No existe factura'
-			RETURN
-		END
-	IF NOT EXISTS (SELECT 1 FROM psn.Factura WHERE @cod_Factura = cod_Factura)
-		BEGIN
-			PRINT 'No existe factura'
-			RETURN
-		END
-	DECLARE @monto			DECIMAL(10,2),
-			@estado			VARCHAR(10),
-			@tipoSuscripc	CHAR(1),
-			@fecha_vto		DATE,
-			@fecha_seg_vto	DATE
-	SET @fecha_vto = (SELECT fecha_vto from psn.Factura WHERE cod_Factura = @cod_Factura)
-	SET @fecha_seg_vto = (SELECT fecha_seg_vto from psn.Factura WHERE cod_Factura = @cod_Factura)
-	SET @monto = (SELECT monto FROM psn.Factura WHERE cod_Factura = @cod_Factura)
-	IF GETDATE() > @fecha_seg_vto
-		SET @monto = @monto * 1.10
-	SET @estado = 'VENCIDA'
+    SET NOCOUNT ON;
 
-	UPDATE psn.Factura
-		SET
-			monto = ISNULL(monto, @monto),
-			estado = ISNULL(estado, @estado)
-		where cod_Factura = @cod_Factura;
-		PRINT 'Factura actualizada correctamente'
+    -- Verificar existencia de la factura con ese socio
+    IF NOT EXISTS (SELECT 1 FROM psn.Factura WHERE cod_socio = @cod_socio AND cod_Factura = @cod_Factura)
+    BEGIN
+        PRINT 'No existe la factura para ese socio';
+        RETURN;
+    END
+
+    -- Validar que el estado ingresado sea uno de los válidos
+    IF @nuevo_estado NOT IN ('VENCIDA', 'ANULADA', 'PAGADA')
+    BEGIN
+        PRINT 'Estado inválido. Debe ser VENCIDA, ANULADA o PAGADA.';
+        RETURN;
+    END
+
+    -- Variables para actualizar
+    DECLARE @monto         DECIMAL(10,2),
+            @fecha_seg_vto DATE;
+
+    -- Obtener valores actuales
+    SELECT 
+        @monto = monto,
+        @fecha_seg_vto = fecha_seg_vto
+    FROM psn.Factura
+    WHERE cod_Factura = @cod_Factura;
+
+    -- Lógica según estado
+    IF @nuevo_estado = 'VENCIDA'
+    BEGIN
+        IF GETDATE() > @fecha_seg_vto
+            SET @monto = @monto * 1.10; -- recargo del 10%
+    END
+    ELSE IF @nuevo_estado = 'ANULADA'
+    BEGIN
+        SET @monto = 0;
+    END
+    -- Si el nuevo estado es ABONADA: se mantiene el monto
+
+    -- Actualización
+    UPDATE psn.Factura
+    SET 
+        estado = @nuevo_estado,
+        monto = @monto
+    WHERE cod_Factura = @cod_Factura;
+
+    PRINT 'Factura actualizada correctamente';
 END
 GO
+
 
 IF EXISTS (SELECT * FROM sys.procedures WHERE name = 'borrarFactura')
 BEGIN

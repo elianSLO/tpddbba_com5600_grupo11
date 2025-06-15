@@ -1190,13 +1190,13 @@ GO
 
 --------- SPs SUSCRIBIR 
 
-IF EXISTS (SELECT * FROM sys.procedures WHERE name = 'suscribirSocio')
+IF EXISTS (SELECT * FROM sys.procedures WHERE name = 'insertarSuscripcion')
 BEGIN
-    DROP PROCEDURE stp.suscribirSocio;
+    DROP PROCEDURE stp.insertarSuscripcion;
 END
 GO
 
-CREATE OR ALTER PROCEDURE stp.suscribirSocio
+CREATE OR ALTER PROCEDURE stp.insertarSuscripcion
 	@cod_socio VARCHAR(15),
 	@tipoSuscripcion CHAR(1), --Si es anual A, si es mensual M
 	@cod_categoria INT
@@ -1234,6 +1234,12 @@ BEGIN
 	INSERT INTO psn.Suscripcion (cod_socio,cod_categoria,fecha_suscripcion,fecha_vto)
 	VALUES(@cod_socio,@cod_categoria,@fecha_inscripcion,@fecha_venc)
 END
+
+IF EXISTS (SELECT * FROM sys.procedures WHERE name = 'modificarSuscripcion')
+BEGIN
+    DROP PROCEDURE stp.modificarSuscripcion;
+END
+GO
 
 IF EXISTS (SELECT * FROM sys.procedures WHERE name = 'modificarSuscripcion')
 BEGIN
@@ -1279,6 +1285,12 @@ IF EXISTS (SELECT * FROM sys.procedures WHERE name = 'borrarSuscripcion')
 BEGIN
     DROP PROCEDURE stp.borrarSuscripcion;
 END;
+GO
+
+IF EXISTS (SELECT * FROM sys.procedures WHERE name = 'borrarSuscripcion')
+BEGIN
+    DROP PROCEDURE stp.borrarSuscripcion;
+END
 GO
 
 CREATE OR ALTER PROCEDURE stp.borrarSuscripcion

@@ -1339,6 +1339,8 @@ BEGIN
 
 	INSERT INTO psn.Factura (monto,fecha_emision,fecha_vto,fecha_seg_vto,recargo,estado,cod_socio)
 	VALUES (@monto,@fecha_emision,@fecha_vto,@fecha_seg_vto, @recargo,@estado,@cod_socio)
+
+	PRINT 'Factura emitida exitosamente.'
 	
 END
 GO

@@ -2292,8 +2292,6 @@ BEGIN
         RETURN;
     END
 
-    DECLARE @prox_item INT;
-
     -- 1. ÍTEM POR CATEGORÍA
     IF @cod_socio LIKE 'SN-%'
     BEGIN
@@ -2342,96 +2340,49 @@ BEGIN
 
         IF @monto_categoria IS NOT NULL
         BEGIN
-            SELECT @prox_item = ISNULL(MAX(cod_item), 0) + 1 FROM psn.Item_Factura WHERE cod_Factura = @cod_Factura;
+            DECLARE @prox_item INT = ISNULL((SELECT MAX(cod_item) FROM psn.Item_Factura WHERE cod_Factura = @cod_Factura), 0) + 1;
 
             INSERT INTO psn.Item_Factura (cod_item, cod_Factura, monto, descripcion)
             VALUES (@prox_item, @cod_Factura, @monto_categoria, @descripcion_categoria);
         END
     END
 
-    -- 2. ÍTEMS POR ACTIVIDAD
-    DECLARE @cant_actividades INT,
-            @factor_actividad DECIMAL(5,2);
+    -- 2. ÍTEMS POR ACTIVIDAD 
+    DECLARE @factor_actividad DECIMAL(5,2) = CASE WHEN @cod_socio LIKE 'NS-%' THEN 0.25 ELSE 1.0 END;
 
-    SET @factor_actividad = CASE
-        WHEN @cod_socio LIKE 'NS-%' THEN 0.25
-        ELSE 1.0
-    END;
-
-    SELECT @cant_actividades = COUNT(DISTINCT c.cod_actividad)
+    INSERT INTO psn.Item_Factura (cod_item, cod_Factura, monto, descripcion)
+    SELECT
+        ROW_NUMBER() OVER (ORDER BY a.nombre) 
+        + ISNULL((SELECT MAX(cod_item) FROM psn.Item_Factura WHERE cod_Factura = @cod_Factura), 0) AS cod_item,
+        @cod_Factura,
+        ROUND(a.valor_mensual * @factor_actividad, 2) AS monto,
+        'ACTIVIDAD ' + a.nombre AS descripcion
     FROM psn.Inscripto i
     JOIN psn.Clase c ON i.cod_clase = c.cod_clase
+    JOIN psn.Actividad a ON c.cod_actividad = a.cod_actividad
     WHERE i.cod_socio = @cod_socio;
 
-    IF @cant_actividades > 1
-    BEGIN
-        DECLARE actividad_cursor CURSOR FOR
-        SELECT a.nombre, ROUND(a.valor_mensual * @factor_actividad * 0.9, 2)
-        FROM psn.Inscripto i
-        JOIN psn.Clase c ON i.cod_clase = c.cod_clase
-        JOIN psn.Actividad a ON c.cod_actividad = a.cod_actividad
-        WHERE i.cod_socio = @cod_socio;
-
-        DECLARE @nombre_act VARCHAR(50), @monto_act DECIMAL(10,2);
-
-        OPEN actividad_cursor;
-        FETCH NEXT FROM actividad_cursor INTO @nombre_act, @monto_act;
-
-        WHILE @@FETCH_STATUS = 0
-        BEGIN
-            SELECT @prox_item = ISNULL(MAX(cod_item), 0) + 1 FROM psn.Item_Factura WHERE cod_Factura = @cod_Factura;
-
-            INSERT INTO psn.Item_Factura (cod_item, cod_Factura, monto, descripcion)
-            VALUES (@prox_item, @cod_Factura, @monto_act, 'ACTIVIDAD ' + @nombre_act);
-
-            FETCH NEXT FROM actividad_cursor INTO @nombre_act, @monto_act;
-        END
-
-        CLOSE actividad_cursor;
-        DEALLOCATE actividad_cursor;
-    END
-    ELSE
-    BEGIN
-        SELECT @nombre_act = a.nombre,
-               @monto_act = ROUND(a.valor_mensual * @factor_actividad, 2)
-        FROM psn.Inscripto i
-        JOIN psn.Clase c ON i.cod_clase = c.cod_clase
-        JOIN psn.Actividad a ON c.cod_actividad = a.cod_actividad
-        WHERE i.cod_socio = @cod_socio;
-
-        IF @nombre_act IS NOT NULL
-        BEGIN
-            SELECT @prox_item = ISNULL(MAX(cod_item), 0) + 1 FROM psn.Item_Factura WHERE cod_Factura = @cod_Factura;
-
-            INSERT INTO psn.Item_Factura (cod_item, cod_Factura, monto, descripcion)
-            VALUES (@prox_item, @cod_Factura, @monto_act, 'ACTIVIDAD ' + @nombre_act);
-        END
-    END
-
     -- 3. ÍTEMS POR RESERVAS
-    DECLARE @monto_reserva DECIMAL(10,2);
-    DECLARE reserva_cursor CURSOR FOR
-    SELECT r.monto
+    INSERT INTO psn.Item_Factura (cod_item, cod_Factura, monto, descripcion)
+    SELECT
+        ROW_NUMBER() OVER (ORDER BY r.monto) 
+        + ISNULL((SELECT MAX(cod_item) FROM psn.Item_Factura WHERE cod_Factura = @cod_Factura), 0) AS cod_item,
+        @cod_Factura,
+        r.monto,
+        'RESERVA'
     FROM psn.Reserva r
     WHERE r.cod_socio = @cod_socio OR r.cod_invitado = @cod_socio;
 
-    OPEN reserva_cursor;
-    FETCH NEXT FROM reserva_cursor INTO @monto_reserva;
+    -- Actualizar monto total en factura sumando los ítems
+    UPDATE psn.Factura
+    SET monto = (
+        SELECT ISNULL(SUM(monto), 0)
+        FROM psn.Item_Factura
+        WHERE cod_Factura = @cod_Factura
+    )
+    WHERE cod_Factura = @cod_Factura;
 
-    WHILE @@FETCH_STATUS = 0
-    BEGIN
-        SELECT @prox_item = ISNULL(MAX(cod_item), 0) + 1 FROM psn.Item_Factura WHERE cod_Factura = @cod_Factura;
-
-        INSERT INTO psn.Item_Factura (cod_item, cod_Factura, monto, descripcion)
-        VALUES (@prox_item, @cod_Factura, @monto_reserva, 'RESERVA');
-
-        FETCH NEXT FROM reserva_cursor INTO @monto_reserva;
-    END
-
-    CLOSE reserva_cursor;
-    DEALLOCATE reserva_cursor;
-
-    PRINT 'Items insertados correctamente en la factura.';
+    PRINT 'Items insertados correctamente y monto actualizado en la factura.';
 END;
 GO
 

@@ -277,7 +277,7 @@ AS
 BEGIN
 	SET NOCOUNT ON;
 
-	-- Validación de campos obligatorios
+	/*-- Validación de campos obligatorios
 	IF @cod_socio IS NULL OR @dni IS NULL OR @nombre IS NULL OR @apellido IS NULL OR 
 	   @fecha_nac IS NULL OR @email IS NULL OR @tel IS NULL OR @tel_emerg IS NULL OR
 	   @estado IS NULL OR @saldo IS NULL OR @nombre_cobertura IS NULL OR @nro_afiliado IS NULL 
@@ -286,7 +286,7 @@ BEGIN
 	BEGIN
 		PRINT 'Error: Ningún campo puede ser NULL';
 		RETURN;
-	END;
+	END;*/
 
 	-- Validaciones
 	IF NOT (@cod_socio LIKE 'SN-[0-9][0-9][0-9][0-9][0-9]' OR
@@ -349,7 +349,7 @@ BEGIN
 	END;
 
 	-- Solo se valida que no tenga letras
-	IF @tel LIKE '%[^0-9]%' OR @tel_emerg LIKE '%[^0-9]%' OR @tel_cobertura LIKE '%[^0-9]%'
+	IF @tel LIKE '%[^0-9 ()-/]%' OR @tel_emerg LIKE '%[^0-9 ()-/]%' OR @tel_cobertura LIKE '%[^0-9 ()-/]%'
 	BEGIN
 		PRINT 'Error: Los teléfonos solo deben contener números.';
 		RETURN;
@@ -462,7 +462,7 @@ BEGIN
 	END;
 
 	-- Teléfonos: solo números
-	IF @tel LIKE '%[^0-9]%' OR @tel_emerg LIKE '%[^0-9]%' OR @tel_cobertura LIKE '%[^0-9]%'
+	IF @tel LIKE '%[^0-9 ()-/]%' OR @tel_emerg LIKE '%[^0-9 ()-/]%' OR @tel_cobertura LIKE '%[^0-9 ()-/]%'
 	BEGIN
 		PRINT 'Error: Los teléfonos solo deben contener números.';
 		RETURN;

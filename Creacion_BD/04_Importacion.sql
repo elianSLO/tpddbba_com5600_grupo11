@@ -59,64 +59,61 @@ BEGIN
 END;
 GO
 
+--'D:\repos\tpddbba_com5600_grupo11\Creacion_BD\import\Datos socios.xlsx'
+
 CREATE OR ALTER PROCEDURE imp.Importar_Pagos
     @RutaArchivo NVARCHAR(255)
 AS
 BEGIN
-    SET NOCOUNT ON;
-
-    -- Eliminar tabla temporal si existe
-    IF OBJECT_ID('tempdb..##Temp') IS NOT NULL
-        DROP TABLE ##Temp;
-
-    -- Crear tabla temporal global
-    CREATE TABLE ##Temp
-    (
-        cod_pago			BIGINT,
-        fecha_pago			DATE,
-        responsable_pago	VARCHAR(15),
-        monto				DECIMAL(10,2),
-        medio_pago			VARCHAR(15)
-    );
-
-    -- Armar SQL dinámico
-    DECLARE @SQL NVARCHAR(MAX);
-
+	SET NOCOUNT ON;
+	-- Eliminar tabla temporal si existe
+	IF OBJECT_ID('tempdb..##Temp') IS NOT NULL
+		DROP TABLE ##Temp;
+	-- Crear tabla temporal global. Mientras algun ´proceso la requeriera existira.
+	CREATE TABLE ##Temp
+	(
+		tcod_pago			VARCHAR(100),
+		tfecha_pago			VARCHAR(100),
+		tresponsable_pago	VARCHAR(100),
+		tmonto				VARCHAR(100),
+		tmedio_pago			VARCHAR(100),
+	);
+	-- Armar consulta dinámica.
+	DECLARE @SQL NVARCHAR(MAX);
 	SET @SQL = '
 		INSERT INTO ##Temp
 		SELECT * FROM OPENROWSET(
-			''Microsoft.ACE.OLEDB.12.0'',
-			''Excel 12.0;HDR=YES;Database=' + @RutaArchivo + ''',
-			''SELECT * FROM [pago cuotas$]''
+		''Microsoft.ACE.OLEDB.12.0'',
+		''Excel 12.0;HDR=YES;Database=' + @RutaArchivo + ''',
+		''SELECT * FROM [pago cuotas$]''
 		);
 	';
+	EXEC sp_executesql @SQL;
+	PRINT 'Datos cargados en ##Temp.';
 
-    EXEC sp_executesql @SQL;
-    PRINT 'Datos cargados en ##Temp.';
-
-    -- Recorrer ##Temp y llamar al SP
-    DECLARE @cod_pago			BIGINT,
-            @fecha_pago			DATE,
-            @responsable_pago	VARCHAR(15),
-            @monto				DECIMAL(10,2),
-            @medio_pago			VARCHAR(15);
+    -- Formateo lo leido en ##Temp y ejecuto sp para insertar.
+    DECLARE @vcod_pago				BIGINT,
+            @vfecha_pago			DATE,
+            @vresponsable_pago		VARCHAR(15),
+            @vmonto					DECIMAL(10,2),
+            @vmedio_pago			VARCHAR(15);
 
     DECLARE cur CURSOR LOCAL FAST_FORWARD FOR
     SELECT cod_pago, fecha_pago, responsable_pago, monto, medio_pago
     FROM ##Temp;
 
     OPEN cur;
-
-    FETCH NEXT FROM cur INTO @cod_pago, @fecha_pago, @responsable_pago, @monto, @medio_pago;
+    FETCH NEXT FROM cur INTO @vcod_pago, @vfecha_pago, @vresponsable_pago, @vmonto, @vmedio_pago;
 
     WHILE @@FETCH_STATUS = 0
     BEGIN
         -- Llamar al SP con reglas de negocio
         EXEC stp.insertarPago 
-            @monto = @monto,
-            @fecha_pago = @fecha_pago,
-            @estado = 'Pagado',
-            @responsable_pago = @responsable_pago;
+			@cod_pago			= @vcod_pago,
+            @monto				= @vmonto,
+            @fecha_pago			= @vfecha_pago,
+            @estado				= 'Pagado',
+            @responsable_pago	= @vresponsable_pago;
 
         FETCH NEXT FROM cur INTO @cod_pago, @fecha_pago, @responsable_pago, @monto, @medio_pago;
     END
@@ -382,3 +379,6 @@ IF OBJECT_ID('tempdb..##Temp') IS NOT NULL
 		'SELECT * FROM [Responsables de Pago$] WHERE F1 NOT LIKE ''Nro de Socio%'''
 	);
 
+
+
+	

@@ -33,11 +33,11 @@ IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'Com5600G1
 			dni					CHAR(8) UNIQUE,
 			email				VARCHAR(100),
 			fecha_nac			DATE,
-			tel					VARCHAR(50) check (tel NOT LIKE '%[^0-9 -]%'),											
-			tel_emerg			VARCHAR(50) check (tel_emerg NOT LIKE '%[^0-9 -]%'),		
+			tel					VARCHAR(50) check (tel NOT LIKE '%[^0-9 -()/]%'),											
+			tel_emerg			VARCHAR(50) check (tel_emerg NOT LIKE '%[^0-9 -()/]%'),		
 			nombre_cobertura	VARCHAR(50),
 			nro_afiliado		VARCHAR(50),
-			tel_cobertura		VARCHAR(50) check (tel_cobertura NOT LIKE '%[^0-9 -]%'),	
+			tel_cobertura		VARCHAR(50) check (tel_cobertura NOT LIKE '%[^0-9 -()/]%'),	
 			estado				BIT, -- 1 - Habilitado, 0 - No habilitado (Pago atrasado o impago)
 			saldo				DECIMAL(10,2),
 			cod_responsable		VARCHAR(15)
@@ -193,7 +193,7 @@ go
 IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'Com5600G11.psn.Pago') AND type = N'U') 
 	BEGIN
 		CREATE TABLE psn.Pago (
-			cod_pago			BIGINT IDENTITY(1,1) PRIMARY KEY,
+			cod_pago			BIGINT PRIMARY KEY,
 			monto				DECIMAL(10,2),
 			fecha_pago			DATE,
 			estado				VARCHAR(15),

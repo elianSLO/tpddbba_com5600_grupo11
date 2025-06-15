@@ -281,7 +281,7 @@ IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'Com5600G1
 			cod_clase			INT IDENTITY (1,1) PRIMARY KEY,
 			categoria			INT NOT NULL,
 			cod_actividad		INT NOT NULL,
-			dia					VARCHAR(9) NOT NULL CHECK (dia IN ('Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo')),
+			dia					VARCHAR(9) NOT NULL CHECK (dia IN ('Lunes', 'Martes', 'Miercoles', 'Jueves', 'Viernes', 'Sabado', 'Domingo')),
 			horario				TIME NOT NULL
 		);
 		PRINT 'Tabla Clase creada correctamente.';

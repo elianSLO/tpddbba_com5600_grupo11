@@ -281,7 +281,8 @@ BEGIN
 	IF @cod_socio IS NULL OR @dni IS NULL OR @nombre IS NULL OR @apellido IS NULL OR 
 	   @fecha_nac IS NULL OR @email IS NULL OR @tel IS NULL OR @tel_emerg IS NULL OR
 	   @estado IS NULL OR @saldo IS NULL OR @nombre_cobertura IS NULL OR @nro_afiliado IS NULL 
-	   OR @tel_cobertura IS NULL OR @cod_responsable IS NULL
+	   OR @tel_cobertura IS NULL
+       -- cod_responsable puede ser null si es mayor
 	BEGIN
 		PRINT 'Error: Ningún campo puede ser NULL';
 		RETURN;
@@ -295,7 +296,7 @@ BEGIN
 		RETURN;
 	END;
 
-	IF NOT (
+	IF @cod_responsable IS NOT NULL AND NOT (
         @cod_responsable NOT LIKE 'SN-[0-9][0-9][0-9][0-9][0-9]' OR 
         @cod_responsable NOT LIKE 'SN-[0-9][0-9][0-9][0-9]' OR 
 	    @cod_responsable NOT LIKE 'NS-[0-9][0-9][0-9][0-9][0-9]' OR
@@ -303,7 +304,7 @@ BEGIN
 	BEGIN
 		PRINT 'El código de responsable debe tener formato "SN-XXXXX" o "NS-XXXXX".';
 		RETURN;
-	END;
+    END;
 
 	IF LEN(@dni) <> 8
 	BEGIN
@@ -402,7 +403,7 @@ BEGIN
 	IF @cod_socio IS NULL OR @dni IS NULL OR @nombre IS NULL OR @apellido IS NULL OR 
 	   @fecha_nac IS NULL OR @email IS NULL OR @tel IS NULL OR @tel_emerg IS NULL OR
 	   @estado IS NULL OR @saldo IS NULL OR @nombre_cobertura IS NULL OR @nro_afiliado IS NULL 
-	   OR @tel_cobertura IS NULL OR @cod_responsable IS NULL
+	   OR @tel_cobertura IS NULL
 	BEGIN
 		PRINT 'Error: Ningún campo puede ser NULL';
 		RETURN;
@@ -414,12 +415,15 @@ BEGIN
 		RETURN;
 	END;
 
-	IF @cod_responsable NOT LIKE 'SN-[0-9][0-9][0-9][0-9][0-9]' AND 
-	   @cod_responsable NOT LIKE 'NS-[0-9][0-9][0-9][0-9][0-9]'
+	IF @cod_responsable IS NOT NULL AND NOT (
+        @cod_responsable NOT LIKE 'SN-[0-9][0-9][0-9][0-9][0-9]' OR 
+        @cod_responsable NOT LIKE 'SN-[0-9][0-9][0-9][0-9]' OR 
+	    @cod_responsable NOT LIKE 'NS-[0-9][0-9][0-9][0-9][0-9]' OR
+        @cod_responsable NOT LIKE 'NS-[0-9][0-9][0-9][0-9]')
 	BEGIN
 		PRINT 'El código de responsable debe tener formato "SN-XXXXX" o "NS-XXXXX".';
 		RETURN;
-	END;
+    END;
 
 	IF NOT EXISTS (SELECT 1 FROM psn.Socio WHERE cod_socio = @cod_socio)
 	BEGIN
@@ -734,18 +738,28 @@ BEGIN
     IF @cod_invitado IS NULL OR @dni IS NULL OR @nombre IS NULL OR @apellido IS NULL OR 
        @fecha_nac IS NULL OR @email IS NULL OR @tel IS NULL OR @tel_emerg IS NULL OR
        @estado IS NULL OR @saldo IS NULL OR @nombre_cobertura IS NULL OR @nro_afiliado IS NULL 
-       OR @tel_cobertura IS NULL OR @cod_responsable IS NULL
+       OR @tel_cobertura IS NULL
     BEGIN
         PRINT 'Error: Ningún campo puede ser NULL';
         RETURN;
     END;
 
     IF NOT (@cod_invitado LIKE 'NS-[0-9][0-9][0-9][0-9]' OR
-        @cod_invitado LIKE 'NS-[0-9][0-9][0-9][0-9]')
+        @cod_invitado LIKE 'NS-[0-9][0-9][0-9][0-9][0-9]')
     BEGIN
         PRINT 'Error: Formato erróneo para @cod_invitado.';
         RETURN;
     END
+
+	IF @cod_responsable IS NOT NULL AND NOT (
+        @cod_responsable NOT LIKE 'SN-[0-9][0-9][0-9][0-9][0-9]' OR 
+        @cod_responsable NOT LIKE 'SN-[0-9][0-9][0-9][0-9]' OR 
+	    @cod_responsable NOT LIKE 'NS-[0-9][0-9][0-9][0-9][0-9]' OR
+        @cod_responsable NOT LIKE 'NS-[0-9][0-9][0-9][0-9]')
+	BEGIN
+		PRINT 'El código de responsable debe tener formato "SN-XXXXX" o "NS-XXXXX".';
+		RETURN;
+    END;
 
     IF LEN(@dni) <> 8
     BEGIN
@@ -1794,7 +1808,8 @@ CREATE OR ALTER PROCEDURE stp.insertarReserva
     @monto              DECIMAL(10,2),
     @fechahoraInicio    DATETIME,
     @fechahoraFin       DATETIME,
-    @piletaSUMColonia   VARCHAR(50)   
+    @piletaSUMColonia   VARCHAR(50),
+    @return_cod_reserva INT OUTPUT
 AS
 BEGIN
     SET NOCOUNT ON;
@@ -1897,6 +1912,7 @@ BEGIN
         @piletaSUMColonia
     );
 
+    SET @return_cod_reserva = SCOPE_IDENTITY();
     PRINT 'Reserva insertada correctamente.';
 END;
 GO

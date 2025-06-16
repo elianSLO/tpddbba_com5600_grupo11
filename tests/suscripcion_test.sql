@@ -1,8 +1,8 @@
-
+Ôªø
 
 -- PRUEBA PARA TABLA SUSCRIPCION 
 
--- SuscripciÛn relaciona Socio con CategorÌa.
+-- Suscripci√≥n relaciona Socio con Categor√≠a.
 
 -- Inserto varios Socios en Tabla Socio
 
@@ -12,7 +12,7 @@ EXEC stp.insertarSocio
     @cod_socio = 'SN-00001',
     @dni = '12345678',
     @nombre = 'Juan',
-    @apellido = 'PÈrez',
+    @apellido = 'P√©rez',
     @fecha_nac = '1990-05-15',
     @email = 'juan.perez@mail.com',
     @tel = '1122334455',
@@ -27,8 +27,8 @@ EXEC stp.insertarSocio
 EXEC stp.insertarSocio
     @cod_socio = 'SN-00002',
     @dni = '23456789',
-    @nombre = 'MarÌa',
-    @apellido = 'GÛmez',
+    @nombre = 'Mar√≠a',
+    @apellido = 'G√≥mez',
     @fecha_nac = '1985-10-20',
     @email = 'maria.gomez@mail.com',
     @tel = '1166778899',
@@ -44,7 +44,7 @@ EXEC stp.insertarSocio
     @cod_socio = 'SN-00003',
     @dni = '34567890',
     @nombre = 'Carlos',
-    @apellido = 'Fern·ndez',
+    @apellido = 'Fern√°ndez',
     @fecha_nac = '2005-08-15',
     @email = 'carlos.fernandez@mail.com',
     @tel = '1155337799',
@@ -59,8 +59,8 @@ EXEC stp.insertarSocio
 EXEC stp.insertarSocio
     @cod_socio = 'SN-00004',
     @dni = '45678901',
-    @nombre = 'LucÌa',
-    @apellido = 'MartÌnez',
+    @nombre = 'Luc√≠a',
+    @apellido = 'Mart√≠nez',
     @fecha_nac = '1999-03-12',
     @email = 'lucia.martinez@mail.com',
     @tel = '1133445566',
@@ -75,7 +75,7 @@ EXEC stp.insertarSocio
 EXEC stp.insertarSocio
     @cod_socio = 'SN-00005',
     @dni = '56789012',
-    @nombre = 'Tom·s',
+    @nombre = 'Tom√°s',
     @apellido = 'Ruiz',
     @fecha_nac = '2010-07-30',
     @email = 'tomas.ruiz@mail.com',
@@ -133,12 +133,16 @@ SELECT * FROM psn.Categoria
 
 -- Pruebo SP insertarSuscripcion
 
+-- Limpio la tabla Suscripcion para pruebas (si es seguro)
+
+DELETE FROM psn.Suscripcion
+
 -- ========================================
 -- PRUEBAS PROCEDIMIENTO stp.insertarSuscripcion
 -- ========================================
 
--- PRUEBA 1: Edad supera la edad m·xima de la categorÌa
--- Carlos (19 aÒos) en categorÌa Cadete (edad_max = 17)
+-- PRUEBA 1: Edad supera la edad m√°xima de la categor√≠a
+-- Carlos (19 a√±os) en categor√≠a Cadete (edad_max = 17)
 EXEC stp.insertarSuscripcion
     @cod_socio = 'SN-00003',
     @tipoSuscripcion = 'M',
@@ -146,25 +150,25 @@ EXEC stp.insertarSuscripcion
 -- Esperado: 'Categoria incorrecta'
 
 
--- PRUEBA 2: SuscripciÛn v·lida anual
--- Tom·s (14 aÒos) en categorÌa Cadete (edad_max = 17)
+-- PRUEBA 2: Suscripci√≥n v√°lida anual
+-- Tom√°s (14 a√±os) en categor√≠a Cadete (edad_max = 17)
 EXEC stp.insertarSuscripcion
     @cod_socio = 'SN-00005',
     @tipoSuscripcion = 'A',
     @cod_categoria = 2; -- Cadete
--- Esperado: InserciÛn OK
+-- Esperado: Inserci√≥n OK
 
 
--- PRUEBA 3: SuscripciÛn v·lida mensual
--- Juan (35 aÒos) en categorÌa Mayor (edad_max = 99)
+-- PRUEBA 3: Suscripci√≥n v√°lida mensual
+-- Juan (35 a√±os) en categor√≠a Mayor (edad_max = 99)
 EXEC stp.insertarSuscripcion
     @cod_socio = 'SN-00001',
     @tipoSuscripcion = 'M',
     @cod_categoria = 3; -- Mayor
--- Esperado: InserciÛn OK
+-- Esperado: Inserci√≥n OK
 
 
--- PRUEBA 4: Tipo de suscripciÛn inv·lido ('Z')
+-- PRUEBA 4: Tipo de suscripci√≥n inv√°lido ('Z')
 EXEC stp.insertarSuscripcion
     @cod_socio = 'SN-00001',
     @tipoSuscripcion = 'Z',
@@ -181,16 +185,16 @@ EXEC stp.insertarSuscripcion
 
 
 -- PRUEBA 6: Edad fuera de rango
--- MarÌa (39 aÒos) en categorÌa Menor (edad_max = 12)
+-- Mar√≠a (39 a√±os) en categor√≠a Menor (edad_max = 12)
 EXEC stp.insertarSuscripcion
     @cod_socio = 'SN-00002',
     @tipoSuscripcion = 'A',
     @cod_categoria = 1; -- Menor
 -- Esperado: 'Categoria incorrecta'
 
--- PRUEBA 7: Edad igual al lÌmite (requiere categorÌa nueva)
--- LucÌa (26 aÒos) en categorÌa con edad_max = 26
--- Insertar nueva categorÌa especial
+-- PRUEBA 7: Edad igual al l√≠mite (requiere categor√≠a nueva)
+-- Luc√≠a (26 a√±os) en categor√≠a con edad_max = 26
+-- Insertar nueva categor√≠a especial
 
 EXEC stp.insertarCategoria 
     @descripcion = 'Especial 26',
@@ -205,12 +209,112 @@ EXEC stp.insertarSuscripcion
     @cod_socio = 'SN-00004',
     @tipoSuscripcion = 'M',
     @cod_categoria = 4;
--- Esperado: InserciÛn OK
+-- Esperado: Inserci√≥n OK
 
--- ========================================
+
 -- Verificar resultados
--- ========================================
 SELECT * FROM psn.Suscripcion;
+
+
+------------ MODIFCACION DE SUSCRIPCION
+
+-- PRUEBA 1: Modificar correctamente la categor√≠a y el tiempo de Tom√°s Ruiz
+-- Tom√°s (SN-00005) tiene categor√≠a Cadete ‚Üí vamos a cambiarlo a Mayor
+-- Aunque es menor, esto deber√≠a fallar por edad
+
+EXEC stp.modificarSuscripcion
+    @cod_socio = 'SN-00005',
+    @nueva_cat = 3,  -- Mayor
+    @tiempo = 'A';
+-- Esperado: 'Categoria incorrecta'
+
+
+-- PRUEBA 2: Modificaci√≥n v√°lida de Juan P√©rez
+-- Juan (35 a√±os), cambiarlo de Mayor a la nueva categor√≠a "Especial 26" (solo si ya fue creada)
+
+EXEC stp.modificarSuscripcion
+    @cod_socio = 'SN-00001',
+    @nueva_cat = 4,  -- Especial 26
+    @tiempo = 'M';
+-- Esperado: Inserci√≥n OK si edad ‚â§ 26, sino: 'Categoria incorrecta'
+
+
+-- PRUEBA 3: Socio no tiene suscripci√≥n
+-- Probamos con un socio que no est√° en Suscripcion
+
+EXEC stp.modificarSuscripcion
+    @cod_socio = 'SN-00002',  -- Mar√≠a
+    @nueva_cat = 3,
+    @tiempo = 'M';
+-- Esperado: 'No existe suscripcion'
+
+
+--  PRUEBA 4: Categor√≠a inexistente
+
+EXEC stp.modificarSuscripcion
+    @cod_socio = 'SN-00001',
+    @nueva_cat = 99,
+    @tiempo = 'A';
+-- Esperado: 'No existe categoria'
+
+
+-- PRUEBA 5: Modificaci√≥n v√°lida para Luc√≠a
+-- Suponiendo que Luc√≠a tiene una suscripci√≥n v√°lida
+-- La cambiamos a categor√≠a Mayor y a tiempo anual
+
+EXEC stp.modificarSuscripcion
+    @cod_socio = 'SN-00004',
+    @nueva_cat = 3,  -- Mayor
+    @tiempo = 'A';
+-- Esperado: Inserci√≥n OK
+
+
+
+------- BORRADO DE SUSCRIPCION
+
+-- RESETEO DE DATOS
+-- Elimino suscripciones para SN-00001 y SN-00005 si existen
+
+DELETE FROM psn.Suscripcion WHERE cod_socio IN ('SN-00001', 'SN-00005');
+
+-- Inserto una suscripci√≥n para cada uno para probar luego el borrado
+EXEC stp.insertarSuscripcion
+    @cod_socio = 'SN-00001',
+    @tipoSuscripcion = 'M',
+    @cod_categoria = 3;  -- Mayor
+
+EXEC stp.insertarSuscripcion
+    @cod_socio = 'SN-00005',
+    @tipoSuscripcion = 'A',
+    @cod_categoria = 2;  -- Cadete
+
+-- VERIFICACI√ìN DE INSERCIONES
+
+SELECT * FROM psn.Suscripcion WHERE cod_socio IN ('SN-00001', 'SN-00005');
+
+-- PRUEBA 1: Eliminar suscripci√≥n existente (SN-00001)
+
+EXEC stp.borrarSuscripcion @cod_socio = 'SN-00001';
+
+--  PRUEBA 2: Eliminar nuevamente la misma (deber√≠a dar error)
+
+EXEC stp.borrarSuscripcion @cod_socio = 'SN-00001';
+
+-- PRUEBA 3: Eliminar otra suscripci√≥n v√°lida (SN-00005)
+
+EXEC stp.borrarSuscripcion @cod_socio = 'SN-00005';
+
+-- PRUEBA 4: Intentar borrar un c√≥digo inexistente
+
+EXEC stp.borrarSuscripcion @cod_socio = 'SN-99999';
+
+--- VERIFICACI√ìN FINAL: Los socios 1 y 5 fueron dados de baja como suscriptores
+
+SELECT * FROM psn.Suscripcion WHERE cod_socio IN ('SN-00001', 'SN-00005');
+
+
+
+
 
 
 

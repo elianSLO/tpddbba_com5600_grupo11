@@ -2212,13 +2212,14 @@ GO
 CREATE OR ALTER PROCEDURE stp.insertarClase
     @categoria     INT,
     @cod_actividad INT,
+    @cod_prof      INT,
     @dia           VARCHAR(9),
     @horario       TIME
 AS
 BEGIN
     SET NOCOUNT ON;
 
-    IF @categoria IS NULL OR @cod_actividad IS NULL OR @dia IS NULL OR @horario IS NULL
+    IF @categoria IS NULL OR @cod_actividad IS NULL OR @dia IS NULL OR @horario IS NULL OR @cod_prof IS NULL
     BEGIN
         PRINT 'Error: Ningún parámetro puede ser NULL.';
         RETURN;
@@ -2242,6 +2243,12 @@ BEGIN
         RETURN;
     END;
 
+    IF NOT EXISTS (SELECT 1 FROM psn.Profesor WHERE @cod_prof = @cod_prof)
+    BEGIN
+        PRINT 'Error: No se encontró profesor.';
+        RETURN;
+    END;
+
     IF EXISTS (
         SELECT 1 FROM psn.Clase
         WHERE categoria = @categoria AND cod_actividad = @cod_actividad
@@ -2252,8 +2259,8 @@ BEGIN
         RETURN;
     END;
 
-    INSERT INTO psn.Clase (categoria, cod_actividad, dia, horario)
-    VALUES (@categoria, @cod_actividad, @dia, @horario);
+    INSERT INTO psn.Clase (categoria, cod_actividad, dia, horario, cod_prof)
+    VALUES (@categoria, @cod_actividad, @dia, @horario, @cod_prof);
 
     PRINT 'Clase insertada correctamente.';
 END;
@@ -2793,9 +2800,9 @@ BEGIN
         RETURN;
     END
 
-    IF @cod_socio IS NULL OR @cod_socio NOT LIKE 'SN-[0-9][0-9][0-9][0-9][0-9]'
+    IF @cod_socio IS NULL OR (@cod_socio NOT LIKE 'SN-[0-9][0-9][0-9][0-9][0-9]' AND @cod_socio NOT LIKE 'SN-[0-9][0-9][0-9][0-9]')
     BEGIN
-        PRINT 'Error: El código de socio debe ser un número positivo.';
+        PRINT 'Error: Formato erróneo para código de socio.';
         RETURN;
     END
 
@@ -2864,9 +2871,9 @@ BEGIN
         RETURN;
     END
 
-    IF @nuevo_cod_socio IS NULL OR @nuevo_cod_socio NOT LIKE 'SN-[0-9][0-9][0-9][0-9][0-9]'
+    IF @nuevo_cod_socio IS NULL OR (@nuevo_cod_socio NOT LIKE 'SN-[0-9][0-9][0-9][0-9][0-9]' AND @nuevo_cod_socio NOT LIKE 'SN-[0-9][0-9][0-9][0-9]')
     BEGIN
-        PRINT 'Error: El nuevo código de socio debe ser un número positivo.';
+        PRINT 'Error: Formato erróneo para código de socio.';
         RETURN;
     END
 

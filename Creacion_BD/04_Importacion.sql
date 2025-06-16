@@ -13,7 +13,6 @@ EXEC sp_configure 'Ad Hoc Distributed Queries', 1;		--	Permito usar OPENROWSET y
 RECONFIGURE;  
 GO
 
-
 EXEC sp_MSset_oledb_prop N'Microsoft.ACE.OLEDB.12.0', N'AllowInProcess', 1;		--	Permito que el proveedor OLEDB (Microsoft.ACE.OLEDB.12.0) se ejecute dentro del proceso de SQL Server.
 EXEC sp_MSset_oledb_prop N'Microsoft.ACE.OLEDB.12.0', N'DynamicParameters', 1;		--	Habilito el pasaje de parámetros a las consultas dinámicas.
 GO
@@ -21,6 +20,7 @@ GO
 SELECT servicename, service_account			--Chequear nombre del servicio para  darle permiso de acceso a los directorios donde se guarda la información.
 FROM sys.dm_server_services;
 
+/*
 --	Registro el origen de los datos.
 EXEC sp_addlinkedserver 
     @server = 'LinkerServer_EXCEL',
@@ -32,12 +32,11 @@ EXEC sp_addlinkedserver
 EXEC sp_tables_ex 'LinkerServer_EXCEL';
 GO
 --EXEC sp_dropserver 'LinkerServer_EXCEL', 'droplogins';		-- Eliminar 
-
-
-
 SELECT * 
 FROM OPENQUERY(LinkerServer_EXCEL, 'SELECT TOP 1 * FROM [Tarifas$]');
 GO
+*/
+
 
 -----------------------------------------------------------------------------------------------------------------------
 --	Crear el esquema de importacion.
@@ -154,15 +153,6 @@ BEGIN
 END
 GO
 
---delete from psn.Pago
-exec imp.Importar_Pagos 'D:\repos\tpddbba_com5600_grupo11\Creacion_BD\import\Datos socios.xlsx';
-select * from psn.Pago
-GO
-
-
-	exec imp.Importar_Socios 'D:\repos\tpddbba_com5600_grupo11\Creacion_BD\import\Datos socios.xlsx';
-	select * from psn.Socio
-	delete from psn.Socio	 
 
 -----------------------------------------------------------------------------------------------------------------------
 --	Importar Socios.
@@ -301,6 +291,7 @@ BEGIN
 	END
 	CLOSE cur;
 	DEALLOCATE cur;
+	DROP TABLE ##Temp
 	PRINT 'Filas importadas: ' + CAST(@filas_importadas AS VARCHAR);
 	PRINT 'Filas ignoradas: ' + CAST(@filas_ignoradas AS VARCHAR);
 END
@@ -310,19 +301,13 @@ GO
 -----------------------------------------------------------------------------------------------------------------------
 --	Importar Actividades.
 
-	exec imp.Importar_Actividades 'D:\repos\tpddbba_com5600_grupo11\Creacion_BD\import\Datos socios.xlsx';
-	select * from psn.Actividad
-	delete from psn.Actividad 
-
------------------------------------------------------------------------------------------------------------------------
---	Importar Socios.
-
 IF EXISTS (SELECT * FROM sys.procedures WHERE name = 'Importar_Actividades') 
 BEGIN
     DROP PROCEDURE imp.Importar_Actividades;
     PRINT 'Importar_Actividades existía y fue borrado';
 END;
 GO
+
 CREATE OR ALTER PROCEDURE imp.Importar_Actividades
 	@RutaArchivo NVARCHAR(255)
 AS
@@ -337,29 +322,30 @@ BEGIN
 	(
 		tnombre				VARCHAR(255),
 		tvalor_mensual		VARCHAR(255),
-		tvig_valor			VARCHAR(255),
+		tvig_valor			VARCHAR(255)
 	);
 
 	DECLARE @filas_importadas INT = 0, @filas_ignoradas INT = 0;
 
 	DECLARE @SQL NVARCHAR(MAX);
 	SET @SQL = '
-		INSERT INTO ##Temp
-		SELECT 
-			CONVERT(VARCHAR(255), F1),
-			CONVERT(VARCHAR(255), F2),
-			CONVERT(VARCHAR(255), F3),
-		FROM OPENROWSET(
-			''Microsoft.ACE.OLEDB.12.0'',
-			''Excel 12.0;HDR=NO;IMEX=1;Database=' + @RutaArchivo + ''',
-			''SELECT * FROM [Tarifas$B2:D8]''
-		)';
+    INSERT INTO ##Temp
+    SELECT 
+        CONVERT(VARCHAR(255), F1),
+        CONVERT(VARCHAR(255), F2),
+        CONVERT(VARCHAR(255), F3)
+    FROM OPENROWSET(
+        ''Microsoft.ACE.OLEDB.12.0'',
+        ''Excel 12.0;HDR=NO;IMEX=1;Database=' + @RutaArchivo + ''',
+        ''SELECT * FROM [Tarifas$B2:D8]''
+    )
+    WHERE F1 IS NOT NULL';
 	EXEC sp_executesql @SQL;
-
+	
 	-- Elimina encabezado
 	DELETE FROM ##Temp WHERE tnombre = 'Actividad';
-
-	-- Variables de cursor
+	
+	-- Variables cursor
 	DECLARE 
 		@tnombre				VARCHAR(255),
 		@tvalor_mensual			VARCHAR(255),
@@ -371,9 +357,12 @@ BEGIN
 		@valor_mensual	DECIMAL(10,2),
 		@vig_valor		DATE;
 
-	DECLARE cur CURSOR LOCAL FAST_FORWARD FOR SELECT * FROM ##Temp;
+	DECLARE cur CURSOR LOCAL FAST_FORWARD FOR 
+		SELECT tnombre, tvalor_mensual, tvig_valor FROM ##Temp;
 
 	OPEN cur;
+
+	-- Primer fetch antes del WHILE
 	FETCH NEXT FROM cur INTO @tnombre, @tvalor_mensual, @tvig_valor;
 
 	WHILE @@FETCH_STATUS = 0
@@ -383,7 +372,6 @@ BEGIN
 		SET @valor_mensual			= TRY_CONVERT(DECIMAL(10,2),REPLACE(LTRIM(RTRIM(@tvalor_mensual)), CHAR(160), ''));
 		SET @vig_valor				= TRY_CONVERT(DATE, REPLACE(LTRIM(RTRIM(@tvig_valor)), CHAR(160), ''), 103); -- dd/MM/yyyy
 
-		-- Validación
 		IF @nombre IS NOT NULL AND @vig_valor IS NOT NULL AND @valor_mensual IS NOT NULL
 		BEGIN TRY
 			EXEC stp.insertarActividad
@@ -393,25 +381,128 @@ BEGIN
 			SET @filas_importadas += 1;
 		END TRY
 		BEGIN CATCH
-            SET @filas_ignoradas += 1;
-            PRINT 'Fila ignorada: Nombre=' + ISNULL(@nombre, 'NULL') +
-                  ', Valor=' + ISNULL(CAST(@valor_mensual AS VARCHAR), 'NULL') +
-                  ', Vig=' + ISNULL(CONVERT(VARCHAR, @vig_valor, 103), 'NULL');
-            PRINT 'Error: ' + ERROR_MESSAGE();
-        END CATCH
+			SET @filas_ignoradas += 1;
+			PRINT 'Fila ignorada: Nombre=' + ISNULL(@nombre, 'NULL') +
+				  ', Valor=' + ISNULL(CAST(@valor_mensual AS VARCHAR(20)), 'NULL') +
+				  ', Vig=' + ISNULL(CONVERT(VARCHAR, @vig_valor, 103), 'NULL');
+			PRINT 'Error: ' + ERROR_MESSAGE();
+		END CATCH
 
-		FETCH NEXT FROM cur INTO @tnombre, @tvalor_mensual, @tvalor_mensual;
-
+		-- Fetch siguiente para continuar el loop
+		FETCH NEXT FROM cur INTO @tnombre, @tvalor_mensual, @tvig_valor;
 	END
+
 	CLOSE cur;
 	DEALLOCATE cur;
+	DROP TABLE ##Temp;
 	PRINT 'Filas importadas: ' + CAST(@filas_importadas AS VARCHAR);
 	PRINT 'Filas ignoradas: ' + CAST(@filas_ignoradas AS VARCHAR);
 END
 GO
 
 
+-----------------------------------------------------------------------------------------------------------------------
+--	Importar Categorias.
 
+IF EXISTS (SELECT * FROM sys.procedures WHERE name = 'Importar_Categorias') 
+BEGIN
+    DROP PROCEDURE imp.Importar_Categorias;
+    PRINT 'Importar_Categorias existía y fue borrado';
+END;
+GO
 
+CREATE OR ALTER PROCEDURE imp.Importar_Categorias
+	@RutaArchivo NVARCHAR(255)
+AS
+BEGIN
+	SET NOCOUNT ON;
+
+	-- Limpieza tabla temporal si existe
+	IF OBJECT_ID('tempdb..##Temp') IS NOT NULL
+		DROP TABLE ##Temp;
+
+	CREATE TABLE ##Temp
+	(
+		tdescripcion		VARCHAR(255),
+		tvalor_mensual		VARCHAR(255),
+		tvig_valor_mens		VARCHAR(255),
+		tvalor_anual		VARCHAR(255),
+		tvig_valor_anual	VARCHAR(255)
+	);
+
+	DECLARE @filas_importadas INT = 0, @filas_ignoradas INT = 0;
+
+	DECLARE @SQL NVARCHAR(MAX);
+	SET @SQL = '
+    INSERT INTO ##Temp
+    SELECT 
+        CONVERT(VARCHAR(255), F1),
+        CONVERT(VARCHAR(255), F2),
+        CONVERT(VARCHAR(255), F3)
+    FROM OPENROWSET(
+        ''Microsoft.ACE.OLEDB.12.0'',
+        ''Excel 12.0;HDR=NO;IMEX=1;Database=' + @RutaArchivo + ''',
+        ''SELECT * FROM [Tarifas$B2:D8]''
+    )
+    WHERE F1 IS NOT NULL';
+	EXEC sp_executesql @SQL;
+	
+	-- Elimina encabezado
+	DELETE FROM ##Temp WHERE tnombre = 'Actividad';
+	
+	-- Variables cursor
+	DECLARE 
+		@tnombre				VARCHAR(255),
+		@tvalor_mensual			VARCHAR(255),
+		@tvig_valor				VARCHAR(255);
+
+	-- Variables formateadas
+	DECLARE 
+		@nombre			VARCHAR(50),
+		@valor_mensual	DECIMAL(10,2),
+		@vig_valor		DATE;
+
+	DECLARE cur CURSOR LOCAL FAST_FORWARD FOR 
+		SELECT tnombre, tvalor_mensual, tvig_valor FROM ##Temp;
+
+	OPEN cur;
+
+	-- Primer fetch antes del WHILE
+	FETCH NEXT FROM cur INTO @tnombre, @tvalor_mensual, @tvig_valor;
+
+	WHILE @@FETCH_STATUS = 0
+	BEGIN
+		-- Limpieza y conversión
+		SET @nombre					= LEFT(LTRIM(RTRIM(@tnombre)), 50);
+		SET @valor_mensual			= TRY_CONVERT(DECIMAL(10,2),REPLACE(LTRIM(RTRIM(@tvalor_mensual)), CHAR(160), ''));
+		SET @vig_valor				= TRY_CONVERT(DATE, REPLACE(LTRIM(RTRIM(@tvig_valor)), CHAR(160), ''), 103); -- dd/MM/yyyy
+
+		IF @nombre IS NOT NULL AND @vig_valor IS NOT NULL AND @valor_mensual IS NOT NULL
+		BEGIN TRY
+			EXEC stp.insertarActividad
+				@nombre = @nombre,
+				@vig_valor = @vig_valor,
+				@valor_mensual = @valor_mensual;
+			SET @filas_importadas += 1;
+		END TRY
+		BEGIN CATCH
+			SET @filas_ignoradas += 1;
+			PRINT 'Fila ignorada: Nombre=' + ISNULL(@nombre, 'NULL') +
+				  ', Valor=' + ISNULL(CAST(@valor_mensual AS VARCHAR(20)), 'NULL') +
+				  ', Vig=' + ISNULL(CONVERT(VARCHAR, @vig_valor, 103), 'NULL');
+			PRINT 'Error: ' + ERROR_MESSAGE();
+		END CATCH
+
+		-- Fetch siguiente para continuar el loop
+		FETCH NEXT FROM cur INTO @tnombre, @tvalor_mensual, @tvig_valor;
+	END
+
+	CLOSE cur;
+	DEALLOCATE cur;
+	DROP TABLE ##Temp;
+	PRINT 'Filas importadas: ' + CAST(@filas_importadas AS VARCHAR);
+	PRINT 'Filas ignoradas: ' + CAST(@filas_ignoradas AS VARCHAR);
+END
+GO
 
 

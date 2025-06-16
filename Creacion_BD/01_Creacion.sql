@@ -125,7 +125,6 @@ ELSE
 	END;
 go
 
-
 -- TABLA CATEGORIA
 
 IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'Com5600G11.psn.Categoria') AND type = N'U') 
@@ -146,8 +145,6 @@ ELSE
 		PRINT 'La tabla Categoria ya existe.';
 	END;
 go
-
---ALTER TABLE psn.Categoria add edad_max int
 
 -- TABLA SUSCRIPCION
 

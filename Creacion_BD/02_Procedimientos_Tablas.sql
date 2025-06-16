@@ -2468,17 +2468,6 @@ BEGIN
         WHERE i.cod_socio = @cod_socio;
     END
 
-    -- 3. ÍTEMS POR RESERVAS
-    INSERT INTO psn.Item_Factura (cod_item, cod_Factura, monto, descripcion)
-    SELECT
-        ROW_NUMBER() OVER (ORDER BY r.monto)
-        + ISNULL((SELECT MAX(cod_item) FROM psn.Item_Factura WHERE cod_Factura = @cod_Factura), 0) AS cod_item,
-        @cod_Factura,
-        r.monto,
-        'RESERVA'
-    FROM psn.Reserva r
-    WHERE r.cod_socio = @cod_socio OR r.cod_invitado = @cod_socio;
-
     -- Actualizar monto total en factura sumando los ítems
     UPDATE psn.Factura
     SET monto = (

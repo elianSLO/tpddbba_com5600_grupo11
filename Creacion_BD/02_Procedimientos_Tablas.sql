@@ -17,56 +17,6 @@ BEGIN
 END;
 GO
 
-
-
-CREATE OR ALTER PROCEDURE stp.insertarCategoria
-	@descripcion		VARCHAR(50),
-	@edad_max			INT,
-	@valor_mensual		DECIMAL(10,2),
-	@vig_valor_mens		DATE,
-	@valor_anual		DECIMAL(10,2),
-	@vig_valor_anual	DATE	
-AS
-BEGIN
-	--	Validar que la descripcion exista
-	 IF @descripcion NOT IN ('Cadete', 'Mayor', 'Menor')
-    BEGIN
-        PRINT 'La descripción debe ser Cadete, Mayor o Menor.'
-        RETURN;
-    END
-	--	Validar que la edad máxima sea mayor a 0
-		IF (@edad_max <= 0)
-		BEGIN
-			PRINT 'La edad máxima debe ser un número mayor a 0.'
-			RETURN;
-		END;
-		--	Validar que los montos no sean nulos o negativos
-		IF (@valor_mensual <= 0 or @valor_mensual IS NULL or @valor_anual <= 0 or @valor_anual IS NULL)
-		BEGIN
-			PRINT 'El valor de la suscripcion debe ser mayor a cero'
-			RETURN;
-		END;
-		IF (@vig_valor_mens < GETDATE() or @vig_valor_anual < GETDATE())
-			BEGIN
-				PRINT 'Fecha de vigencia invalida'
-            RETURN;
-			END;
-		
-		INSERT INTO psn.Categoria(descripcion,edad_max,valor_mensual,vig_valor_mens,valor_anual,vig_valor_anual)
-        VALUES (@descripcion,@edad_max,@valor_mensual,@vig_valor_mens,@valor_anual,@vig_valor_anual);
-		PRINT 'Categoria insertada correctamente'
-END
-GO
-
----------------------------------------------------------------------------------------------------------------
--- SP PARA MODIFICAR CATEGORIA
-
-IF  EXISTS (SELECT * FROM sys.procedures WHERE name = 'modificarCategoria')
-BEGIN
-    DROP PROCEDURE stp.modificarCategoria;
-END;
-GO
-
 CREATE OR ALTER PROCEDURE stp.insertarCategoria
 	@descripcion		VARCHAR(50),
 	@edad_max			INT,
@@ -120,6 +70,84 @@ BEGIN
 END
 GO
 
+-- SP PARA MODIFICAR CATEGORIA
+
+IF  EXISTS (SELECT * FROM sys.procedures WHERE name = 'modificarCategoria')
+BEGIN
+    DROP PROCEDURE stp.modificarCategoria;
+END;
+GO
+
+CREATE OR ALTER PROCEDURE stp.modificarCategoria
+    @cod_categoria      INT,
+    @descripcion        VARCHAR(50),
+    @edad_max           INT,
+    @valor_mensual      DECIMAL(10,2),
+    @vig_valor_mens     DATE,
+    @valor_anual        DECIMAL(10,2),
+    @vig_valor_anual    DATE
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    -- Validar que la categoría exista por código
+    IF NOT EXISTS (SELECT 1 FROM psn.Categoria WHERE cod_categoria = @cod_categoria)
+    BEGIN
+        PRINT 'No existe una categoría con ese código para modificar.'
+        RETURN;
+    END
+
+    -- Validar que la descripción sea válida
+    IF @descripcion NOT IN ('Cadete', 'Mayor', 'Menor')
+    BEGIN
+        PRINT 'La descripción debe ser Cadete, Mayor o Menor.'
+        RETURN;
+    END
+
+    -- Validar que la nueva descripción no esté en uso por otra categoría diferente
+    IF EXISTS (
+        SELECT 1 FROM psn.Categoria
+        WHERE descripcion = @descripcion AND cod_categoria <> @cod_categoria
+    )
+    BEGIN
+        PRINT 'Otra categoría ya tiene esa descripción.'
+        RETURN;
+    END
+
+    -- Validar que la edad máxima sea mayor a 0
+    IF (@edad_max <= 0)
+    BEGIN
+        PRINT 'La edad máxima debe ser un número mayor a 0.'
+        RETURN;
+    END
+
+    -- Validar que los montos no sean nulos o negativos
+    IF (@valor_mensual <= 0 OR @valor_mensual IS NULL OR @valor_anual <= 0 OR @valor_anual IS NULL)
+    BEGIN
+        PRINT 'El valor de la suscripción debe ser mayor a cero.'
+        RETURN;
+    END
+
+    -- Validar que las fechas de vigencia no sean anteriores a hoy
+    IF (@vig_valor_mens < CAST(GETDATE() AS DATE) OR @vig_valor_anual < CAST(GETDATE() AS DATE))
+    BEGIN
+        PRINT 'Fecha de vigencia inválida.'
+        RETURN;
+    END
+
+    -- Actualizar la categoría
+    UPDATE psn.Categoria
+    SET descripcion = @descripcion,
+        edad_max = @edad_max,
+        valor_mensual = @valor_mensual,
+        vig_valor_mens = @vig_valor_mens,
+        valor_anual = @valor_anual,
+        vig_valor_anual = @vig_valor_anual
+    WHERE cod_categoria = @cod_categoria;
+
+    PRINT 'Categoría modificada correctamente.';
+END
+GO
 
 -- SP PARA BORRAR CATEGORIA
 
@@ -148,6 +176,11 @@ GO
 ----------------------------------------------------------------------------------------------------------------
 --	STORED PROCEDURES PARA TABLA ACTIVIDAD
 
+IF EXISTS (SELECT * FROM sys.procedures WHERE name = 'insertarActividad')
+BEGIN
+    DROP PROCEDURE stp.insertarActividad;
+END;
+GO
 
 CREATE OR ALTER PROCEDURE stp.insertarActividad
     @nombre         VARCHAR(50),
@@ -157,7 +190,7 @@ AS
 BEGIN
     SET NOCOUNT ON;
 
-    -- Validar el nombre de la actividad 
+    /*-- Validar el nombre de la actividad 
     IF @nombre COLLATE Modern_Spanish_CI_AI NOT IN (
         'Futsal',
         'Vóley',
@@ -169,7 +202,7 @@ BEGIN
     BEGIN
         PRINT 'El nombre de la actividad no es correcto.'
         RETURN;
-    END
+    END*/	
 
     -- Validar que no exista ya una actividad con el mismo nombre
     IF EXISTS (SELECT 1 FROM psn.Actividad WHERE nombre = @nombre)
@@ -199,6 +232,11 @@ BEGIN
 END
 GO
 
+IF EXISTS (SELECT * FROM sys.procedures WHERE name = 'modificarActividad')
+BEGIN
+    DROP PROCEDURE stp.modificarActividad;
+END;
+GO
 
 CREATE OR ALTER PROCEDURE stp.modificarActividad
 	@nombre				VARCHAR(50),
@@ -243,6 +281,12 @@ BEGIN
 
 	PRINT 'Actividad modificada correctamente.';
 END
+GO
+
+IF EXISTS (SELECT * FROM sys.procedures WHERE name = 'eliminarActividad')
+BEGIN
+    DROP PROCEDURE stp.eliminarActividad;
+END;
 GO
 
 CREATE OR ALTER PROCEDURE stp.eliminarActividad
@@ -1201,8 +1245,6 @@ END;
 GO
 
 
-----------------------------------------------------------------------
-
 
 --------- SPs SUSCRIBIR 
 
@@ -1247,8 +1289,10 @@ BEGIN
 	ELSE
 		SET	@fecha_venc = DATEADD(MONTH, 1, @fecha_inscripcion)
 
-	INSERT INTO psn.Suscripcion (cod_socio,cod_categoria,fecha_suscripcion,fecha_vto)
-	VALUES(@cod_socio,@cod_categoria,@fecha_inscripcion,@fecha_venc)
+	INSERT INTO psn.Suscripcion (cod_socio, cod_categoria, fecha_suscripcion, fecha_vto, tiempoSuscr)
+	VALUES(@cod_socio, @cod_categoria, @fecha_inscripcion, @fecha_venc, UPPER(@tipoSuscripcion))
+
+	PRINT 'Socio suscrito exitosamente.'
 END
 
 IF EXISTS (SELECT * FROM sys.procedures WHERE name = 'modificarSuscripcion')
@@ -1289,12 +1333,25 @@ BEGIN
 		PRINT 'Categoria incorrecta'
 		RETURN
 	END
+	IF EXISTS (
+		SELECT 1
+		FROM psn.Suscripcion
+		WHERE cod_socio = @cod_socio
+		  AND cod_categoria = @nueva_cat
+		  AND tiempoSuscr = @tiempo
+	)
+	BEGIN
+		PRINT 'La suscripción ya fue modificada anteriormente.'
+		RETURN
+	END
 
 	UPDATE psn.Suscripcion
 	SET 
 		cod_categoria = ISNULL(cod_categoria,@nueva_cat),
 		tiempoSuscr = ISNULL(tiempoSuscr, @tiempo)
 	WHERE cod_socio = @cod_socio
+
+	PRINT 'Modificación exitosa.'
 END
 
 IF EXISTS (SELECT * FROM sys.procedures WHERE name = 'borrarSuscripcion')
@@ -1332,7 +1389,7 @@ GO
 -----------------------------------------------------------------------------------------
 --	SP PARA FACTURAS
 
-IF EXISTS (SELECT * FROM sys.procedures WHERE (object_id = OBJECT_ID('emitirFactura') AND type = N'U'))
+IF EXISTS (SELECT * FROM sys.procedures WHERE name = 'emitirFactura')
 BEGIN
     DROP PROCEDURE stp.emitirFactura;
 END;
@@ -1373,7 +1430,7 @@ BEGIN
 END
 GO
 
-IF EXISTS (SELECT * FROM sys.procedures WHERE (object_id = OBJECT_ID('modificarFactura') AND type = N'U'))
+IF EXISTS (SELECT * FROM sys.procedures WHERE name = 'modificarFactura')
 BEGIN
     DROP PROCEDURE stp.modificarFactura;
 END;
@@ -2410,17 +2467,6 @@ BEGIN
         JOIN psn.Actividad a ON c.cod_actividad = a.cod_actividad
         WHERE i.cod_socio = @cod_socio;
     END
-
-    -- 3. ÍTEMS POR RESERVAS
-    INSERT INTO psn.Item_Factura (cod_item, cod_Factura, monto, descripcion)
-    SELECT
-        ROW_NUMBER() OVER (ORDER BY r.monto)
-        + ISNULL((SELECT MAX(cod_item) FROM psn.Item_Factura WHERE cod_Factura = @cod_Factura), 0) AS cod_item,
-        @cod_Factura,
-        r.monto,
-        'RESERVA'
-    FROM psn.Reserva r
-    WHERE r.cod_socio = @cod_socio OR r.cod_invitado = @cod_socio;
 
     -- Actualizar monto total en factura sumando los ítems
     UPDATE psn.Factura

@@ -1,0 +1,140 @@
+
+
+-- PRUEBA PARA TABLA SUSCRIPCION 
+
+-- Suscripción relaciona Socio con Categoría.
+
+-- Inserto varios Socios en Tabla Socio
+
+DELETE FROM psn.Socio
+
+EXEC stp.insertarSocio
+    @cod_socio = 'SN-00001',
+    @dni = '12345678',
+    @nombre = 'Juan',
+    @apellido = 'Pérez',
+    @fecha_nac = '1990-05-15',
+    @email = 'juan.perez@mail.com',
+    @tel = '1122334455',
+    @tel_emerg = '1133445566',
+    @estado = 1,
+    @saldo = 0,
+    @nombre_cobertura = 'OSDE',
+    @nro_afiliado = 'OS12345678',
+    @tel_cobertura = '1144556677',
+    @cod_responsable = NULL
+
+EXEC stp.insertarSocio
+    @cod_socio = 'SN-00002',
+    @dni = '23456789',
+    @nombre = 'María',
+    @apellido = 'Gómez',
+    @fecha_nac = '1985-10-20',
+    @email = 'maria.gomez@mail.com',
+    @tel = '1166778899',
+    @tel_emerg = '1177889900',
+    @estado = 1,
+    @saldo = 500,
+    @nombre_cobertura = 'Swiss Medical',
+    @nro_afiliado = 'SM87654321',
+    @tel_cobertura = '1199887766',
+    @cod_responsable = NULL;
+
+EXEC stp.insertarSocio
+    @cod_socio = 'SN-00003',
+    @dni = '34567890',
+    @nombre = 'Carlos',
+    @apellido = 'Fernández',
+    @fecha_nac = '2005-08-15',
+    @email = 'carlos.fernandez@mail.com',
+    @tel = '1155337799',
+    @tel_emerg = '1155223366',
+    @estado = 1,
+    @saldo = 0,
+    @nombre_cobertura = 'Galeno',
+    @nro_afiliado = 'GA65432109',
+    @tel_cobertura = '1133667788',
+    @cod_responsable = NULL;
+
+EXEC stp.insertarSocio
+    @cod_socio = 'SN-00004',
+    @dni = '45678901',
+    @nombre = 'Lucía',
+    @apellido = 'Martínez',
+    @fecha_nac = '1999-03-12',
+    @email = 'lucia.martinez@mail.com',
+    @tel = '1133445566',
+    @tel_emerg = '1144223344',
+    @estado = 1,
+    @saldo = 150,
+    @nombre_cobertura = 'OSDE',
+    @nro_afiliado = 'OS11223344',
+    @tel_cobertura = '1122113344',
+    @cod_responsable = NULL;
+
+EXEC stp.insertarSocio
+    @cod_socio = 'SN-00005',
+    @dni = '56789012',
+    @nombre = 'Tomás',
+    @apellido = 'Ruiz',
+    @fecha_nac = '2010-07-30',
+    @email = 'tomas.ruiz@mail.com',
+    @tel = '1144667788',
+    @tel_emerg = '1177993355',
+    @estado = 1,
+    @saldo = 0,
+    @nombre_cobertura = 'Hospital Italiano',
+    @nro_afiliado = 'HI99887766',
+    @tel_cobertura = '1100998877',
+    @cod_responsable = NULL;
+
+-- Verifico que se insertaron correctamente
+
+SELECT * FROM psn.Socio 
+
+
+----- Inserto en tabla Categoria
+
+-- Limpiar la tabla para pruebas (solo si es seguro)
+
+DELETE FROM psn.Categoria
+DBCC CHECKIDENT ('psn.Categoria', RESEED, 0);
+
+-- INSERTO LAS 3 CATEGORIAS VALIDAS
+
+EXEC stp.insertarCategoria 
+    @descripcion = 'Menor',
+	@edad_max = 12,
+    @valor_mensual = 10000.00, 
+    @vig_valor_mens = '2026-01-01', 
+    @valor_anual = 1200000.00, 
+    @vig_valor_anual = '10-05-2025';
+
+EXEC stp.insertarCategoria 
+    @descripcion = 'Cadete',
+	@edad_max = 17,
+    @valor_mensual = 10000.00, 
+    @vig_valor_mens = '2026-01-01', 
+    @valor_anual = 2000000.00, 
+    @vig_valor_anual = '10-05-2025';
+
+EXEC stp.insertarCategoria 
+    @descripcion = 'Mayor',
+	@edad_max = 99,
+    @valor_mensual = 25000.00, 
+    @vig_valor_mens = '2026-01-01', 
+    @valor_anual = 2000000.00, 
+    @vig_valor_anual = '10-05-2025';
+
+-- Verifico 
+
+SELECT * FROM psn.Categoria
+
+
+-- Pruebo SP insertarSuscripcion
+
+EXEC stp.insertarSuscripcion @cod_socio = 'SN-00001', @tipoSuscripcion = 'A', @cod_categoria = 3
+
+
+
+

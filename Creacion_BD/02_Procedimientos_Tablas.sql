@@ -2199,9 +2199,9 @@ END;
 GO
 
 ---------------
--- STORED PROCEDURES PARA TABLA CLASE
 
--- SP PARA INSERTAR CLASE
+
+-- SP: insertarClase
 
 IF EXISTS (SELECT * FROM sys.procedures WHERE name = 'insertarClase')
 BEGIN
@@ -2211,14 +2211,22 @@ GO
 
 CREATE OR ALTER PROCEDURE stp.insertarClase
     @categoria     INT,
-    @cod_actividad INT
+    @cod_actividad INT,
+    @dia           VARCHAR(9),
+    @horario       TIME
 AS
 BEGIN
     SET NOCOUNT ON;
 
-    IF @categoria IS NULL OR @cod_actividad IS NULL
+    IF @categoria IS NULL OR @cod_actividad IS NULL OR @dia IS NULL OR @horario IS NULL
     BEGIN
-        PRINT 'Error: Los campos categoría y código de actividad no pueden ser NULL.';
+        PRINT 'Error: Ningún parámetro puede ser NULL.';
+        RETURN;
+    END;
+
+    IF @dia NOT IN ('Lunes', 'Martes', 'Miercoles', 'Jueves', 'Viernes', 'Sabado', 'Domingo')
+    BEGIN
+        PRINT 'Error: Día inválido.';
         RETURN;
     END;
 
@@ -2234,20 +2242,26 @@ BEGIN
         RETURN;
     END;
 
-    IF EXISTS (SELECT 1 FROM psn.Clase WHERE categoria = @categoria AND cod_actividad = @cod_actividad)
+    IF EXISTS (
+        SELECT 1 FROM psn.Clase
+        WHERE categoria = @categoria AND cod_actividad = @cod_actividad
+              AND dia = @dia AND horario = @horario
+    )
     BEGIN
-        PRINT 'Error: Ya existe una clase con esta combinación de categoría y actividad.';
+        PRINT 'Error: Ya existe una clase con esa combinación.';
         RETURN;
     END;
 
-    INSERT INTO psn.Clase (categoria, cod_actividad)
-    VALUES (@categoria, @cod_actividad);
+    INSERT INTO psn.Clase (categoria, cod_actividad, dia, horario)
+    VALUES (@categoria, @cod_actividad, @dia, @horario);
 
     PRINT 'Clase insertada correctamente.';
 END;
 GO
 
--- SP PARA MODIFICAR CLASE
+
+-- SP: modificarClase
+
 IF EXISTS (SELECT * FROM sys.procedures WHERE name = 'modificarClase')
 BEGIN
     DROP PROCEDURE stp.modificarClase;
@@ -2257,26 +2271,28 @@ GO
 CREATE OR ALTER PROCEDURE stp.modificarClase
     @cod_clase     INT,
     @categoria     INT,
-    @cod_actividad   INT
+    @cod_actividad INT,
+    @dia           VARCHAR(9),
+    @horario       TIME
 AS
 BEGIN
     SET NOCOUNT ON;
 
-    IF @cod_clase IS NULL
+    IF @cod_clase IS NULL OR @categoria IS NULL OR @cod_actividad IS NULL OR @dia IS NULL OR @horario IS NULL
     BEGIN
-        PRINT 'Error: El código de clase no puede ser NULL.';
+        PRINT 'Error: Ningún parámetro puede ser NULL.';
+        RETURN;
+    END;
+
+    IF @dia NOT IN ('Lunes', 'Martes', 'Miercoles', 'Jueves', 'Viernes', 'Sabado', 'Domingo')
+    BEGIN
+        PRINT 'Error: Día inválido.';
         RETURN;
     END;
 
     IF NOT EXISTS (SELECT 1 FROM psn.Clase WHERE cod_clase = @cod_clase)
     BEGIN
-        PRINT 'Error: La clase con el código especificado no existe.';
-        RETURN;
-    END;
-
-    IF @categoria IS NULL OR @cod_actividad IS NULL
-    BEGIN
-        PRINT 'Error: Los campos categoría y código de actividad no pueden ser NULL para la modificación.';
+        PRINT 'Error: La clase especificada no existe.';
         RETURN;
     END;
 
@@ -2292,23 +2308,32 @@ BEGIN
         RETURN;
     END;
 
-    IF EXISTS (SELECT 1 FROM psn.Clase WHERE categoria = @categoria AND cod_actividad = @cod_actividad AND cod_clase <> @cod_clase)
+    IF EXISTS (
+        SELECT 1 FROM psn.Clase
+        WHERE categoria = @categoria AND cod_actividad = @cod_actividad
+              AND dia = @dia AND horario = @horario
+              AND cod_clase <> @cod_clase
+    )
     BEGIN
-        PRINT 'Error: La modificación resultaría en una clase duplicada con esta combinación de categoría y actividad.';
+        PRINT 'Error: Ya existe otra clase con esa combinación.';
         RETURN;
     END;
 
     UPDATE psn.Clase
     SET
-        categoria = @categoria,
-        cod_actividad = @cod_actividad
+        categoria     = @categoria,
+        cod_actividad = @cod_actividad,
+        dia           = @dia,
+        horario       = @horario
     WHERE cod_clase = @cod_clase;
 
     PRINT 'Clase modificada correctamente.';
 END;
 GO
 
--- SP PARA BORRAR CLASE
+
+-- SP: borrarClase
+
 IF EXISTS (SELECT * FROM sys.procedures WHERE name = 'borrarClase')
 BEGIN
     DROP PROCEDURE stp.borrarClase;
@@ -2333,18 +2358,17 @@ BEGIN
         RETURN;
     END;
 
-    IF EXISTS (SELECT 1 FROM psn.HorarioClase WHERE cod_clase = @cod_clase)
-    BEGIN
-         PRINT 'Error: No se puede eliminar la clase porque tiene horarios asociados.';
-         RETURN;
-     END;
-
     DELETE FROM psn.Clase
     WHERE cod_clase = @cod_clase;
 
     PRINT 'Clase eliminada correctamente.';
 END;
 GO
+
+
+
+
+
 
 --- STORED PROCEDURES PARA ITEM_FACTURA
 

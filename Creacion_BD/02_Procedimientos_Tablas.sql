@@ -1275,8 +1275,10 @@ BEGIN
 	ELSE
 		SET	@fecha_venc = DATEADD(MONTH, 1, @fecha_inscripcion)
 
-	INSERT INTO psn.Suscripcion (cod_socio,cod_categoria,fecha_suscripcion,fecha_vto)
-	VALUES(@cod_socio,@cod_categoria,@fecha_inscripcion,@fecha_venc)
+	INSERT INTO psn.Suscripcion (cod_socio, cod_categoria, fecha_suscripcion, fecha_vto, tiempoSuscr)
+	VALUES(@cod_socio, @cod_categoria, @fecha_inscripcion, @fecha_venc, UPPER(@tipoSuscripcion))
+
+	PRINT 'Socio suscrito exitosamente.'
 END
 
 IF EXISTS (SELECT * FROM sys.procedures WHERE name = 'modificarSuscripcion')
@@ -1323,6 +1325,8 @@ BEGIN
 		cod_categoria = ISNULL(cod_categoria,@nueva_cat),
 		tiempoSuscr = ISNULL(tiempoSuscr, @tiempo)
 	WHERE cod_socio = @cod_socio
+
+	PRINT 'Modificación exitosa.'
 END
 
 IF EXISTS (SELECT * FROM sys.procedures WHERE name = 'borrarSuscripcion')

@@ -133,7 +133,85 @@ SELECT * FROM psn.Categoria
 
 -- Pruebo SP insertarSuscripcion
 
-EXEC stp.insertarSuscripcion @cod_socio = 'SN-00001', @tipoSuscripcion = 'A', @cod_categoria = 3
+-- ========================================
+-- PRUEBAS PROCEDIMIENTO stp.insertarSuscripcion
+-- ========================================
+
+-- PRUEBA 1: Edad supera la edad máxima de la categoría
+-- Carlos (19 años) en categoría Cadete (edad_max = 17)
+EXEC stp.insertarSuscripcion
+    @cod_socio = 'SN-00003',
+    @tipoSuscripcion = 'M',
+    @cod_categoria = 2;  -- Cadete
+-- Esperado: 'Categoria incorrecta'
+
+
+-- PRUEBA 2: Suscripción válida anual
+-- Tomás (14 años) en categoría Cadete (edad_max = 17)
+EXEC stp.insertarSuscripcion
+    @cod_socio = 'SN-00005',
+    @tipoSuscripcion = 'A',
+    @cod_categoria = 2; -- Cadete
+-- Esperado: Inserción OK
+
+
+-- PRUEBA 3: Suscripción válida mensual
+-- Juan (35 años) en categoría Mayor (edad_max = 99)
+EXEC stp.insertarSuscripcion
+    @cod_socio = 'SN-00001',
+    @tipoSuscripcion = 'M',
+    @cod_categoria = 3; -- Mayor
+-- Esperado: Inserción OK
+
+
+-- PRUEBA 4: Tipo de suscripción inválido ('Z')
+EXEC stp.insertarSuscripcion
+    @cod_socio = 'SN-00001',
+    @tipoSuscripcion = 'Z',
+    @cod_categoria = 3;
+-- Esperado: 'Tipo de suscripcion erronea'
+
+
+-- PRUEBA 5: Socio inexistente
+EXEC stp.insertarSuscripcion
+    @cod_socio = 'SN-99999',
+    @tipoSuscripcion = 'M',
+    @cod_categoria = 1;
+-- Esperado: 'No existe socio'
+
+
+-- PRUEBA 6: Edad fuera de rango
+-- María (39 años) en categoría Menor (edad_max = 12)
+EXEC stp.insertarSuscripcion
+    @cod_socio = 'SN-00002',
+    @tipoSuscripcion = 'A',
+    @cod_categoria = 1; -- Menor
+-- Esperado: 'Categoria incorrecta'
+
+-- PRUEBA 7: Edad igual al límite (requiere categoría nueva)
+-- Lucía (26 años) en categoría con edad_max = 26
+-- Insertar nueva categoría especial
+
+EXEC stp.insertarCategoria 
+    @descripcion = 'Especial 26',
+    @edad_max = 26,
+    @valor_mensual = 15000.00, 
+    @vig_valor_mens = '2026-01-01', 
+    @valor_anual = 180000.00, 
+    @vig_valor_anual = '2025-05-10';
+
+-- Suponiendo que el cod_categoria insertado es el 4:
+EXEC stp.insertarSuscripcion
+    @cod_socio = 'SN-00004',
+    @tipoSuscripcion = 'M',
+    @cod_categoria = 4;
+-- Esperado: Inserción OK
+
+-- ========================================
+-- Verificar resultados
+-- ========================================
+SELECT * FROM psn.Suscripcion;
+
 
 
 

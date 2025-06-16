@@ -36,7 +36,7 @@ GO
 
 
 SELECT * 
-FROM OPENQUERY(LinkerServer_EXCEL, 'SELECT TOP 1 * FROM [Responsables de Pago$]');
+FROM OPENQUERY(LinkerServer_EXCEL, 'SELECT TOP 1 * FROM [Tarifas$]');
 GO
 
 -----------------------------------------------------------------------------------------------------------------------
@@ -158,15 +158,6 @@ GO
 exec imp.Importar_Pagos 'D:\repos\tpddbba_com5600_grupo11\Creacion_BD\import\Datos socios.xlsx';
 select * from psn.Pago
 GO
-
-
-
-
-
-
-
-
-
 
 
 	exec imp.Importar_Socios 'D:\repos\tpddbba_com5600_grupo11\Creacion_BD\import\Datos socios.xlsx';
@@ -308,7 +299,6 @@ BEGIN
 			@tcod_socio, @tnombre, @tapellido, @tdni, @temail, @tfecha_nac,
 			@ttel, @ttel_emerg, @tnombre_cobertura, @tnro_afiliado, @ttel_cobertura;
 	END
-
 	CLOSE cur;
 	DEALLOCATE cur;
 	PRINT 'Filas importadas: ' + CAST(@filas_importadas AS VARCHAR);
@@ -317,16 +307,108 @@ END
 GO
 
 
+-----------------------------------------------------------------------------------------------------------------------
+--	Importar Actividades.
 
+	exec imp.Importar_Actividades 'D:\repos\tpddbba_com5600_grupo11\Creacion_BD\import\Datos socios.xlsx';
+	select * from psn.Actividad
+	delete from psn.Actividad 
 
-SELECT TOP 1 * 
-FROM OPENROWSET(
-    'Microsoft.ACE.OLEDB.12.0',
-    'Excel 12.0;HDR=NO;Database=D:\repos\tpddbba_com5600_grupo11\Creacion_BD\import\Datos socios.xlsx',
-    'SELECT * FROM [Responsables de Pago$]'
-);
+-----------------------------------------------------------------------------------------------------------------------
+--	Importar Socios.
 
+IF EXISTS (SELECT * FROM sys.procedures WHERE name = 'Importar_Actividades') 
+BEGIN
+    DROP PROCEDURE imp.Importar_Actividades;
+    PRINT 'Importar_Actividades existía y fue borrado';
+END;
+GO
+CREATE OR ALTER PROCEDURE imp.Importar_Actividades
+	@RutaArchivo NVARCHAR(255)
+AS
+BEGIN
+	SET NOCOUNT ON;
 
+	-- Limpieza tabla temporal si existe
+	IF OBJECT_ID('tempdb..##Temp') IS NOT NULL
+		DROP TABLE ##Temp;
+
+	CREATE TABLE ##Temp
+	(
+		tnombre				VARCHAR(255),
+		tvalor_mensual		VARCHAR(255),
+		tvig_valor			VARCHAR(255),
+	);
+
+	DECLARE @filas_importadas INT = 0, @filas_ignoradas INT = 0;
+
+	DECLARE @SQL NVARCHAR(MAX);
+	SET @SQL = '
+		INSERT INTO ##Temp
+		SELECT 
+			CONVERT(VARCHAR(255), F1),
+			CONVERT(VARCHAR(255), F2),
+			CONVERT(VARCHAR(255), F3),
+		FROM OPENROWSET(
+			''Microsoft.ACE.OLEDB.12.0'',
+			''Excel 12.0;HDR=NO;IMEX=1;Database=' + @RutaArchivo + ''',
+			''SELECT * FROM [Tarifas$B2:D8]''
+		)';
+	EXEC sp_executesql @SQL;
+
+	-- Elimina encabezado
+	DELETE FROM ##Temp WHERE tnombre = 'Actividad';
+
+	-- Variables de cursor
+	DECLARE 
+		@tnombre				VARCHAR(255),
+		@tvalor_mensual			VARCHAR(255),
+		@tvig_valor				VARCHAR(255);
+
+	-- Variables formateadas
+	DECLARE 
+		@nombre			VARCHAR(50),
+		@valor_mensual	DECIMAL(10,2),
+		@vig_valor		DATE;
+
+	DECLARE cur CURSOR LOCAL FAST_FORWARD FOR SELECT * FROM ##Temp;
+
+	OPEN cur;
+	FETCH NEXT FROM cur INTO @tnombre, @tvalor_mensual, @tvig_valor;
+
+	WHILE @@FETCH_STATUS = 0
+	BEGIN
+		-- Limpieza y conversión
+		SET @nombre					= LEFT(LTRIM(RTRIM(@tnombre)), 50);
+		SET @valor_mensual			= TRY_CONVERT(DECIMAL(10,2),REPLACE(LTRIM(RTRIM(@tvalor_mensual)), CHAR(160), ''));
+		SET @vig_valor				= TRY_CONVERT(DATE, REPLACE(LTRIM(RTRIM(@tvig_valor)), CHAR(160), ''), 103); -- dd/MM/yyyy
+
+		-- Validación
+		IF @nombre IS NOT NULL AND @vig_valor IS NOT NULL AND @valor_mensual IS NOT NULL
+		BEGIN TRY
+			EXEC stp.insertarActividad
+				@nombre = @nombre,
+				@vig_valor = @vig_valor,
+				@valor_mensual = @valor_mensual;
+			SET @filas_importadas += 1;
+		END TRY
+		BEGIN CATCH
+            SET @filas_ignoradas += 1;
+            PRINT 'Fila ignorada: Nombre=' + ISNULL(@nombre, 'NULL') +
+                  ', Valor=' + ISNULL(CAST(@valor_mensual AS VARCHAR), 'NULL') +
+                  ', Vig=' + ISNULL(CONVERT(VARCHAR, @vig_valor, 103), 'NULL');
+            PRINT 'Error: ' + ERROR_MESSAGE();
+        END CATCH
+
+		FETCH NEXT FROM cur INTO @tnombre, @tvalor_mensual, @tvalor_mensual;
+
+	END
+	CLOSE cur;
+	DEALLOCATE cur;
+	PRINT 'Filas importadas: ' + CAST(@filas_importadas AS VARCHAR);
+	PRINT 'Filas ignoradas: ' + CAST(@filas_ignoradas AS VARCHAR);
+END
+GO
 
 
 

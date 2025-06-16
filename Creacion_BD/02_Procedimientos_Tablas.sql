@@ -2619,7 +2619,8 @@ GO
 CREATE PROCEDURE stp.insertarAsiste
     @fecha      DATE,
     @cod_socio  VARCHAR(15),
-    @cod_clase  INT
+    @cod_clase  INT,
+    @estado         CHAR(1)
 AS
 BEGIN
     SET NOCOUNT ON;
@@ -2631,9 +2632,16 @@ BEGIN
         RETURN;
     END
 
-    IF @cod_socio IS NULL OR @cod_socio NOT LIKE 'SN-[0-9][0-9][0-9][0-9][0-9]'
+    IF @estado IS NULL OR @estado NOT IN ('P','A','J')
     BEGIN
-        PRINT 'Error: El código de socio debe ser un número positivo.';
+        PRINT 'Error: La fecha no puede ser nula ni futura.';
+        RETURN;
+    END
+
+    IF @cod_socio IS NULL OR (@cod_socio  NOT LIKE 'SN-[0-9][0-9][0-9][0-9][0-9]' 
+                          AND @cod_socio  NOT LIKE 'SN-[0-9][0-9][0-9][0-9]')
+    BEGIN
+        PRINT 'Error: Formato erróneo de código de socio.';
         RETURN;
     END
 
@@ -2654,8 +2662,8 @@ BEGIN
     END
 
     -- Inserción
-    INSERT INTO psn.Asiste (fecha, cod_socio, cod_clase)
-    VALUES (@fecha, @cod_socio, @cod_clase);
+    INSERT INTO psn.Asiste (fecha, cod_socio, cod_clase, estado)
+    VALUES (@fecha, @cod_socio, @cod_clase, @estado);
 
     PRINT 'Asistencia registrada correctamente.';
 END;

@@ -31,7 +31,7 @@ BEGIN
         FechaHoraError  DATETIME DEFAULT GETDATE(),
         Nro_Socio_Excel VARCHAR(15) NULL,
         Actividad_Excel VARCHAR(50) NULL,
-        Fecha_Asistencia_Excel NVARCHAR(15) NULL,
+        Fecha_Asistencia_Excel NVARCHAR(50) NULL,
         Asistencia_Estado_Excel VARCHAR(5) NULL,
         Profesor_Excel  VARCHAR(50) NULL,
         Motivo_Error    VARCHAR(MAX)
@@ -52,7 +52,7 @@ BEGIN TRY
     CREATE TABLE #AsistenciaCruda (
         Nro_Socio_Excel     VARCHAR(15),
         Actividad_Excel     VARCHAR(50),
-        Fecha_Asistencia_Excel NVARCHAR(15),
+        Fecha_Asistencia_Excel NVARCHAR(50),
         Asistencia_Estado_Excel VARCHAR(5),
         Profesor_Excel      VARCHAR(50)
     );
@@ -78,7 +78,7 @@ BEGIN TRY
         id_cruda            INT IDENTITY(1,1) PRIMARY KEY,
         Nro_Socio_Excel_Src VARCHAR(15),
         Actividad_Excel_Src VARCHAR(50),
-        Fecha_Asistencia_Excel_Src NVARCHAR(10),
+        Fecha_Asistencia_Excel_Src NVARCHAR(50),
         Asistencia_Estado_Excel_Src VARCHAR(5),
         Profesor_Excel_Src  VARCHAR(50),
 
@@ -176,7 +176,8 @@ BEGIN TRY
     INNER JOIN
         psn.Clase AS C ON I.cod_clase = C.cod_clase
                          AND AV.cod_actividad = C.cod_actividad
-                         AND AV.dia_semana_asistencia = C.dia;
+                         AND AV.dia_semana_asistencia = C.dia
+                         AND AV.cod_profesor = C.cod_prof;
 
     -- Registrar errores de filas que no se pudieron validar
     INSERT INTO psn.LogErroresImportacion (

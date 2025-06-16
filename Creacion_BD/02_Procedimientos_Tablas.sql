@@ -1319,6 +1319,17 @@ BEGIN
 		PRINT 'Categoria incorrecta'
 		RETURN
 	END
+	IF EXISTS (
+		SELECT 1
+		FROM psn.Suscripcion
+		WHERE cod_socio = @cod_socio
+		  AND cod_categoria = @nueva_cat
+		  AND tiempoSuscr = @tiempo
+	)
+	BEGIN
+		PRINT 'La suscripción ya fue modificada anteriormente.'
+		RETURN
+	END
 
 	UPDATE psn.Suscripcion
 	SET 

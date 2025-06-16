@@ -176,6 +176,11 @@ GO
 ----------------------------------------------------------------------------------------------------------------
 --	STORED PROCEDURES PARA TABLA ACTIVIDAD
 
+IF EXISTS (SELECT * FROM sys.procedures WHERE name = 'insertarActividad')
+BEGIN
+    DROP PROCEDURE stp.insertarActividad;
+END;
+GO
 
 CREATE OR ALTER PROCEDURE stp.insertarActividad
     @nombre         VARCHAR(50),
@@ -227,6 +232,11 @@ BEGIN
 END
 GO
 
+IF EXISTS (SELECT * FROM sys.procedures WHERE name = 'modificarActividad')
+BEGIN
+    DROP PROCEDURE stp.modificarActividad;
+END;
+GO
 
 CREATE OR ALTER PROCEDURE stp.modificarActividad
 	@nombre				VARCHAR(50),
@@ -271,6 +281,12 @@ BEGIN
 
 	PRINT 'Actividad modificada correctamente.';
 END
+GO
+
+IF EXISTS (SELECT * FROM sys.procedures WHERE name = 'eliminarActividad')
+BEGIN
+    DROP PROCEDURE stp.eliminarActividad;
+END;
 GO
 
 CREATE OR ALTER PROCEDURE stp.eliminarActividad

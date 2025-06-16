@@ -278,6 +278,7 @@ IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'Com5600G1
 			cod_clase			INT IDENTITY (1,1) PRIMARY KEY,
 			categoria			INT NOT NULL,
 			cod_actividad		INT NOT NULL,
+			cod_prof			INT NOT NULL,
 			dia					VARCHAR(9) NOT NULL CHECK (dia IN ('Lunes', 'Martes', 'Miercoles', 'Jueves', 'Viernes', 'Sabado', 'Domingo')),
 			horario				TIME NOT NULL
 		);
@@ -372,7 +373,8 @@ alter table psn.Reserva add
 	constraint fk_invit_res foreign key (cod_invitado) references psn.Invitado(cod_invitado);
 
 alter table psn.Clase add 		
-	constraint fk_act_clase foreign key (cod_actividad) references psn.Actividad(cod_actividad);
+	constraint fk_act_clase foreign key (cod_actividad) references psn.Actividad(cod_actividad),
+	constraint fk_prof_clase foreign key (cod_prof) references psn.Profesor(cod_prof);
 
 alter table psn.Inscripto add 	
 	constraint pk_inscripto primary key (fecha_inscripcion,cod_socio,cod_clase),

@@ -425,9 +425,9 @@ BEGIN
 	(
 		tdescripcion		VARCHAR(255),
 		tvalor_mensual		VARCHAR(255),
-		tvig_valor_mens		VARCHAR(255),
-		tvalor_anual		VARCHAR(255),
-		tvig_valor_anual	VARCHAR(255)
+		tvig_valor_mens		VARCHAR(255)--,
+		--tvalor_anual		VARCHAR(255),
+		--tvig_valor_anual	VARCHAR(255)
 	);
 
 	DECLARE @filas_importadas INT = 0, @filas_ignoradas INT = 0;
@@ -442,59 +442,61 @@ BEGIN
     FROM OPENROWSET(
         ''Microsoft.ACE.OLEDB.12.0'',
         ''Excel 12.0;HDR=NO;IMEX=1;Database=' + @RutaArchivo + ''',
-        ''SELECT * FROM [Tarifas$B2:D8]''
+        ''SELECT * FROM [Tarifas$B10:D13]''
     )
     WHERE F1 IS NOT NULL';
 	EXEC sp_executesql @SQL;
 	
 	-- Elimina encabezado
-	DELETE FROM ##Temp WHERE tnombre = 'Actividad';
-	
+	DELETE FROM ##Temp WHERE tdescripcion = 'Actividad';
 	-- Variables cursor
 	DECLARE 
-		@tnombre				VARCHAR(255),
+		@tdescripcion			VARCHAR(255),
 		@tvalor_mensual			VARCHAR(255),
-		@tvig_valor				VARCHAR(255);
+		@tvig_valor_mens		VARCHAR(255);
 
 	-- Variables formateadas
 	DECLARE 
-		@nombre			VARCHAR(50),
+		@descripcion	VARCHAR(50),
 		@valor_mensual	DECIMAL(10,2),
-		@vig_valor		DATE;
+		@vig_valor_mens	DATE;
 
 	DECLARE cur CURSOR LOCAL FAST_FORWARD FOR 
-		SELECT tnombre, tvalor_mensual, tvig_valor FROM ##Temp;
+		SELECT tdescripcion, tvalor_mensual, tvig_valor_mens FROM ##Temp;
 
 	OPEN cur;
 
 	-- Primer fetch antes del WHILE
-	FETCH NEXT FROM cur INTO @tnombre, @tvalor_mensual, @tvig_valor;
+	FETCH NEXT FROM cur INTO @tdescripcion, @tvalor_mensual, @tvig_valor_mens;
 
 	WHILE @@FETCH_STATUS = 0
 	BEGIN
 		-- Limpieza y conversión
-		SET @nombre					= LEFT(LTRIM(RTRIM(@tnombre)), 50);
+		SET @descripcion					= LEFT(LTRIM(RTRIM(@tdescripcion)), 50);
 		SET @valor_mensual			= TRY_CONVERT(DECIMAL(10,2),REPLACE(LTRIM(RTRIM(@tvalor_mensual)), CHAR(160), ''));
-		SET @vig_valor				= TRY_CONVERT(DATE, REPLACE(LTRIM(RTRIM(@tvig_valor)), CHAR(160), ''), 103); -- dd/MM/yyyy
+		SET @vig_valor_mens				= TRY_CONVERT(DATE, REPLACE(LTRIM(RTRIM(@tvig_valor_mens)), CHAR(160), ''), 103); -- dd/MM/yyyy
 
-		IF @nombre IS NOT NULL AND @vig_valor IS NOT NULL AND @valor_mensual IS NOT NULL
+		IF @descripcion IS NOT NULL AND @valor_mensual IS NOT NULL AND @vig_valor_mens IS NOT NULL
 		BEGIN TRY
-			EXEC stp.insertarActividad
-				@nombre = @nombre,
-				@vig_valor = @vig_valor,
-				@valor_mensual = @valor_mensual;
+			EXEC stp.insertarCategoria
+				@descripcion = @descripcion,
+				@vig_valor_mens = @vig_valor_mens,
+				@valor_mensual = @valor_mensual,
+				@edad_max = 10,
+				@valor_anual = 10.0,
+				@vig_valor_anual = '27/07/2031';
 			SET @filas_importadas += 1;
 		END TRY
 		BEGIN CATCH
 			SET @filas_ignoradas += 1;
-			PRINT 'Fila ignorada: Nombre=' + ISNULL(@nombre, 'NULL') +
+			PRINT 'Fila ignorada: Nombre=' + ISNULL(@descripcion, 'NULL') +
 				  ', Valor=' + ISNULL(CAST(@valor_mensual AS VARCHAR(20)), 'NULL') +
-				  ', Vig=' + ISNULL(CONVERT(VARCHAR, @vig_valor, 103), 'NULL');
+				  ', Vig=' + ISNULL(CONVERT(VARCHAR, @vig_valor_mens, 103), 'NULL');
 			PRINT 'Error: ' + ERROR_MESSAGE();
 		END CATCH
 
 		-- Fetch siguiente para continuar el loop
-		FETCH NEXT FROM cur INTO @tnombre, @tvalor_mensual, @tvig_valor;
+		FETCH NEXT FROM cur INTO @tdescripcion, @tvalor_mensual, @tvig_valor_mens;
 	END
 
 	CLOSE cur;
@@ -506,3 +508,5 @@ END
 GO
 
 
+EXEC imp.Importar_Categorias 'D:\repos\tpddbba_com5600_grupo11\Creacion_BD\import\Datos socios.xlsx'
+select * from psn.Categoria

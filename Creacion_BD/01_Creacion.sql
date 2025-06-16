@@ -185,7 +185,7 @@ ELSE
 	END;
 go
 
--- PAGO
+-- TABLA PAGO
 
 IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'Com5600G11.psn.Pago') AND type = N'U') 
 	BEGIN

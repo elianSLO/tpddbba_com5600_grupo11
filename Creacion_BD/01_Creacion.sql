@@ -313,7 +313,7 @@ IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'Com5600G1
 	BEGIN
 		CREATE TABLE psn.Asiste (
 			fecha			DATE NOT NULL,
-			cod_socio		VARCHAR(15) NOT NULL CHECK (cod_socio LIKE 'SN-[0-9][0-9][0-9][0-9][0-9]'),
+			cod_socio		VARCHAR(15) NOT NULL CHECK (cod_socio LIKE 'SN-[0-9][0-9][0-9][0-9][0-9]' OR cod_socio LIKE 'SN-[0-9][0-9][0-9][0-9]'),
 			cod_clase		INT NOT NULL,
 			estado			CHAR(1) CHECK (estado IN ('P','PP','A','J')),
 			cod_profesor	INT,
@@ -327,8 +327,8 @@ ELSE
 	BEGIN
 		PRINT 'La tabla Asiste ya existe.';
 	END;
-go
-
+GO
+ 
 -- TABLA ITEM_FACTURA
 
 IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'Com5600G11.psn.Item_Factura') AND type = N'U') 

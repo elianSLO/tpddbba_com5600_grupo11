@@ -1245,8 +1245,6 @@ END;
 GO
 
 
-----------------------------------------------------------------------
-
 
 --------- SPs SUSCRIBIR 
 
@@ -1391,7 +1389,7 @@ GO
 -----------------------------------------------------------------------------------------
 --	SP PARA FACTURAS
 
-IF EXISTS (SELECT * FROM sys.procedures WHERE (object_id = OBJECT_ID('emitirFactura') AND type = N'U'))
+IF EXISTS (SELECT * FROM sys.procedures WHERE name = 'emitirFactura')
 BEGIN
     DROP PROCEDURE stp.emitirFactura;
 END;
@@ -1432,7 +1430,7 @@ BEGIN
 END
 GO
 
-IF EXISTS (SELECT * FROM sys.procedures WHERE (object_id = OBJECT_ID('modificarFactura') AND type = N'U'))
+IF EXISTS (SELECT * FROM sys.procedures WHERE name = 'modificarFactura')
 BEGIN
     DROP PROCEDURE stp.modificarFactura;
 END;

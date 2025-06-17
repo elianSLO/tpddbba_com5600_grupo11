@@ -2567,7 +2567,7 @@ CREATE PROCEDURE stp.insertarAsiste
     @fecha      DATE,
     @cod_socio  VARCHAR(15),
     @cod_clase  INT,
-    @estado         CHAR(1)
+    @estado     CHAR(1)
 AS
 BEGIN
     SET NOCOUNT ON;
@@ -2628,6 +2628,7 @@ CREATE PROCEDURE stp.modificarAsiste
     @fecha_original     DATE,
     @cod_socio_original VARCHAR(15),
     @cod_clase_original INT,
+    @nuevo_estado       CHAR(1),
     @nueva_fecha        DATE,
     @nuevo_cod_socio    VARCHAR(15),
     @nuevo_cod_clase    INT
@@ -2642,6 +2643,12 @@ BEGIN
     )
     BEGIN
         PRINT 'Error: No se encontró el registro original de asistencia.';
+        RETURN;
+    END
+
+    IF @nuevo_estado IS NULL OR @nuevo_estado NOT IN ('P','A','J')
+    BEGIN
+        PRINT 'Error: La fecha no puede ser nula ni futura.';
         RETURN;
     END
 
@@ -2683,7 +2690,8 @@ BEGIN
     UPDATE psn.Asiste
     SET fecha = @nueva_fecha,
         cod_socio = @nuevo_cod_socio,
-        cod_clase = @nuevo_cod_clase
+        cod_clase = @nuevo_cod_clase,
+        estado = @nuevo_estado
     WHERE fecha = @fecha_original AND cod_socio = @cod_socio_original AND cod_clase = @cod_clase_original;
 
     PRINT 'Registro de asistencia modificado correctamente.';

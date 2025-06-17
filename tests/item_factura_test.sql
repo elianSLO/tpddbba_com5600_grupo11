@@ -7,12 +7,12 @@ GO
 
 -- Limpio las tablas a utilizar
 
--- Tabla Socio
-DELETE psn.Socio 
-
 -- Tabla Factura
 DELETE psn.Factura
 DBCC CHECKIDENT ('psn.Factura', RESEED, 0);
+
+-- Tabla Socio
+DELETE psn.Socio 
 
 -- Tabla Item_Fctura
 DELETE psn.Item_Factura

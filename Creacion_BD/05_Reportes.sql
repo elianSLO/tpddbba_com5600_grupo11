@@ -9,7 +9,6 @@ IF NOT EXISTS (SELECT * FROM sys.schemas WHERE name = 'Rep')
 	END;
 go
 
-
 -- REPORTE 1: Socios Morosos
 
 IF EXISTS (SELECT * FROM sys.procedures WHERE name = 'Reporte_SociosMorosos_XML') 
@@ -135,79 +134,86 @@ AS
 BEGIN
     SET NOCOUNT ON;
 
-    -- CTE: Todas las clases dictadas
-    WITH ClasesProgramadas AS (
+    -- CTE: Inscriptos y clases asociadas
+    WITH Inscriptos AS (
         SELECT 
-            cod_clase,
-            fecha
-        FROM psn.Clase_Dictada
+            I.cod_socio,
+            I.cod_clase,
+            I.fecha_inscripcion,
+            C.categoria,
+            C.cod_actividad,
+            A.nombre AS nombre_actividad
+        FROM psn.Inscripto I
+        INNER JOIN psn.Clase C ON I.cod_clase = C.cod_clase
+        INNER JOIN psn.Actividad A ON C.cod_actividad = A.cod_actividad
     ),
 
-    -- CTE: Asistencias registradas
+    -- CTE: Asistencias efectivas
     Asistencias AS (
         SELECT 
-            A.cod_socio,
-            CD.cod_clase,
-            CD.fecha
-        FROM psn.Asiste A
-        INNER JOIN psn.Clase_Dictada CD ON A.cod_clase = CD.cod_clase AND A.fecha = CD.fecha
+            cod_socio,
+            cod_clase,
+            fecha
+        FROM psn.Asiste
     ),
 
-    -- CTE: Posibles asistencias esperadas por socio (basado en inscripción)
+    -- CTE: Total de fechas distintas de asistencia por clase (como si fueran clases dictadas)
+    FechasDictadas AS (
+        SELECT DISTINCT
+            cod_clase,
+            fecha
+        FROM psn.Asiste
+    ),
+
+    -- CTE: Generar posibles asistencias esperadas (por clase y socio)
     PosiblesAsistencias AS (
         SELECT 
             I.cod_socio,
-            CD.cod_clase,
-            CD.fecha
-        FROM psn.Inscripto I
-        INNER JOIN psn.Clase_Dictada CD ON I.cod_clase = CD.cod_clase
-        WHERE CD.fecha >= I.fecha_inscripcion
+            I.cod_clase,
+            F.fecha,
+            I.categoria,
+            I.cod_actividad,
+            I.nombre_actividad
+        FROM Inscriptos I
+        INNER JOIN FechasDictadas F 
+            ON I.cod_clase = F.cod_clase
+           AND F.fecha >= I.fecha_inscripcion
     ),
 
-    -- CTE: Inasistencias = clases que el socio debería haber ido pero no fue
+    -- CTE: Inasistencias (cuando no fue en una fecha dictada)
     Inasistencias AS (
         SELECT 
             PA.cod_socio,
             PA.cod_clase,
-            PA.fecha
+            PA.fecha,
+            PA.categoria,
+            PA.cod_actividad,
+            PA.nombre_actividad
         FROM PosiblesAsistencias PA
-        LEFT JOIN Asistencias A 
-            ON PA.cod_socio = A.cod_socio 
-            AND PA.cod_clase = A.cod_clase 
-            AND PA.fecha = A.fecha
+        LEFT JOIN Asistencias A
+            ON PA.cod_socio = A.cod_socio
+           AND PA.cod_clase = A.cod_clase
+           AND PA.fecha = A.fecha
         WHERE A.cod_socio IS NULL
     ),
 
-    -- CTE: Enriquecer con datos de actividad y categoría
-    InasistenciasDetalle AS (
-        SELECT 
-            I.cod_socio,
-            S.categoria,
-            A.cod_actividad,
-            Act.nombre AS nombre_actividad
-        FROM Inasistencias I
-        INNER JOIN psn.Socio S ON I.cod_socio = S.cod_socio
-        INNER JOIN psn.Clase C ON I.cod_clase = C.cod_clase
-        INNER JOIN psn.Actividad Act ON C.cod_actividad = Act.cod_actividad
-    ),
-
-    -- CTE: Contar inasistencias por categoría y actividad
+    -- CTE: Conteo por categoría y actividad
     ConteoInasistencias AS (
         SELECT 
             categoria,
             cod_actividad,
             nombre_actividad,
             COUNT(*) AS cantidad_inasistencias
-        FROM InasistenciasDetalle
+        FROM Inasistencias
         GROUP BY categoria, cod_actividad, nombre_actividad
     )
 
-    -- Resultado final
+    -- Resultado en XML
     SELECT
-        categoria             AS [@categoria],
-        cod_actividad         AS [@cod_actividad],
-        nombre_actividad      AS [Actividad],
-        cantidad_inasistencias AS [Inasistencias]
+        categoria               AS [@categoria],
+        cod_actividad           AS [@cod_actividad],
+        nombre_actividad        AS [Actividad],
+        cantidad_inasistencias  AS [Inasistencias]
     FROM ConteoInasistencias
     ORDER BY cantidad_inasistencias DESC
     FOR XML PATH('Registro'), ROOT('InasistenciasPorCategoria');
@@ -228,57 +234,85 @@ AS
 BEGIN
     SET NOCOUNT ON;
 
-    -- CTE: Todas las clases dictadas para las actividades donde hay socios inscriptos
-    WITH ClasesProgramadas AS (
+    -- CTE: Fechas en que se dictaron clases (tomadas desde la tabla Asiste)
+    WITH FechasDictadas AS (
+        SELECT DISTINCT 
+            cod_clase,
+            fecha
+        FROM psn.Asiste
+    ),
+
+    -- CTE: Socios inscriptos a clases
+    Inscriptos AS (
         SELECT 
-            cd.cod_clase,
-            cd.fecha,
-            i.cod_socio
-        FROM psn.Clase_Dictada cd
-        INNER JOIN psn.Inscripto i 
-            ON cd.cod_clase = i.cod_clase
-        WHERE cd.fecha >= i.fecha_inscripcion
+            cod_socio,
+            cod_clase,
+            fecha_inscripcion
+        FROM psn.Inscripto
+    ),
+
+    -- CTE: Generar combinaciones esperadas de clase-socio-fecha
+    ClasesEsperadas AS (
+        SELECT 
+            i.cod_socio,
+            fd.cod_clase,
+            fd.fecha
+        FROM FechasDictadas fd
+        INNER JOIN Inscriptos i 
+            ON fd.cod_clase = i.cod_clase
+           AND fd.fecha >= i.fecha_inscripcion
     ),
 
     -- CTE: Asistencias reales
     Asistencias AS (
         SELECT 
-            a.cod_socio,
-            a.cod_clase,
-            a.fecha
-        FROM psn.Asiste a
+            cod_socio,
+            cod_clase,
+            fecha
+        FROM psn.Asiste
     ),
 
-    -- CTE: Inasistencias = clases que el socio debería haber asistido pero no lo hizo
+    -- CTE: Inasistencias (cuando el socio no fue a una clase en la que debería haber estado)
     Inasistencias AS (
         SELECT 
-            cp.cod_socio,
-            cp.cod_clase,
-            cp.fecha
-        FROM ClasesProgramadas cp
-        LEFT JOIN Asistencias a 
-            ON cp.cod_socio = a.cod_socio 
-            AND cp.cod_clase = a.cod_clase 
-            AND cp.fecha = a.fecha
+            ce.cod_socio,
+            ce.cod_clase,
+            ce.fecha
+        FROM ClasesEsperadas ce
+        LEFT JOIN Asistencias a
+            ON ce.cod_socio = a.cod_socio
+           AND ce.cod_clase = a.cod_clase
+           AND ce.fecha = a.fecha
         WHERE a.cod_socio IS NULL
     ),
 
-    -- CTE: Traer detalles del socio y la actividad
+    -- CTE: Última categoría del socio según la suscripción más reciente
+    UltimaCategoria AS (
+        SELECT 
+            sus.cod_socio,
+            cat.descripcion AS categoria,
+            ROW_NUMBER() OVER (PARTITION BY sus.cod_socio ORDER BY sus.fecha_suscripcion DESC) AS rn
+        FROM psn.Suscripcion sus
+        INNER JOIN psn.Categoria cat ON sus.cod_categoria = cat.cod_categoria
+    ),
+
+    -- CTE: Detalles de socios con al menos una inasistencia
     DetallesSociosInasistentes AS (
         SELECT DISTINCT
             s.cod_socio,
             s.nombre,
             s.apellido,
             DATEDIFF(YEAR, s.fecha_nac, GETDATE()) AS edad,
-            s.categoria,
+            uc.categoria,
             act.nombre AS actividad
         FROM Inasistencias i
         INNER JOIN psn.Socio s ON i.cod_socio = s.cod_socio
         INNER JOIN psn.Clase c ON i.cod_clase = c.cod_clase
         INNER JOIN psn.Actividad act ON c.cod_actividad = act.cod_actividad
+        INNER JOIN UltimaCategoria uc ON s.cod_socio = uc.cod_socio AND uc.rn = 1
     )
 
-    -- Resultado final
+    -- Resultado final en XML
     SELECT 
         nombre      AS [Nombre],
         apellido    AS [Apellido],
@@ -290,3 +324,13 @@ BEGIN
     FOR XML PATH('Socio'), ROOT('SociosConInasistencias');
 END;
 GO
+
+-- PRUEBA
+
+EXEC Rep.Reporte_SociosMorosos_XML @fechaInicio = '2025-01-01', @fechaFin = '2026-01-01'
+
+EXEC Rep.Reporte_IngresosMensuales_XML
+
+EXEC Rep.Reporte_Inasistencias_XML
+
+EXEC Rep.Reporte_SociosConInasistencias_XML

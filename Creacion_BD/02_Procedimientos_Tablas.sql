@@ -2388,131 +2388,36 @@ END;
 GO
 
 CREATE OR ALTER PROCEDURE stp.insertarItem_factura
-    @cod_Factura INT
+    @cod_item INT,
+    @cod_Factura INT,
+    @monto DECIMAL(10,2),
+    @descripcion VARCHAR(50)
 AS
 BEGIN
     SET NOCOUNT ON;
 
-    IF NOT EXISTS (SELECT 1 FROM psn.Factura WHERE cod_Factura = @cod_Factura)
-    BEGIN
-        PRINT 'La factura no existe.';
-        RETURN;
-    END
-
-    DECLARE @cod_socio VARCHAR(15);
-    SELECT @cod_socio = cod_socio FROM psn.Factura WHERE cod_Factura = @cod_Factura;
-
-    IF @cod_socio IS NULL
-    BEGIN
-        PRINT 'No se encontró el socio vinculado a la factura.';
-        RETURN;
-    END
-
-    -- 1. ÍTEM POR CATEGORÍA
-    IF @cod_socio LIKE 'SN-%'
-    BEGIN
-        DECLARE @cod_categoria INT,
-                @tiempo CHAR(1),
-                @monto_categoria DECIMAL(10,2),
-                @descripcion_categoria VARCHAR(50),
-                @anio_actual INT = YEAR(GETDATE()),
-                @ya_facturada_anual BIT = 0;
-
-        SELECT TOP 1
-            @cod_categoria = cod_categoria,
-            @tiempo = tiempoSuscr
-        FROM psn.Suscripcion
-        WHERE cod_socio = @cod_socio
-        ORDER BY fecha_suscripcion DESC;
-
-        IF @tiempo = 'A'
-        BEGIN
-            IF EXISTS (
-                SELECT 1
-                FROM psn.Factura f
-                JOIN psn.Item_Factura i ON f.cod_Factura = i.cod_Factura
-                WHERE f.cod_socio = @cod_socio
-                  AND YEAR(f.fecha_emision) = @anio_actual
-                  AND i.monto BETWEEN 
-                      (SELECT valor_anual - 0.01 FROM psn.Categoria WHERE cod_categoria = @cod_categoria)
-                      AND 
-                      (SELECT valor_anual + 0.01 FROM psn.Categoria WHERE cod_categoria = @cod_categoria)
-            )
-            BEGIN
-                SET @ya_facturada_anual = 1;
-            END
-        END
-
-        IF @tiempo = 'A' AND @ya_facturada_anual = 0
-        BEGIN
-            SELECT @monto_categoria = valor_anual FROM psn.Categoria WHERE cod_categoria = @cod_categoria;
-            SET @descripcion_categoria = 'CUOTA ANUAL';
-        END
-        ELSE IF @tiempo = 'M'
-        BEGIN
-            SELECT @monto_categoria = valor_mensual FROM psn.Categoria WHERE cod_categoria = @cod_categoria;
-            SET @descripcion_categoria = 'CUOTA MENSUAL';
-        END
-
-        IF @monto_categoria IS NOT NULL
-        BEGIN
-            DECLARE @prox_item INT = ISNULL((SELECT MAX(cod_item) FROM psn.Item_Factura WHERE cod_Factura = @cod_Factura), 0) + 1;
-
-            INSERT INTO psn.Item_Factura (cod_item, cod_Factura, monto, descripcion)
-            VALUES (@prox_item, @cod_Factura, @monto_categoria, @descripcion_categoria);
-        END
-    END
-
-    -- 2. ÍTEMS POR ACTIVIDAD
-    DECLARE @cant_actividades INT;
-    SELECT @cant_actividades = COUNT(DISTINCT a.cod_actividad)
-    FROM psn.Inscripto i
-    JOIN psn.Clase c ON i.cod_clase = c.cod_clase
-    JOIN psn.Actividad a ON c.cod_actividad = a.cod_actividad
-    WHERE i.cod_socio = @cod_socio;
-
-    IF @cant_actividades > 1
-    BEGIN
-        INSERT INTO psn.Item_Factura (cod_item, cod_Factura, monto, descripcion)
-        SELECT
-            ROW_NUMBER() OVER (ORDER BY a.nombre)
-            + ISNULL((SELECT MAX(cod_item) FROM psn.Item_Factura WHERE cod_Factura = @cod_Factura), 0) AS cod_item,
-            @cod_Factura,
-            a.valor_mensual * 0.9 AS monto, -- Aplica 10% descuento
-            'ACTIVIDAD: ' + a.nombre AS descripcion
-        FROM psn.Inscripto i
-        JOIN psn.Clase c ON i.cod_clase = c.cod_clase
-        JOIN psn.Actividad a ON c.cod_actividad = a.cod_actividad
-        WHERE i.cod_socio = @cod_socio;
-    END
-    ELSE
-    BEGIN
-        INSERT INTO psn.Item_Factura (cod_item, cod_Factura, monto, descripcion)
-        SELECT
-            ISNULL((SELECT MAX(cod_item) FROM psn.Item_Factura WHERE cod_Factura = @cod_Factura), 0) + 1 AS cod_item,
-            @cod_Factura,
-            a.valor_mensual AS monto,
-            'ACTIVIDAD: ' + a.nombre AS descripcion
-        FROM psn.Inscripto i
-        JOIN psn.Clase c ON i.cod_clase = c.cod_clase
-        JOIN psn.Actividad a ON c.cod_actividad = a.cod_actividad
-        WHERE i.cod_socio = @cod_socio;
-    END
-
-    -- Actualizar monto total en factura sumando los ítems
-    UPDATE psn.Factura
-    SET monto = (
-        SELECT ISNULL(SUM(monto), 0)
-        FROM psn.Item_Factura
-        WHERE cod_Factura = @cod_Factura
+    IF NOT EXISTS (
+        SELECT 1 FROM psn.Factura WHERE cod_Factura = @cod_Factura
     )
-    WHERE cod_Factura = @cod_Factura;
+    BEGIN
+        RAISERROR('La factura con código %d no existe.', 16, 1, @cod_Factura);
+        RETURN;
+    END
 
-    PRINT 'Items insertados correctamente y monto actualizado en la factura.';
+    IF EXISTS (
+        SELECT 1 FROM psn.Item_Factura WHERE cod_item = @cod_item AND cod_Factura = @cod_Factura
+    )
+    BEGIN
+        RAISERROR('Ya existe un item con el mismo cod_item para esta factura.', 16, 1);
+        RETURN;
+    END
+
+    INSERT INTO psn.Item_Factura (cod_item, cod_Factura, monto, descripcion)
+    VALUES (@cod_item, @cod_Factura, @monto, @descripcion);
+
+    PRINT 'Item insertado correctamente.';
 END;
 GO
-
-
 
 -- MODIFICACION ITEM_FACTURA
 

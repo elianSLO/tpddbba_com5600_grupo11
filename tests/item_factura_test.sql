@@ -17,7 +17,7 @@ DBCC CHECKIDENT ('psn.Factura', RESEED, 0);
 -- Tabla Item_Fctura
 DELETE psn.Item_Factura
 
------------------------------------------------------------- PRUEBA DE STORED PROCEDURE insertarItem_Factura
+------------------------------------------------------------ 1. PRUEBAS insertarItem_Factura
 
 INSERT INTO psn.Socio (cod_socio, nombre, apellido, dni, email, fecha_nac, tel, tel_emerg, nombre_cobertura, nro_afiliado, tel_cobertura, estado, saldo, cod_responsable)
 VALUES ('SN-00001', 'Juan', 'Pérez', '12345678', 'juan@example.com', '1990-05-10', '123456789', '987654321', 'OSDE', 'AF123', '1122334455', 1, 0.00, NULL);
@@ -80,7 +80,9 @@ EXEC stp.insertarItem_factura
     @monto = 10000,
     @descripcion = NULL;
 
----- 2. modificarItem_Factura
+----------------------------------------------------------- 2. PRUEBAS modificarItem_Factura
+
+-- CASO 2.1 - Modificacion correcta
 
 EXEC stp.modificarItem_Factura 
     @cod_item = 1,
@@ -88,7 +90,39 @@ EXEC stp.modificarItem_Factura
     @monto = 15000.00, -- Cambio Precio
     @descripcion = 'Cuota Categoría Cadete'; -- Cambio Categoria
 
----- 3. borrarItem_Factura
+-- CASO 2.2 - Modificación factura inexistente
+
+EXEC stp.modificarItem_Factura 
+    @cod_item = 1,
+    @cod_Factura = 2,
+    @monto = 15000.00,
+    @descripcion = 'Cuota Categoría Cadete'; -- Cambio Categoria
+
+-- CASO 2.3 - Modificación con Monto negativo
+
+EXEC stp.modificarItem_Factura 
+    @cod_item = 1,
+    @cod_Factura = 1,
+    @monto = -15000.00, 
+    @descripcion = 'Cuota Categoría Cadete'; 
+
+-- CASO 2.4 - Modificación con Categoría vacía
+
+EXEC stp.modificarItem_Factura 
+    @cod_item = 1,
+    @cod_Factura = 1,
+    @monto = 15000.00, 
+    @descripcion = '';
+
+-- CASO 2.5 - Modificación con Cateogría nula
+
+EXEC stp.modificarItem_Factura 
+    @cod_item = 1,
+    @cod_Factura = 1,
+    @monto = 15000.00, 
+    @descripcion = NULL;
+
+-------------------------------------------------------------- 3. PRUEBAS borrarItem_Factura
 
 -- Borro el item 1
 

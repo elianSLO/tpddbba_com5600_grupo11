@@ -2454,6 +2454,15 @@ AS
 BEGIN
     SET NOCOUNT ON;
 
+	-- Validar existencia de la factura
+    IF NOT EXISTS (
+        SELECT 1 FROM psn.Factura WHERE cod_Factura = @cod_Factura
+    )
+    BEGIN
+        PRINT 'Error: La factura con el código ' + CAST(@cod_Factura AS VARCHAR) + ' no existe.';
+        RETURN;
+    END
+
     -- Validar que el item exista
     IF NOT EXISTS (
         SELECT 1

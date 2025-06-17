@@ -1,88 +1,100 @@
--- PRUEBAS SPs Item_Factura
+----------- PRUEBAS SP Item_Factura
 
--- Primero inserto Socio y Factura para pruebas
+-- Selecciono la base de datos 
 
--- Limpio la tabla Factura para pruebas (si es seguro)
+USE Com5600G11
+GO
 
-DELETE FROM psn.Factura
+-- Limpio las tablas a utilizar
+
+-- Tabla Socio
+DELETE psn.Socio 
+
+-- Tabla Factura
+DELETE psn.Factura
 DBCC CHECKIDENT ('psn.Factura', RESEED, 0);
 
--- Inserto Socio para pruebas
--- Limpio la tabla primero (si es seguro)
-DELETE FROM psn.Socio 
+-- Tabla Item_Fctura
+DELETE psn.Item_Factura
 
-EXEC stp.insertarSocio
-    @cod_socio = 'SN-00001',
-    @dni = '12345672',
-    @nombre = 'Juan',
-    @apellido = 'Pérez',
-    @fecha_nac = '2015-05-15',
-    @email = 'juan.perez@mail.com',
-    @tel = '1122334455',
-    @tel_emerg = '1133445566',
-    @estado = 1,
-    @saldo = 0,
-    @nombre_cobertura = 'OSDE',
-    @nro_afiliado = 'OS12345678',
-    @tel_cobertura = '1144556677',
-    @cod_responsable = NULL ;
+------------------------------------------------------------ PRUEBA DE STORED PROCEDURE insertarItem_Factura
 
--- Inserto Factura para ese socio
-EXEC stp.emitirFactura @cod_socio = 'SN-00001' 
+INSERT INTO psn.Socio (cod_socio, nombre, apellido, dni, email, fecha_nac, tel, tel_emerg, nombre_cobertura, nro_afiliado, tel_cobertura, estado, saldo, cod_responsable)
+VALUES ('SN-00001', 'Juan', 'Pérez', '12345678', 'juan@example.com', '1990-05-10', '123456789', '987654321', 'OSDE', 'AF123', '1122334455', 1, 0.00, NULL);
 
-SELECT * FROM psn.Factura
+INSERT INTO psn.Factura (monto, fecha_emision, fecha_vto, fecha_seg_vto, recargo, estado, cod_socio)
+VALUES (2000.00, '2025-06-01', '2025-06-10', '2025-06-20', 0.1, 'Pendiente', 'SN-00001');
 
--- PRUEBAS PARA stp.insertarItem_factura
+SELECT cod_Factura FROM psn.Factura WHERE cod_socio = 'SN-00001';
 
---CASO 11.1.1 Prueba insertarItem_factura: caso válido 
-EXEC stp.insertarItem_factura @cod_Factura = 1;
+
+-- CASO 1.1: Inserción correcta.
+
+EXEC stp.insertarItem_factura 
+    @cod_item = 1,
+    @cod_Factura = 1,
+    @monto = 25000.00,
+    @descripcion = 'Cuota Categoría Mayor';
+
+-- Verificacion: 
 
 SELECT * FROM psn.Item_Factura
 
---CASO 11.1.2 Código de Factura inválido
-EXEC stp.insertarItem_factura @cod_Factura = 0;
+-- CASO 1.2: Inserción del mismo item (debe dar error)
 
---CASO 11.1.3 Código de Factura NULO
-EXEC stp.insertarItem_factura @cod_Factura = NULL;
+EXEC stp.insertarItem_factura 
+    @cod_item = 1,
+    @cod_Factura = 1,
+    @monto = 25000.00,
+    @descripcion = 'Cuota Categoría Mayor';
 
+-- CASO 1.3: Código de factura inexistente.
 
--- PRUEBAS PARA stp.modificarItem_factura
+EXEC stp.insertarItem_factura 
+    @cod_item = 1,
+    @cod_Factura = 2,
+    @monto = 25000.00,
+    @descripcion = 'Cuota Categoría Mayor';
 
--- Suponiendo que el IDENTITY de cod_item se incrementa y existe un item con ID 1
-DECLARE @ultimo_item INT;
-SELECT TOP 1 @ultimo_item = cod_item FROM psn.Item_Factura ORDER BY cod_item DESC;
+-- CASO 1.4: Monto negativo
 
-IF @ultimo_item IS NOT NULL
-BEGIN
-    PRINT '--- Prueba modificarItem_factura: caso válido ---';
-    EXEC stp.modificarItem_factura @cod_item = @ultimo_item, @cod_Factura = 2;
+EXEC stp.insertarItem_factura 
+    @cod_item = 2,
+    @cod_Factura = 1,
+    @monto = -10000,
+    @descripcion = 'Cuota Categoría Mayor';
 
-    PRINT '--- Prueba modificarItem_factura: cod_item inexistente ---';
-    EXEC stp.modificarItem_factura @cod_item = -1, @cod_Factura = 2;
+-- CASO 1.5: Cateogría Vacía 
 
-    PRINT '--- Prueba modificarItem_factura: cod_Factura inválido (0) ---';
-    EXEC stp.modificarItem_factura @cod_item = @ultimo_item, @cod_Factura = 0;
+EXEC stp.insertarItem_factura 
+    @cod_item = 2,
+    @cod_Factura = 1,
+    @monto = 10000,
+    @descripcion = '';
 
-    PRINT '--- Prueba modificarItem_factura: cod_Factura nulo ---';
-    EXEC stp.modificarItem_factura @cod_item = @ultimo_item, @cod_Factura = NULL;
-END
-ELSE
-BEGIN
-    PRINT 'No hay ítems de factura para probar modificar.';
-END
+-- CASO 1.6: Categoría NULL
 
--- PRUEBAS PARA stp.borrarItem_factura
+EXEC stp.insertarItem_factura 
+    @cod_item = 2,
+    @cod_Factura = 1,
+    @monto = 10000,
+    @descripcion = NULL;
 
--- Insertamos un ítem temporal para probar el borrado
+---- 2. modificarItem_Factura
 
-EXEC stp.insertarItem_factura @cod_Factura = 3;
+EXEC stp.modificarItem_Factura 
+    @cod_item = 1,
+    @cod_Factura = 1,
+    @monto = 15000.00, -- Cambio Precio
+    @descripcion = 'Cuota Categoría Cadete'; -- Cambio Categoria
 
--- Obtener el último item insertado
-DECLARE @item_temp INT;
-SELECT TOP 1 @item_temp = cod_item FROM psn.Item_Factura ORDER BY cod_item DESC;
+---- 3. borrarItem_Factura
 
-PRINT '--- Prueba borrarItem_factura: caso válido ---';
-EXEC stp.borrarItem_factura @cod_item = @item_temp;
+-- Borro el item 1
 
-PRINT '--- Prueba borrarItem_factura: cod_item inexistente ---';
-EXEC stp.borrarItem_factura @cod_item = -999;
+EXEC stp.borrarItem_factura @cod_item = 1, @cod_factura = 1
+
+-- Verifico que el item no existe.
+
+EXEC stp.borrarItem_factura @cod_item = 1, @cod_factura = 1 
+

@@ -2396,28 +2396,46 @@ AS
 BEGIN
     SET NOCOUNT ON;
 
+    -- Validar existencia de la factura
     IF NOT EXISTS (
         SELECT 1 FROM psn.Factura WHERE cod_Factura = @cod_Factura
     )
     BEGIN
-        RAISERROR('La factura con código %d no existe.', 16, 1, @cod_Factura);
+        PRINT 'Error: La factura con el código ' + CAST(@cod_Factura AS VARCHAR) + ' no existe.';
         RETURN;
     END
 
+    -- Validar que no exista el mismo cod_item en esa factura
     IF EXISTS (
         SELECT 1 FROM psn.Item_Factura WHERE cod_item = @cod_item AND cod_Factura = @cod_Factura
     )
     BEGIN
-        RAISERROR('Ya existe un item con el mismo cod_item para esta factura.', 16, 1);
+        PRINT 'Error: Ya existe un item con el mismo cod_item para esta factura.';
         RETURN;
     END
 
+    -- Validar que el monto sea positivo
+    IF @monto <= 0
+    BEGIN
+        PRINT 'Error: El monto debe ser un valor positivo mayor a cero.';
+        RETURN;
+    END
+
+    -- Validar que la descripción no sea NULL ni vacía o solo espacios
+    IF @descripcion IS NULL OR LTRIM(RTRIM(@descripcion)) = ''
+    BEGIN
+        PRINT 'Error: La descripción no puede ser vacía ni nula.';
+        RETURN;
+    END
+
+    -- Inserción
     INSERT INTO psn.Item_Factura (cod_item, cod_Factura, monto, descripcion)
     VALUES (@cod_item, @cod_Factura, @monto, @descripcion);
 
     PRINT 'Item insertado correctamente.';
 END;
 GO
+
 
 -- MODIFICACION ITEM_FACTURA
 
@@ -2444,7 +2462,21 @@ BEGIN
           AND cod_item = @cod_item
     )
     BEGIN
-        PRINT 'El item de factura no existe.';
+        PRINT 'Error: El item de factura no existe.';
+        RETURN;
+    END
+
+    -- Validar que el monto sea positivo
+    IF @monto <= 0
+    BEGIN
+        PRINT 'Error: El monto debe ser un valor positivo mayor a cero.';
+        RETURN;
+    END
+
+    -- Validar que la descripción no sea NULL ni vacía o solo espacios
+    IF @descripcion IS NULL OR LTRIM(RTRIM(@descripcion)) = ''
+    BEGIN
+        PRINT 'Error: La descripción no puede ser vacía ni nula.';
         RETURN;
     END
 
@@ -2458,6 +2490,7 @@ BEGIN
     PRINT 'Item de factura modificado correctamente.';
 END;
 GO
+
 
 
 -- BORRADO ITEM_FACTURA

@@ -2581,7 +2581,7 @@ BEGIN
 
     IF @estado IS NULL OR @estado NOT IN ('P','A','J')
     BEGIN
-        PRINT 'Error: La fecha no puede ser nula ni futura.';
+        PRINT 'Error: Estado inválido.';
         RETURN;
     END
 
@@ -2592,9 +2592,36 @@ BEGIN
         RETURN;
     END
 
+    IF NOT EXISTS (
+    SELECT 1 FROM psn.Socio
+        WHERE cod_socio = @cod_socio
+    )
+    BEGIN
+        PRINT 'Error: No se encontró al socio.';
+        RETURN;
+    END
+
     IF @cod_clase IS NULL OR @cod_clase <= 0
     BEGIN
         PRINT 'Error: El código de clase debe ser un número positivo.';
+        RETURN;
+    END
+
+    IF NOT EXISTS (
+        SELECT 1 FROM psn.Clase
+        WHERE cod_clase = @cod_clase
+    )
+    BEGIN
+        PRINT 'Error: La clase no existe';
+        RETURN;
+    END
+
+    IF NOT EXISTS (
+        SELECT 1 FROM psn.Inscripto
+        WHERE @cod_socio = cod_socio AND cod_clase = @cod_clase
+    )
+    BEGIN
+        PRINT 'Error: El socio no esta inscripto a esta clase';
         RETURN;
     END
 
@@ -2636,22 +2663,6 @@ AS
 BEGIN
     SET NOCOUNT ON;
 
-    -- Validar existencia del registro original
-    IF NOT EXISTS (
-        SELECT 1 FROM psn.Asiste
-        WHERE fecha = @fecha_original AND cod_socio = @cod_socio_original AND cod_clase = @cod_clase_original
-    )
-    BEGIN
-        PRINT 'Error: No se encontró el registro original de asistencia.';
-        RETURN;
-    END
-
-    IF @nuevo_estado IS NULL OR @nuevo_estado NOT IN ('P','A','J')
-    BEGIN
-        PRINT 'Error: La fecha no puede ser nula ni futura.';
-        RETURN;
-    END
-
     -- Validaciones para nuevos datos
     IF @nueva_fecha IS NULL OR @nueva_fecha > GETDATE()
     BEGIN
@@ -2665,9 +2676,52 @@ BEGIN
         RETURN;
     END
 
+    IF NOT EXISTS (
+    SELECT 1 FROM psn.Socio
+        WHERE cod_socio = @nuevo_cod_socio
+    )
+    BEGIN
+        PRINT 'Error: No se encontró al socio.';
+        RETURN;
+    END
+
     IF @nuevo_cod_clase IS NULL OR @nuevo_cod_clase <= 0
     BEGIN
         PRINT 'Error: El nuevo código de clase debe ser un número positivo.';
+        RETURN;
+    END
+
+    IF NOT EXISTS (
+        SELECT 1 FROM psn.Clase
+        WHERE cod_clase = @nuevo_cod_clase
+    )
+    BEGIN
+        PRINT 'Error: La clase no existe';
+        RETURN;
+    END
+
+    IF NOT EXISTS (
+        SELECT 1 FROM psn.Inscripto
+        WHERE @nuevo_cod_socio = cod_socio AND cod_clase = @nuevo_cod_clase
+    )
+    BEGIN
+        PRINT 'Error: El socio no esta inscripto a esta clase';
+        RETURN;
+    END
+
+    IF @nuevo_estado IS NULL OR @nuevo_estado NOT IN ('P','A','J')
+    BEGIN
+        PRINT 'Error: Estado inválido.';
+        RETURN;
+    END
+
+    -- Validar existencia del registro original
+    IF NOT EXISTS (
+        SELECT 1 FROM psn.Asiste
+        WHERE fecha = @fecha_original AND cod_socio = @cod_socio_original AND cod_clase = @cod_clase_original
+    )
+    BEGIN
+        PRINT 'Error: No se encontró el registro original de asistencia.';
         RETURN;
     END
 

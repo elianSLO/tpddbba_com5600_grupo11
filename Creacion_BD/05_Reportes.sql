@@ -125,7 +125,7 @@ GO
 
 IF EXISTS (SELECT * FROM sys.procedures WHERE name = 'Reporte_Inasistencias_XML') 
 BEGIN
-    DROP PROCEDURE Rep.Reporte_IngresosMensuales_XML;
+    DROP PROCEDURE Rep.Reporte_Inasistencias_XML;
     PRINT 'SP Reporte_Inasistencias_XML ya existe. Se creará nuevamente.';
 END;
 GO
@@ -214,11 +214,11 @@ BEGIN
 END;
 GO
 
--- REPORTE 4: 
+-- REPORTE 4: Socios con Inasistencias
 
 IF EXISTS (SELECT * FROM sys.procedures WHERE name = 'Reporte_SociosConInasistencias_XML') 
 BEGIN
-    DROP PROCEDURE Rep.Reporte_IngresosMensuales_XML;
+    DROP PROCEDURE Rep.Reporte_SociosConInasistencias_XML;
     PRINT 'SP Reporte_SociosConInasistencias_XML ya existe. Se creará nuevamente.';
 END;
 GO

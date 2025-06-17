@@ -325,7 +325,9 @@ BEGIN
 END;
 GO
 
--- PRUEBA
+-- PRUEBAS
+
+-- Antes de probar: CTRL + T para mostrar los resultados en modo texto
 
 EXEC Rep.Reporte_SociosMorosos_XML @fechaInicio = '2025-01-01', @fechaFin = '2026-01-01'
 

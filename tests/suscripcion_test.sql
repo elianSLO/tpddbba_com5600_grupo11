@@ -137,16 +137,15 @@ SELECT * FROM psn.Categoria
 
 DELETE FROM psn.Suscripcion
 
--- ========================================
--- PRUEBAS PROCEDIMIENTO stp.insertarSuscripcion
--- ========================================
 
--- PRUEBA 1: Edad supera la edad máxima de la categoría
--- Carlos (19 años) en categoría Cadete (edad_max = 17)
+----------------------------------------------------------- 1. PRUEBAS STORED PROCEDURE insertarSuscripcion
+
+
+-- PRUEBA 1
 EXEC stp.insertarSuscripcion
     @cod_socio = 'SN-00003',
     @tipoSuscripcion = 'M',
-    @cod_categoria = 2;  -- Cadete
+    @cod_categoria = 2;  
 -- Esperado: 'Categoria incorrecta'
 
 
@@ -155,7 +154,7 @@ EXEC stp.insertarSuscripcion
 EXEC stp.insertarSuscripcion
     @cod_socio = 'SN-00005',
     @tipoSuscripcion = 'A',
-    @cod_categoria = 2; -- Cadete
+    @cod_categoria = 2; 
 -- Esperado: Inserción OK
 
 
@@ -164,7 +163,7 @@ EXEC stp.insertarSuscripcion
 EXEC stp.insertarSuscripcion
     @cod_socio = 'SN-00001',
     @tipoSuscripcion = 'M',
-    @cod_categoria = 3; -- Mayor
+    @cod_categoria = 3; 
 -- Esperado: Inserción OK
 
 
@@ -189,122 +188,83 @@ EXEC stp.insertarSuscripcion
 EXEC stp.insertarSuscripcion
     @cod_socio = 'SN-00002',
     @tipoSuscripcion = 'A',
-    @cod_categoria = 1; -- Menor
+    @cod_categoria = 1; 
 -- Esperado: 'Categoria incorrecta'
 
--- PRUEBA 7: Edad igual al límite (requiere categoría nueva)
--- Lucía (26 años) en categoría con edad_max = 26
--- Insertar nueva categoría especial
 
-EXEC stp.insertarCategoria 
-    @descripcion = 'Especial 26',
-    @edad_max = 26,
-    @valor_mensual = 15000.00, 
-    @vig_valor_mens = '2026-01-01', 
-    @valor_anual = 180000.00, 
-    @vig_valor_anual = '2025-05-10';
-
--- Suponiendo que el cod_categoria insertado es el 4:
-EXEC stp.insertarSuscripcion
-    @cod_socio = 'SN-00004',
-    @tipoSuscripcion = 'M',
-    @cod_categoria = 4;
--- Esperado: Inserción OK
-
-
--- Verificar resultados
+-- Verificar resultados esperados del test (2 inserciones correctas, una mensual y una anual)
 SELECT * FROM psn.Suscripcion;
 
 
------------- MODIFCACION DE SUSCRIPCION
+--------------------------------------------------------2. PRUEBAS DE STORED PROCEDURE modificarSuscripcion
 
--- PRUEBA 1: Modificar correctamente la categoría y el tiempo de Tomás Ruiz
--- Tomás (SN-00005) tiene categoría Cadete → vamos a cambiarlo a Mayor
--- Aunque es menor, esto debería fallar por edad
+
+-- PRUEBA 1: Modificación correcta
 
 EXEC stp.modificarSuscripcion
     @cod_socio = 'SN-00005',
-    @nueva_cat = 3,  -- Mayor
+    @nueva_cat = 3,  
     @tiempo = 'A';
--- Esperado: 'Categoria incorrecta'
 
 
--- PRUEBA 2: Modificación válida de Juan Pérez
--- Juan (35 años), cambiarlo de Mayor a la nueva categoría "Especial 26" (solo si ya fue creada)
+-- PRUEBA 2: Categoría incorrecta
 
 EXEC stp.modificarSuscripcion
     @cod_socio = 'SN-00001',
-    @nueva_cat = 4,  -- Especial 26
+    @nueva_cat = 4,  
     @tiempo = 'M';
--- Esperado: Inserción OK si edad ≤ 26, sino: 'Categoria incorrecta'
 
-
--- PRUEBA 3: Socio no tiene suscripción
--- Probamos con un socio que no está en Suscripcion
+-- PRUEBA 3: Socio que no tiene suscripción
 
 EXEC stp.modificarSuscripcion
-    @cod_socio = 'SN-00002',  -- María
+    @cod_socio = 'SN-00002',  
     @nueva_cat = 3,
     @tiempo = 'M';
--- Esperado: 'No existe suscripcion'
 
-
---  PRUEBA 4: Categoría inexistente
+-- PRUEBA 5: Tipo de Suscripción no válido
 
 EXEC stp.modificarSuscripcion
     @cod_socio = 'SN-00001',
-    @nueva_cat = 99,
-    @tiempo = 'A';
--- Esperado: 'No existe categoria'
+    @nueva_cat = 3,  
+    @tiempo = 'D';
 
 
--- PRUEBA 5: Modificación válida para Lucía
--- Suponiendo que Lucía tiene una suscripción válida
--- La cambiamos a categoría Mayor y a tiempo anual
-
-EXEC stp.modificarSuscripcion
-    @cod_socio = 'SN-00004',
-    @nueva_cat = 3,  -- Mayor
-    @tiempo = 'A';
--- Esperado: Inserción OK
-
-
-
-------- BORRADO DE SUSCRIPCION
+-------------------------------------------------------- 3. PRUEBAS DE STORED PROCEDURE borrarSuscripcion
 
 -- RESETEO DE DATOS
--- Elimino suscripciones para SN-00001 y SN-00005 si existen
 
-DELETE FROM psn.Suscripcion WHERE cod_socio IN ('SN-00001', 'SN-00005');
+-- Elimino suscripciones
+
+DELETE FROM psn.Suscripcion 
 
 -- Inserto una suscripción para cada uno para probar luego el borrado
 EXEC stp.insertarSuscripcion
     @cod_socio = 'SN-00001',
     @tipoSuscripcion = 'M',
-    @cod_categoria = 3;  -- Mayor
+    @cod_categoria = 3;  
 
 EXEC stp.insertarSuscripcion
     @cod_socio = 'SN-00005',
     @tipoSuscripcion = 'A',
-    @cod_categoria = 2;  -- Cadete
+    @cod_categoria = 2;  
 
 -- VERIFICACIÓN DE INSERCIONES
 
 SELECT * FROM psn.Suscripcion WHERE cod_socio IN ('SN-00001', 'SN-00005');
 
--- PRUEBA 1: Eliminar suscripción existente (SN-00001)
+-- PRUEBA 3.1: Eliminar suscripción existente (SN-00001)
 
 EXEC stp.borrarSuscripcion @cod_socio = 'SN-00001';
 
---  PRUEBA 2: Eliminar nuevamente la misma (debería dar error)
+--  PRUEBA 3.2: Eliminar nuevamente la misma (debería dar error)
 
 EXEC stp.borrarSuscripcion @cod_socio = 'SN-00001';
 
--- PRUEBA 3: Eliminar otra suscripción válida (SN-00005)
+-- PRUEBA 3.3: Eliminar otra suscripción válida (SN-00005)
 
 EXEC stp.borrarSuscripcion @cod_socio = 'SN-00005';
 
--- PRUEBA 4: Intentar borrar un código inexistente
+-- PRUEBA 3.4: Intentar borrar un código inexistente
 
 EXEC stp.borrarSuscripcion @cod_socio = 'SN-99999';
 

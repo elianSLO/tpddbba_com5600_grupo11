@@ -1318,6 +1318,11 @@ BEGIN
 			PRINT 'No existe suscripcion'
 			RETURN
 		END
+	IF (UPPER(@tiempo) NOT IN ('A','M'))
+	BEGIN
+		PRINT 'Tipo de suscripcion erronea'
+		RETURN
+	END
 	IF NOT EXISTS (SELECT 1 FROM psn.Suscripcion WHERE cod_categoria = @nueva_cat)
 		BEGIN
 			PRINT 'No existe categoria'

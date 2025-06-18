@@ -115,7 +115,7 @@ BEGIN
         ingreso_mensual      AS [IngresoMensual],
         ingreso_acumulado    AS [IngresoAcumulado]
     FROM IngresosAcumulados
-    ORDER BY nombre_actividad, anio, mes
+    ORDER BY cod_actividad, anio, mes
     FOR XML PATH('Actividad'), ROOT('IngresosMensuales');
 END;
 GO
@@ -312,7 +312,15 @@ VALUES
 (25000.00, '2025-01-10', '2025-01-20', NULL, 0.00, 'Pagada', 'SN-1001'), 
 (30000.00, '2025-01-12', '2025-01-22', NULL, 0.00, 'Pagada', 'SN-1002'), 
 (25000.00, '2025-02-10', '2025-02-20', NULL, 0.00, 'Pagada', 'SN-1001'), 
-(30000.00, '2025-02-12', '2025-02-22', NULL, 0.00, 'Pagada', 'SN-1002'); 
+(30000.00, '2025-02-12', '2025-02-22', NULL, 0.00, 'Pagada', 'SN-1002'),
+(25000.00, '2025-01-14', '2025-01-24', NULL, 0.00, 'Pagada', 'SN-1001'),  
+(30000.00, '2025-01-16', '2025-01-26', NULL, 0.00, 'Pagada', 'SN-1002'),  
+(45000.00, '2025-01-18', '2025-01-28', NULL, 0.00, 'Pagada', 'SN-1001'),  
+(2000.00,  '2025-01-20', '2025-01-30', NULL, 0.00, 'Pagada', 'SN-1002'),  
+(25000.00, '2025-02-14', '2025-02-24', NULL, 0.00, 'Pagada', 'SN-1001'),  
+(30000.00, '2025-02-16', '2025-02-26', NULL, 0.00, 'Pagada', 'SN-1002'),  
+(45000.00, '2025-02-18', '2025-02-28', NULL, 0.00, 'Pagada', 'SN-1001'),  
+(2000.00,  '2025-02-20', '2025-03-01', NULL, 0.00, 'Pagada', 'SN-1002');
 
 -- ÍTEMS de FACTURA (referencia a cod_clase: suponiendo IDENTITY de clases = 1 para Futsal, 2 para Vóley)
 INSERT INTO psn.Item_Factura (cod_item, cod_Factura, monto, descripcion)
@@ -320,7 +328,15 @@ VALUES
 (1, 1, 25000.00, '1'),
 (2, 2, 30000.00, '2'),
 (3, 3, 25000.00, '1'),
-(4, 4, 30000.00, '2');
+(4, 4, 30000.00, '2'),
+(5, 5, 25000.00, '3'),
+(6, 6, 30000.00, '4'),
+(7, 7, 45000.00, '5'),
+(8, 8, 2000.00,  '6'),
+(9, 9, 25000.00, '3'),
+(10, 10, 30000.00, '4'),
+(11, 11, 45000.00, '5'),
+(12, 12, 2000.00,  '6');
 
 -- EJECUTAR SP
 EXEC Rep.Reporte_IngresosMensuales_XML;

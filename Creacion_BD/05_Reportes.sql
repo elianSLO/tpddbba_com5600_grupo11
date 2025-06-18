@@ -125,6 +125,7 @@ GO
 IF EXISTS (SELECT * FROM sys.procedures WHERE name = 'Reporte_Inasistencias_XML')
 BEGIN
     DROP PROCEDURE Rep.Reporte_Inasistencias_XML;
+	PRINT 'SP Reporte_Inasistencias_XML ya existe. Se creará nuevamente.';
 END;
 GO
 
@@ -197,11 +198,81 @@ BEGIN
     FROM Inasistencias
     GROUP BY nombre_categoria, nombre_actividad
     ORDER BY cantidad_socios_inasistentes DESC
-    FOR XML AUTO, ROOT('SociosInasistentes');
+    FOR XML AUTO, ROOT('Inasistencias');
 END;
 GO
 
+-- REPORTE 4: Socios con Inasistencias
 
+IF EXISTS (SELECT * FROM sys.procedures WHERE name = 'Reporte_SociosConInasistencias')
+BEGIN
+    DROP PROCEDURE Rep.Reporte_SociosConInasistencias;
+	PRINT 'SP Reporte_SociosConInasistencias_XML ya existe. Se creará nuevamente.';
+END;
+GO
+
+CREATE OR ALTER PROCEDURE Rep.Reporte_SociosConInasistencias
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    -- CTE 1: Socios con sus clases y actividades
+    WITH SociosInscriptos AS (
+        SELECT 
+            S.cod_socio,
+            S.nombre,
+            S.apellido,
+            S.fecha_nac,
+            A.nombre AS nombre_actividad,
+            C.cod_clase
+        FROM psn.Inscripto I
+        INNER JOIN psn.Socio S ON I.cod_socio = S.cod_socio
+        INNER JOIN psn.Clase C ON I.cod_clase = C.cod_clase
+        INNER JOIN psn.Actividad A ON C.cod_actividad = A.cod_actividad
+        WHERE I.estado = 'Inscripto'
+    ),
+
+    -- CTE 2: Última categoría vigente del socio
+    CategoriaActual AS (
+        SELECT 
+            cod_socio,
+            cod_categoria,
+            ROW_NUMBER() OVER (PARTITION BY cod_socio ORDER BY fecha_suscripcion DESC) AS rn
+        FROM psn.Suscripcion
+    ),
+
+    -- CTE 3: Categoría con descripción
+    SociosConCategoria AS (
+        SELECT 
+            SI.*,
+            CAT.descripcion AS categoria
+        FROM SociosInscriptos SI
+        LEFT JOIN CategoriaActual SC ON SI.cod_socio = SC.cod_socio AND SC.rn = 1
+        LEFT JOIN psn.Categoria CAT ON SC.cod_categoria = CAT.cod_categoria
+    ),
+
+    -- CTE 4: Inasistencias detectadas
+    Inasistencias AS (
+        SELECT cod_socio, cod_clase
+        FROM psn.Asiste
+        WHERE estado = 'A'
+        GROUP BY cod_socio, cod_clase
+    )
+
+    -- Resultado final: socios con inasistencias
+    SELECT 
+        SC.nombre        AS [Nombre],
+        SC.apellido      AS [Apellido],
+        DATEDIFF(YEAR, SC.fecha_nac, GETDATE()) AS [Edad],
+        SC.categoria     AS [Categoria],
+        SC.nombre_actividad AS [Actividad]
+    FROM SociosConCategoria SC
+    INNER JOIN Inasistencias IA
+        ON SC.cod_socio = IA.cod_socio AND SC.cod_clase = IA.cod_clase
+    ORDER BY SC.apellido, SC.nombre
+    FOR XML PATH('Socio'), ROOT('SociosConInasistencias');
+END;
+GO
 
 
 
@@ -254,7 +325,7 @@ EXEC Rep.Reporte_SociosMorosos_XML
     @fechaInicio = '2025-01-01', 
     @fechaFin = '2025-04-30';
 
---------------------------------------------------------------------- REPORTE 2: INGRESOS MENSUALES
+--------------------------------------------------------------------- REPORTE 2: INGRESOS MENSUALES Y ACUMULADO POR ACTIVIDAD
 
 -- Limpiar datos anteriores para pruebas (solo si es seguro)
 
@@ -342,7 +413,7 @@ VALUES
 EXEC Rep.Reporte_IngresosMensuales_XML;
 
 
----------------------------------------------------------------------- REPORTE 3: INASISTENCIAS
+---------------------------------------------------------------------- REPORTE 3: CANTIDAD DE INASISTENCIAS POR ACTIVIDAD Y CATEGORIA
 
 -- Limpiar datos anteriores para pruebas (solo si es seguro)
 
@@ -480,56 +551,27 @@ VALUES
 -- EJECUTAR SP
 EXEC Rep.Reporte_Inasistencias_XML;
 
------------------------------------------------------------------   REPORTE 4
+-----------------------------------------------------------------   REPORTE 4: SOCIOS CON INASISTENCIAS
 
 -- Limpiar datos anteriores para pruebas (solo si es seguro)
+
+DELETE FROM psn.Suscripcion;
+DELETE FROM psn.Factura;
+DBCC CHECKIDENT ('psn.Factura', RESEED, 0);
+DELETE FROM psn.Categoria
+DBCC CHECKIDENT ('psn.Categoria', RESEED, 0);
 DELETE FROM psn.Asiste;
 DELETE FROM psn.Inscripto;
-DELETE FROM psn.Clase;
-DELETE FROM psn.Profesor;
-DBCC CHECKIDENT ('psn.Profesor', RESEED, 0);
 DELETE FROM psn.Clase;
 DBCC CHECKIDENT ('psn.Clase', RESEED, 0);
 DELETE FROM psn.Actividad;
 DBCC CHECKIDENT ('psn.Actividad', RESEED, 0);
-DELETE FROM psn.Suscripcion;
-DELETE FROM psn.Categoria;
-DBCC CHECKIDENT ('psn.Categoria', RESEED, 0);
 DELETE FROM psn.Socio;
-
--- 1. Insertar categorías
-INSERT INTO psn.Categoria (descripcion, edad_max, valor_mensual, vig_valor_mens, valor_anual, vig_valor_anual)
-VALUES 
-    ('Mayor', 99, 25000, '2026-01-01', 300000,'2026-01-01'),
-    ('Cadete', 17, 15000, '2026-01-01', 180000, '2026-01-01'),
-    ('Menor', 12, 10000, '2026-01-01', 120000, '2026-01-01');
+DELETE FROM psn.Profesor;
+DBCC CHECKIDENT ('psn.Profesor', RESEED, 0);
 
 
--- 2. Insertar socios
-INSERT INTO psn.Socio (cod_socio, nombre, apellido, dni, email, fecha_nac, tel, tel_emerg, nombre_cobertura, nro_afiliado, tel_cobertura, estado, saldo, cod_responsable)
-VALUES 
-('SN-00001', 'Sofía', 'Paz', '10000001', 'sofia@socio.com', '1990-01-01', '1122334455', '1199887766', 'OSDE', '0001', '1133112233', 1, 0, NULL),
-('SN-00002', 'Tomás', 'Leiva', '10000002', 'tomas@socio.com', '1988-02-02', '1144556677', '1166554433', 'Swiss', '0002', '1144223344', 1, 0, NULL),
-('SN-00003', 'Matías', 'González', '10000003', 'matias@socio.com', '1985-05-02', '11556677', '1166554444', 'OSDE', '0001', '1133112233', 1, 0, NULL);
-
-
--- Insertar Profesor
-INSERT INTO psn.Profesor (dni, nombre, apellido, email, tel)
-VALUES 
-('12345678', 'Carlos', 'Ruiz', 'cruiz@mail.com', '1122334455'),
-('12345679', 'Roberto', 'Álvarez', 'ralvarez@mail.com', '1122334456'),
-('12345680', 'Alberto', 'Martin', 'amartin@mail.com', '1122334457'),
-('12345681', 'Raúl', 'Ramírez', 'rramirez@mail.com', '1122334458');
-
-
--- 3. Insertar suscripciones
-INSERT INTO psn.Suscripcion (cod_socio, cod_categoria, fecha_suscripcion, fecha_vto, tiempoSuscr)
-VALUES 
-    ('SN-00001', 1, '2025-06-01','2025-07-01','M'),
-    ('SN-00002', 1, '2025-06-15','2025-07-15','M'),
-	('SN-00003', 1, '2025-06-15','2025-07-15','M');
-
--- 4. Insertar actividad
+-- ACTIVIDADES
 INSERT INTO psn.Actividad (nombre, valor_mensual, vig_valor)
 VALUES 
 ('Futsal', 25000, '2026-01-01'),
@@ -539,30 +581,111 @@ VALUES
 ('Natación', 45000, '2026-01-01'),
 ('Ajedrez', 2000, '2026-01-01');
 
--- 5. Insertar clases
+-- CATEGORÍAS
+INSERT INTO psn.Categoria (descripcion, edad_max, valor_mensual, vig_valor_mens, valor_anual, vig_valor_anual)
+VALUES
+('Menor', 12, 5000, '2025-01-01', 50000, '2025-01-01'),
+('Cadete', 17, 6000, '2025-01-01', 60000, '2025-01-01'),
+('Mayor', 99, 7000, '2025-01-01', 70000, '2025-01-01');
+
+-- SOCIOS
+INSERT INTO psn.Socio (cod_socio, nombre, apellido, dni, email, fecha_nac, tel, tel_emerg, nombre_cobertura, nro_afiliado, tel_cobertura, estado, saldo, cod_responsable)
+VALUES 
+('SN-2001', 'Luna', 'Rojas', '10100001', 'luna@socio.com', '2015-01-01', '1111111111', '1222222222', 'OSDE', 'A001', '1111000000', 1, 0, NULL),
+('SN-2002', 'Ezequiel', 'Gómez', '10100002', 'eze@socio.com', '2014-02-01', '1111111112', '1222222223', 'OSDE', 'A002', '1111000001', 1, 0, NULL),
+('SN-2101', 'Bruno', 'Acosta', '10200001', 'bruno@socio.com', '2010-03-01', '1111111113', '1222222224', 'Swiss', 'B001', '1111000002', 1, 0, NULL),
+('SN-2102', 'Martina', 'Lopez', '10200002', 'martina@socio.com', '2011-04-01', '1111111114', '1222222225', 'Swiss', 'B002', '1111000003', 1, 0, NULL),
+('SN-2201', 'Lucía', 'Fernández', '10300001', 'lucia@socio.com', '1990-05-01', '1111111115', '1222222226', 'Medife', 'C001', '1111000004', 1, 0, NULL),
+('SN-2202', 'Marcos', 'Silva', '10300002', 'marcos@socio.com', '1985-06-01', '1111111116', '1222222227', 'Medife', 'C002', '1111000005', 1, 0, NULL),
+('SN-2003', 'Julieta', 'Maidana', '10100003', 'julieta@socio.com', '2013-03-03', '1111111117', '1222222228', 'OSDE', 'A003', '1111000006', 1, 0, NULL),
+('SN-2103', 'Carlos', 'Benítez', '10200003', 'carlos@socio.com', '2010-03-03', '1111111118', '1222222229', 'Swiss', 'B003', '1111000007', 1, 0, NULL),
+('SN-2104', 'Rocío', 'Franco', '10200004', 'rocio@socio.com', '2011-04-04', '1111111119', '1222222230', 'Swiss', 'B004', '1111000008', 1, 0, NULL),
+('SN-2203', 'Tomás', 'Ibarra', '10300003', 'tomas@socio.com', '1989-07-07', '1111111120', '1222222231', 'Medife', 'C003', '1111000009', 1, 0, NULL),
+('SN-2204', 'Camila', 'Moreira', '10300004', 'camila@socio.com', '1988-08-08', '1111111121', '1222222232', 'Medife', 'C004', '1111000010', 1, 0, NULL),
+('SN-2205', 'Gustavo', 'Lagos', '10300005', 'gustavo@socio.com', '1985-09-09', '1111111122', '1222222233', 'Medife', 'C005', '1111000011', 1, 0, NULL);
+
+-- PROFESORES
+INSERT INTO psn.Profesor (dni, nombre, apellido, email, tel)
+VALUES 
+('10000001', 'Carlos', 'Ruiz', 'car@prof.com', '1122330001'),
+('10000002', 'Sandra', 'Vera', 'san@prof.com', '1122330002'),
+('10000003', 'Ramón', 'Iglesias', 'ram@prof.com', '1122330003'),
+('10000004', 'Lucía', 'Martínez', 'luc@prof.com', '1122330004'),
+('10000005', 'Roberto', 'Díaz', 'rob@prof.com', '1122330005'),
+('10000006', 'Julieta', 'Alonso', 'jul@prof.com', '1122330006');
+
+-- CLASES
 INSERT INTO psn.Clase (categoria, cod_actividad, cod_prof, dia, horario)
-VALUES 
-    (1, 1, 1, 'Lunes', '10:00'),
-    (1, 2, 2, 'Martes', '16:00'),
-	(1, 1, 1, 'Miercoles', '18:00'),
-    (1, 3, 2, 'Jueves', '11:00'),
-	(1, 5, 1, 'Viernes', '14:00'),
-    (1, 6, 2, 'Sabado', '15:00');
+VALUES
+(1, 1, 1, 'Lunes', '09:00'),
+(1, 2, 2, 'Lunes', '10:00'),
+(2, 3, 3, 'Martes', '09:00'),
+(2, 4, 4, 'Martes', '10:00'),
+(3, 5, 5, 'Miercoles', '09:00'),
+(3, 6, 6, 'Miercoles', '10:00');
+
+-- SUSCRIPCIONES
+INSERT INTO psn.Suscripcion (cod_socio, cod_categoria, fecha_suscripcion, fecha_vto, tiempoSuscr)
+VALUES
+('SN-2001', 1, '2025-05-01', '2025-06-01', 'M'),
+('SN-2002', 1, '2025-05-01', '2025-06-01', 'M'),
+('SN-2003', 1, '2025-05-01', '2025-06-01', 'M'),
+('SN-2101', 2, '2025-05-01', '2025-06-01', 'M'),
+('SN-2102', 2, '2025-05-01', '2025-06-01', 'M'),
+('SN-2103', 2, '2025-05-01', '2025-06-01', 'M'),
+('SN-2104', 2, '2025-05-01', '2025-06-01', 'M'),
+('SN-2201', 3, '2025-05-01', '2025-06-01', 'M'),
+('SN-2202', 3, '2025-05-01', '2025-06-01', 'M'),
+('SN-2203', 3, '2025-05-01', '2025-06-01', 'M'),
+('SN-2204', 3, '2025-05-01', '2025-06-01', 'M'),
+('SN-2205', 3, '2025-05-01', '2025-06-01', 'M');
+
+-- INSCRIPCIONES
+INSERT INTO psn.Inscripto (fecha_inscripcion, estado, cod_socio, cod_clase)
+VALUES
+('2025-05-02', 'Inscripto', 'SN-2001', 1),
+('2025-05-02', 'Inscripto', 'SN-2002', 2),
+('2025-05-02', 'Inscripto', 'SN-2003', 2),
+('2025-05-02', 'Inscripto', 'SN-2101', 3),
+('2025-05-02', 'Inscripto', 'SN-2102', 4),
+('2025-05-02', 'Inscripto', 'SN-2103', 3),
+('2025-05-02', 'Inscripto', 'SN-2104', 3),
+('2025-05-02', 'Inscripto', 'SN-2201', 5),
+('2025-05-02', 'Inscripto', 'SN-2202', 6),
+('2025-05-02', 'Inscripto', 'SN-2203', 5),
+('2025-05-02', 'Inscripto', 'SN-2204', 5),
+('2025-05-02', 'Inscripto', 'SN-2205', 5);
+
+-- ASISTENCIAS
+
+INSERT INTO psn.Asiste (fecha, cod_socio, cod_clase, estado)
+VALUES
+('2025-05-10', 'SN-2001', 1, 'P'),
+('2025-05-17', 'SN-2001', 1, 'P'),
+('2025-05-10', 'SN-2002', 2, 'A'),
+('2025-05-17', 'SN-2002', 2, 'P'),
+('2025-05-10', 'SN-2003', 2, 'A'),
+('2025-05-17', 'SN-2003', 2, 'P'),
+('2025-05-10', 'SN-2101', 3, 'A'),
+('2025-05-17', 'SN-2101', 3, 'P'),
+('2025-05-10', 'SN-2102', 4, 'P'),
+('2025-05-17', 'SN-2102', 4, 'P'),
+('2025-05-10', 'SN-2103', 3, 'A'),
+('2025-05-17', 'SN-2103', 3, 'A'),
+('2025-05-10', 'SN-2104', 3, 'A'),
+('2025-05-17', 'SN-2104', 3, 'A'),
+('2025-05-10', 'SN-2201', 5, 'A'),
+('2025-05-17', 'SN-2201', 5, 'A'),
+('2025-05-10', 'SN-2203', 5, 'A'),
+('2025-05-17', 'SN-2203', 5, 'A'),
+('2025-05-10', 'SN-2204', 5, 'A'),
+('2025-05-17', 'SN-2204', 5, 'A'),
+('2025-05-10', 'SN-2205', 5, 'A'),
+('2025-05-17', 'SN-2205', 5, 'A'),
+('2025-05-10', 'SN-2202', 6, 'A'),
+('2025-05-17', 'SN-2202', 6, 'P');
 
 
--- 6. Inscribir socios
-INSERT INTO psn.Inscripto (cod_socio, cod_clase, fecha_inscripcion)
-VALUES 
-    ('SN-00001', 1, '2025-05-20'),
-    ('SN-00001', 2, '2025-05-30'),
-    ('SN-00002', 3, '2025-05-25');
-
--- 7. Registrar asistencias (sólo una asistencia, el resto será inasistencia)
-INSERT INTO psn.Asiste (cod_socio, cod_clase, fecha)
-VALUES 
-    ('SN-00001', 1, '2025-06-20'); -- Asistió solo a una clase
-
--- 8. Ejecutar el SP
-EXEC Rep.Reporte_SociosConInasistencias_XML;
-GO
+-- Ejecutar el SP
+EXEC Rep.Reporte_SociosConInasistencias;
 

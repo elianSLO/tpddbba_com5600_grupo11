@@ -221,6 +221,12 @@ BEGIN
 END;
 GO
 
+IF EXISTS (SELECT * FROM sys.procedures WHERE name = 'Reporte_SociosConInasistencias_XML') 
+BEGIN
+    DROP PROCEDURE Rep.Reporte_Inasistencias_XML;
+    PRINT 'SP Reporte_SociosConInasistencias_XML ya existe. Se creará nuevamente.';
+END;
+GO
 
 CREATE OR ALTER PROCEDURE Rep.Reporte_SociosConInasistencias_XML
 AS
@@ -358,7 +364,7 @@ VALUES
 (1150, '2025-02-20', '2025-03-20', NULL, 0, 'Vencida', 'SN-00003'),
 (1200, '2025-03-20', '2025-04-20', NULL, 0, 'Pagada',  'SN-00003');
 
--- Ejecutar el SP con un rango de fechas que incluya todas las facturas anteriores
+-- Ejecutar SP con un rango de fechas que incluya todas las facturas anteriores
 EXEC Rep.Reporte_SociosMorosos_XML 
     @fechaInicio = '2025-01-01', 
     @fechaFin = '2025-04-30';
@@ -431,13 +437,13 @@ VALUES
 (3, 3, 25000.00, '1'),
 (4, 4, 30000.00, '2');
 
--- EJECUTAR el SP
+-- EJECUTAR SP
 EXEC Rep.Reporte_IngresosMensuales_XML;
 
 
 ---------------------------------------------------------------------- REPORTE 3: INASISTENCIAS
 
--- LIMPIEZA DE DATOS ANTERIORES (opcional para entorno de pruebas)
+-- LIMPIEZA DE DATOS ANTERIORES
 
 DELETE FROM psn.Factura;
 DBCC CHECKIDENT ('psn.Factura', RESEED, 0);
@@ -453,6 +459,8 @@ DELETE FROM psn.Socio;
 DELETE FROM psn.Suscripcion;
 DELETE FROM psn.Profesor;
 DBCC CHECKIDENT ('psn.Profesor', RESEED, 0);
+
+-- INSERCIÓN DE DATOS DE PRUEBA
 
 -- ACTIVIDADES
 INSERT INTO psn.Actividad (nombre, valor_mensual, vig_valor)
@@ -520,6 +528,9 @@ EXEC Rep.Reporte_Inasistencias_XML;
 DELETE FROM psn.Asiste;
 DELETE FROM psn.Inscripto;
 DELETE FROM psn.Clase;
+DELETE FROM psn.Profesor;
+DBCC CHECKIDENT ('psn.Profesor', RESEED, 0);
+DELETE FROM psn.Clase;
 DBCC CHECKIDENT ('psn.Clase', RESEED, 0);
 DELETE FROM psn.Actividad;
 DBCC CHECKIDENT ('psn.Actividad', RESEED, 0);
@@ -537,16 +548,28 @@ VALUES
 
 
 -- 2. Insertar socios
-INSERT INTO psn.Socio (cod_socio, nombre, apellido, fecha_nac)
+INSERT INTO psn.Socio (cod_socio, nombre, apellido, dni, email, fecha_nac, tel, tel_emerg, nombre_cobertura, nro_afiliado, tel_cobertura, estado, saldo, cod_responsable)
 VALUES 
-    ('SN-00001', 'Ana', 'Gomez', '1990-05-12'),
-    ('SN-00002', 'Luis', 'Martinez', '1985-10-20');
+('SN-00001', 'Sofía', 'Paz', '10000001', 'sofia@socio.com', '1990-01-01', '1122334455', '1199887766', 'OSDE', '0001', '1133112233', 1, 0, NULL),
+('SN-00002', 'Tomás', 'Leiva', '10000002', 'tomas@socio.com', '1988-02-02', '1144556677', '1166554433', 'Swiss', '0002', '1144223344', 1, 0, NULL),
+('SN-00003', 'Matías', 'González', '10000003', 'matias@socio.com', '1985-05-02', '11556677', '1166554444', 'OSDE', '0001', '1133112233', 1, 0, NULL);
+
+
+-- Insertar Profesor
+INSERT INTO psn.Profesor (dni, nombre, apellido, email, tel)
+VALUES 
+('12345678', 'Carlos', 'Ruiz', 'cruiz@mail.com', '1122334455'),
+('12345679', 'Roberto', 'Álvarez', 'ralvarez@mail.com', '1122334456'),
+('12345680', 'Alberto', 'Martin', 'amartin@mail.com', '1122334457'),
+('12345681', 'Raúl', 'Ramírez', 'rramirez@mail.com', '1122334458');
+
 
 -- 3. Insertar suscripciones
-INSERT INTO psn.Suscripcion (cod_socio, cod_categoria, fecha_suscripcion)
+INSERT INTO psn.Suscripcion (cod_socio, cod_categoria, fecha_suscripcion, fecha_vto, tiempoSuscr)
 VALUES 
-    ('SN-00001', 1, '2025-01-01'),
-    ('SN-00002', 2, '2025-01-15');
+    ('SN-00001', 1, '2025-06-01','2025-07-01','M'),
+    ('SN-00002', 1, '2025-06-15','2025-07-15','M'),
+	('SN-00003', 1, '2025-06-15','2025-07-15','M');
 
 -- 4. Insertar actividad
 INSERT INTO psn.Actividad (nombre, valor_mensual, vig_valor)
@@ -559,22 +582,27 @@ VALUES
 ('Ajedrez', 2000, '2026-01-01');
 
 -- 5. Insertar clases
-INSERT INTO psn.Clase (cod_clase, cod_actividad, dia, horario)
+INSERT INTO psn.Clase (categoria, cod_actividad, cod_prof, dia, horario)
 VALUES 
-    (1, 1, 'Martes', '10:00'),
-    (2, 2, 'Jueves', '10:00');
+    (1, 1, 1, 'Lunes', '10:00'),
+    (1, 2, 2, 'Martes', '16:00'),
+	(1, 1, 1, 'Miercoles', '18:00'),
+    (1, 3, 2, 'Jueves', '11:00'),
+	(1, 5, 1, 'Viernes', '14:00'),
+    (1, 6, 2, 'Sabado', '15:00');
+
 
 -- 6. Inscribir socios
 INSERT INTO psn.Inscripto (cod_socio, cod_clase, fecha_inscripcion)
 VALUES 
-    ('SN-00001', 1001, '2025-05-20'),
-    ('SN-00001', 1002, '2025-05-20'),
-    ('SN-00002', 1001, '2025-05-25');
+    ('SN-00001', 1, '2025-05-20'),
+    ('SN-00001', 2, '2025-05-30'),
+    ('SN-00002', 3, '2025-05-25');
 
 -- 7. Registrar asistencias (sólo una asistencia, el resto será inasistencia)
 INSERT INTO psn.Asiste (cod_socio, cod_clase, fecha)
 VALUES 
-    ('SN-00001', 1001, '2025-06-01'); -- Asistió solo a una clase
+    ('SN-00001', 1, '2025-06-20'); -- Asistió solo a una clase
 
 -- 8. Ejecutar el SP
 EXEC Rep.Reporte_SociosConInasistencias_XML;

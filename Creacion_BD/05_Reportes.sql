@@ -120,7 +120,7 @@ BEGIN
 END;
 GO
 
--- REPORTE 3: Inasistencias
+-- REPORTE 3: Inasistencias por Categoria y Actividad
 
 IF EXISTS (SELECT * FROM sys.procedures WHERE name = 'Reporte_Inasistencias_XML')
 BEGIN
@@ -133,209 +133,81 @@ AS
 BEGIN
     SET NOCOUNT ON;
 
-    -- 1. CTE: Clases dictadas (fechas distintas por clase)
-    WITH ClasesDictadas AS (
-        SELECT DISTINCT
-            cod_clase,
-            fecha
+    -- CTE: Relación socio-clase-categoría-actividad
+    WITH DatosSocioClase AS (
+        SELECT 
+            I.cod_socio,
+            C.cod_clase,
+            C.cod_actividad,
+            C.categoria,
+            A.nombre AS nombre_actividad,
+            Cat.descripcion AS nombre_categoria
+        FROM psn.Inscripto I
+        INNER JOIN psn.Clase C ON I.cod_clase = C.cod_clase
+        INNER JOIN psn.Actividad A ON C.cod_actividad = A.cod_actividad
+        INNER JOIN psn.Suscripcion S ON I.cod_socio = S.cod_socio AND S.cod_categoria = C.categoria
+        INNER JOIN psn.Categoria Cat ON S.cod_categoria = Cat.cod_categoria
+    ),
+
+    -- Fechas dictadas por clase
+    FechasDictadas AS (
+        SELECT DISTINCT cod_clase, fecha
         FROM psn.Asiste
     ),
 
-    -- 2. CTE: Clases que debería haber asistido cada socio inscripto
-    ClasesEsperadas AS (
+    -- Combinaciones posibles
+    PosiblesAsistencias AS (
         SELECT 
-            i.cod_socio,
-            i.cod_clase,
-            cd.fecha
-        FROM psn.Inscripto i
-        INNER JOIN ClasesDictadas cd ON i.cod_clase = cd.cod_clase
-        WHERE cd.fecha >= i.fecha_inscripcion
+            D.cod_socio,
+            F.cod_clase,
+            F.fecha,
+            D.cod_actividad,
+            D.categoria,
+            D.nombre_actividad,
+            D.nombre_categoria
+        FROM DatosSocioClase D
+        INNER JOIN FechasDictadas F ON D.cod_clase = F.cod_clase
     ),
 
-    -- 3. CTE: Asistencias efectivas
-    Asistencias AS (
-        SELECT 
-            cod_socio,
-            cod_clase,
-            fecha
+    -- Asistencias reales (registradas)
+    AsistenciasRegistradas AS (
+        SELECT cod_socio, cod_clase, fecha, estado
         FROM psn.Asiste
-        WHERE estado = 'P'
     ),
 
-    -- 4. CTE: Inasistencias = Clases esperadas - Asistencias reales
+    -- Inasistencias (sin asistencia o estado distinto de 'P')
     Inasistencias AS (
         SELECT 
-            ce.cod_socio,
-            ce.cod_clase,
-            ce.fecha
-        FROM ClasesEsperadas ce
-        LEFT JOIN Asistencias a 
-            ON ce.cod_socio = a.cod_socio AND ce.cod_clase = a.cod_clase AND ce.fecha = a.fecha
-        WHERE a.cod_socio IS NULL
-    ),
-
-    -- 5. Última categoría de cada socio (por su última suscripción)
-    UltimaCategoria AS (
-        SELECT 
-            s.cod_socio,
-            c.descripcion AS categoria,
-            ROW_NUMBER() OVER (PARTITION BY s.cod_socio ORDER BY s.fecha_suscripcion DESC) AS rn
-        FROM psn.Suscripcion s
-        INNER JOIN psn.Categoria c ON s.cod_categoria = c.cod_categoria
-    ),
-
-    CategoriaFinal AS (
-        SELECT cod_socio, categoria
-        FROM UltimaCategoria
-        WHERE rn = 1
-    ),
-
-    -- 6. Datos de actividad de cada clase
-    Actividades AS (
-        SELECT 
-            c.cod_clase,
-            a.nombre AS actividad
-        FROM psn.Clase c
-        INNER JOIN psn.Actividad a ON c.cod_actividad = a.cod_actividad
-    ),
-
-    -- 7. CTE Final: Conteo de inasistencias por socio, categoría y actividad
-    ConteoInasistencias AS (
-        SELECT 
-            i.cod_socio,
-            cf.categoria,
-            act.actividad,
-            COUNT(*) AS cantidad_inasistencias
-        FROM Inasistencias i
-        INNER JOIN CategoriaFinal cf ON i.cod_socio = cf.cod_socio
-        INNER JOIN Actividades act ON i.cod_clase = act.cod_clase
-        GROUP BY i.cod_socio, cf.categoria, act.actividad
+            P.cod_socio,
+            P.cod_actividad,
+            P.categoria,
+            P.nombre_actividad,
+            P.nombre_categoria
+        FROM PosiblesAsistencias P
+        LEFT JOIN AsistenciasRegistradas A
+            ON P.cod_socio = A.cod_socio AND P.cod_clase = A.cod_clase AND P.fecha = A.fecha
+        WHERE A.cod_socio IS NULL OR A.estado IN ('A', 'J')
     )
 
-    -- 8. Resultado final en formato XML
+    -- Resultado final
     SELECT 
-        categoria,
-        actividad,
-        COUNT(*) AS cantidad_socios,
-        SUM(cantidad_inasistencias) AS total_inasistencias,
-        (
-            SELECT 
-                cod_socio,
-                cantidad_inasistencias
-            FROM ConteoInasistencias ci2
-            WHERE ci2.categoria = ci.categoria AND ci2.actividad = ci.actividad
-            FOR XML PATH('Socio'), TYPE
-        ) AS Socios
-    FROM ConteoInasistencias ci
-    GROUP BY categoria, actividad
-    ORDER BY total_inasistencias DESC
-    FOR XML PATH('CategoriaActividad'), ROOT('ReporteInasistencias');
+        nombre_categoria,
+        nombre_actividad,
+        COUNT(DISTINCT cod_socio) AS cantidad_socios_inasistentes
+    FROM Inasistencias
+    GROUP BY nombre_categoria, nombre_actividad
+    ORDER BY cantidad_socios_inasistentes DESC
+    FOR XML AUTO, ROOT('SociosInasistentes');
 END;
 GO
 
 
-IF EXISTS (SELECT * FROM sys.procedures WHERE name = 'Reporte_SociosConInasistencias_XML') 
-BEGIN
-    DROP PROCEDURE Rep.Reporte_Inasistencias_XML;
-    PRINT 'SP Reporte_SociosConInasistencias_XML ya existe. Se creará nuevamente.';
-END;
-GO
 
-CREATE OR ALTER PROCEDURE Rep.Reporte_SociosConInasistencias_XML
-AS
-BEGIN
-    SET NOCOUNT ON;
 
-    -- CTE: Fechas en que se dictaron clases (tomadas desde la tabla Asiste)
-    WITH FechasDictadas AS (
-        SELECT DISTINCT 
-            cod_clase,
-            fecha
-        FROM psn.Asiste
-    ),
 
-    -- CTE: Socios inscriptos a clases
-    Inscriptos AS (
-        SELECT 
-            cod_socio,
-            cod_clase,
-            fecha_inscripcion
-        FROM psn.Inscripto
-    ),
 
-    -- CTE: Generar combinaciones esperadas de clase-socio-fecha
-    ClasesEsperadas AS (
-        SELECT 
-            i.cod_socio,
-            fd.cod_clase,
-            fd.fecha
-        FROM FechasDictadas fd
-        INNER JOIN Inscriptos i 
-            ON fd.cod_clase = i.cod_clase
-           AND fd.fecha >= i.fecha_inscripcion
-    ),
 
-    -- CTE: Asistencias reales
-    Asistencias AS (
-        SELECT 
-            cod_socio,
-            cod_clase,
-            fecha
-        FROM psn.Asiste
-    ),
 
-    -- CTE: Inasistencias (cuando el socio no fue a una clase en la que debería haber estado)
-    Inasistencias AS (
-        SELECT 
-            ce.cod_socio,
-            ce.cod_clase,
-            ce.fecha
-        FROM ClasesEsperadas ce
-        LEFT JOIN Asistencias a
-            ON ce.cod_socio = a.cod_socio
-           AND ce.cod_clase = a.cod_clase
-           AND ce.fecha = a.fecha
-        WHERE a.cod_socio IS NULL
-    ),
-
-    -- CTE: Última categoría del socio según la suscripción más reciente
-    UltimaCategoria AS (
-        SELECT 
-            sus.cod_socio,
-            cat.descripcion AS categoria,
-            ROW_NUMBER() OVER (PARTITION BY sus.cod_socio ORDER BY sus.fecha_suscripcion DESC) AS rn
-        FROM psn.Suscripcion sus
-        INNER JOIN psn.Categoria cat ON sus.cod_categoria = cat.cod_categoria
-    ),
-
-    -- CTE: Detalles de socios con al menos una inasistencia
-    DetallesSociosInasistentes AS (
-        SELECT DISTINCT
-            s.cod_socio,
-            s.nombre,
-            s.apellido,
-            DATEDIFF(YEAR, s.fecha_nac, GETDATE()) AS edad,
-            uc.categoria,
-            act.nombre AS actividad
-        FROM Inasistencias i
-        INNER JOIN psn.Socio s ON i.cod_socio = s.cod_socio
-        INNER JOIN psn.Clase c ON i.cod_clase = c.cod_clase
-        INNER JOIN psn.Actividad act ON c.cod_actividad = act.cod_actividad
-        INNER JOIN UltimaCategoria uc ON s.cod_socio = uc.cod_socio AND uc.rn = 1
-    )
-
-    -- Resultado final en XML
-    SELECT 
-        nombre      AS [Nombre],
-        apellido    AS [Apellido],
-        edad        AS [Edad],
-        categoria   AS [Categoria],
-        actividad   AS [Actividad]
-    FROM DetallesSociosInasistentes
-    ORDER BY apellido, nombre
-    FOR XML PATH('Socio'), ROOT('SociosConInasistencias');
-END;
-GO
 
 -------------------------------------------------------------------- PRUEBAS
 
@@ -437,10 +309,10 @@ VALUES
 -- FACTURAS (Enero y Febrero 2025, una para cada socio)
 INSERT INTO psn.Factura (monto, fecha_emision, fecha_vto, fecha_seg_vto, recargo, estado, cod_socio)
 VALUES 
-(25000.00, '2025-01-10', '2025-01-20', NULL, 0.00, 'Pagada', 'SN-1001'), -- Futsal
-(30000.00, '2025-01-12', '2025-01-22', NULL, 0.00, 'Pagada', 'SN-1002'), -- Vóley
-(25000.00, '2025-02-10', '2025-02-20', NULL, 0.00, 'Pagada', 'SN-1001'), -- Futsal
-(30000.00, '2025-02-12', '2025-02-22', NULL, 0.00, 'Pagada', 'SN-1002'); -- Vóley
+(25000.00, '2025-01-10', '2025-01-20', NULL, 0.00, 'Pagada', 'SN-1001'), 
+(30000.00, '2025-01-12', '2025-01-22', NULL, 0.00, 'Pagada', 'SN-1002'), 
+(25000.00, '2025-02-10', '2025-02-20', NULL, 0.00, 'Pagada', 'SN-1001'), 
+(30000.00, '2025-02-12', '2025-02-22', NULL, 0.00, 'Pagada', 'SN-1002'); 
 
 -- ÍTEMS de FACTURA (referencia a cod_clase: suponiendo IDENTITY de clases = 1 para Futsal, 2 para Vóley)
 INSERT INTO psn.Item_Factura (cod_item, cod_Factura, monto, descripcion)
@@ -475,6 +347,8 @@ DBCC CHECKIDENT ('psn.Profesor', RESEED, 0);
 
 -- INSERCIÓN DE DATOS DE PRUEBA
 
+
+
 -- ACTIVIDADES
 INSERT INTO psn.Actividad (nombre, valor_mensual, vig_valor)
 VALUES 
@@ -492,44 +366,103 @@ VALUES
 ('Cadete', 17, 6000, '2025-01-01', 60000, '2025-01-01'),
 ('Mayor', 99, 7000, '2025-01-01', 70000, '2025-01-01');
 
--- SOCIOS
+-- SOCIOS (2 por categoría)
 INSERT INTO psn.Socio (cod_socio, nombre, apellido, dni, email, fecha_nac, tel, tel_emerg, nombre_cobertura, nro_afiliado, tel_cobertura, estado, saldo, cod_responsable)
 VALUES 
-('SN-1001', 'Sofía', 'Paz', '10000001', 'sofia@socio.com', '1990-01-01', '1122334455', '1199887766', 'OSDE', '0001', '1133112233', 1, 0, NULL),
-('SN-1002', 'Tomás', 'Leiva', '10000002', 'tomas@socio.com', '1988-02-02', '1144556677', '1166554433', 'Swiss', '0002', '1144223344', 1, 0, NULL),
-('SN-1003', 'Matías', 'González', '10000003', 'matias@socio.com', '1985-05-02', '11556677', '1166554444', 'OSDE', '0001', '1133112233', 1, 0, NULL);
+-- Menor
+('SN-2001', 'Luna', 'Rojas', '10100001', 'luna@socio.com', '2015-01-01', '1111111111', '1222222222', 'OSDE', 'A001', '1111000000', 1, 0, NULL),
+('SN-2002', 'Ezequiel', 'Gómez', '10100002', 'eze@socio.com', '2014-02-01', '1111111112', '1222222223', 'OSDE', 'A002', '1111000001', 1, 0, NULL),
+-- Cadete
+('SN-2101', 'Bruno', 'Acosta', '10200001', 'bruno@socio.com', '2010-03-01', '1111111113', '1222222224', 'Swiss', 'B001', '1111000002', 1, 0, NULL),
+('SN-2102', 'Martina', 'Lopez', '10200002', 'martina@socio.com', '2011-04-01', '1111111114', '1222222225', 'Swiss', 'B002', '1111000003', 1, 0, NULL),
+-- Mayor
+('SN-2201', 'Lucía', 'Fernández', '10300001', 'lucia@socio.com', '1990-05-01', '1111111115', '1222222226', 'Medife', 'C001', '1111000004', 1, 0, NULL),
+('SN-2202', 'Marcos', 'Silva', '10300002', 'marcos@socio.com', '1985-06-01', '1111111116', '1222222227', 'Medife', 'C002', '1111000005', 1, 0, NULL);
 
 -- PROFESORES
 INSERT INTO psn.Profesor (dni, nombre, apellido, email, tel)
 VALUES 
-('12345678', 'Carlos', 'Ruiz', 'cruiz@mail.com', '1122334455');
+('10000001', 'Carlos', 'Ruiz', 'car@prof.com', '1122330001'),
+('10000002', 'Sandra', 'Vera', 'san@prof.com', '1122330002'),
+('10000003', 'Ramón', 'Iglesias', 'ram@prof.com', '1122330003'),
+('10000004', 'Lucía', 'Martínez', 'luc@prof.com', '1122330004'),
+('10000005', 'Roberto', 'Díaz', 'rob@prof.com', '1122330005'),
+('10000006', 'Julieta', 'Alonso', 'jul@prof.com', '1122330006');
 
 -- CLASES (una por actividad y categoría)
+-- cod_categoria: 1=Menor, 2=Cadete, 3=Mayor
 INSERT INTO psn.Clase (categoria, cod_actividad, cod_prof, dia, horario)
-VALUES 
-(1, 1, 1, 'Viernes', '10:00'), -- Fútbol Menor
-(2, 1, 1, 'Viernes', '11:00'), -- Fútbol Cadete
-(3, 2, 1, 'Viernes', '12:00'); -- Natación Mayor
+VALUES
+(1, 1, 1, 'Lunes', '09:00'),  -- Menor - Futsal
+(1, 2, 2, 'Lunes', '10:00'),  -- Menor - Vóley
+(2, 3, 3, 'Martes', '09:00'), -- Cadete - Taekwondo
+(2, 4, 4, 'Martes', '10:00'), -- Cadete - Baile artístico
+(3, 5, 5, 'Miercoles', '09:00'), -- Mayor - Natación
+(3, 6, 6, 'Miercoles', '10:00'); -- Mayor - Ajedrez
 
--- SUSCRIPCIONES
+-- SUSCRIPCIONES (1 por socio con categoría correspondiente)
 INSERT INTO psn.Suscripcion (fecha_suscripcion, fecha_vto, cod_socio, cod_categoria, tiempoSuscr)
 VALUES
-('2025-05-01', '2025-06-01', 'SN-1001', 1, 'M'), -- Menor
-('2025-05-01', '2025-06-01', 'SN-1002', 2, 'M'), -- Cadete
-('2025-05-01', '2025-06-01', 'SN-1003', 3, 'M'); -- Mayor
+-- Menores
+('2025-05-01', '2025-06-01', 'SN-2001', 1, 'M'),
+('2025-05-01', '2025-06-01', 'SN-2002', 1, 'M'),
+-- Cadetes
+('2025-05-01', '2025-06-01', 'SN-2101', 2, 'M'),
+('2025-05-01', '2025-06-01', 'SN-2102', 2, 'M'),
+-- Mayores
+('2025-05-01', '2025-06-01', 'SN-2201', 3, 'M'),
+('2025-05-01', '2025-06-01', 'SN-2202', 3, 'M');
 
--- INSCRIPCIONES 
+-- INSCRIPCIONES (cada socio en una clase correspondiente a su categoría)
 INSERT INTO psn.Inscripto (fecha_inscripcion, estado, cod_socio, cod_clase)
-VALUES 
-('2025-05-02', 'Inscripto', 'SN-1001', 1),
-('2025-05-02', 'Inscripto', 'SN-1002', 2),
-('2025-05-02', 'Inscripto', 'SN-1003', 3);
+VALUES
+-- Menor
+('2025-05-02', 'Inscripto', 'SN-2001', 1),
+('2025-05-02', 'Inscripto', 'SN-2002', 2),
+-- Cadete
+('2025-05-02', 'Inscripto', 'SN-2101', 3),
+('2025-05-02', 'Inscripto', 'SN-2102', 4),
+-- Mayor
+('2025-05-02', 'Inscripto', 'SN-2201', 5),
+('2025-05-02', 'Inscripto', 'SN-2202', 6);
 
--- ASISTENCIAS 
+-- ASISTENCIAS
 
+-- SN-2001 (Menor - Futsal): todas presentes
 INSERT INTO psn.Asiste (fecha, cod_socio, cod_clase, estado)
 VALUES
-('2025-05-02', 'SN-1003', 3, 'A'); 
+('2025-05-10', 'SN-2001', 1, 'P'),
+('2025-05-17', 'SN-2001', 1, 'P');
+
+-- SN-2002 (Menor - Vóley): todas ausente
+INSERT INTO psn.Asiste (fecha, cod_socio, cod_clase, estado)
+VALUES
+('2025-05-10', 'SN-2002', 2, 'A'),
+('2025-05-17', 'SN-2002', 2, 'A');
+
+-- SN-2101 (Cadete - Taekwondo): faltó una
+INSERT INTO psn.Asiste (fecha, cod_socio, cod_clase, estado)
+VALUES
+('2025-05-10', 'SN-2101', 3, 'P'),
+('2025-05-17', 'SN-2101', 3, 'A');
+
+-- SN-2102 (Cadete - Baile artístico): todas presentes
+INSERT INTO psn.Asiste (fecha, cod_socio, cod_clase, estado)
+VALUES
+('2025-05-10', 'SN-2102', 4, 'P'),
+('2025-05-17', 'SN-2102', 4, 'P');
+
+-- SN-2201 (Mayor - Natación): faltó una
+INSERT INTO psn.Asiste (fecha, cod_socio, cod_clase, estado)
+VALUES
+('2025-05-10', 'SN-2201', 5, 'P'),
+('2025-05-17', 'SN-2201', 5, 'A');
+
+-- SN-2202 (Mayor - Ajedrez): todas presentes
+INSERT INTO psn.Asiste (fecha, cod_socio, cod_clase, estado)
+VALUES
+('2025-05-10', 'SN-2202', 6, 'P'),
+('2025-05-17', 'SN-2202', 6, 'P');
 
 
 -- EJECUTAR SP

@@ -345,9 +345,6 @@ DELETE FROM psn.Socio;
 DELETE FROM psn.Profesor;
 DBCC CHECKIDENT ('psn.Profesor', RESEED, 0);
 
--- INSERCIÓN DE DATOS DE PRUEBA
-
-
 
 -- ACTIVIDADES
 INSERT INTO psn.Actividad (nombre, valor_mensual, vig_valor)
@@ -366,18 +363,21 @@ VALUES
 ('Cadete', 17, 6000, '2025-01-01', 60000, '2025-01-01'),
 ('Mayor', 99, 7000, '2025-01-01', 70000, '2025-01-01');
 
--- SOCIOS (2 por categoría)
+-- SOCIOS
 INSERT INTO psn.Socio (cod_socio, nombre, apellido, dni, email, fecha_nac, tel, tel_emerg, nombre_cobertura, nro_afiliado, tel_cobertura, estado, saldo, cod_responsable)
 VALUES 
--- Menor
 ('SN-2001', 'Luna', 'Rojas', '10100001', 'luna@socio.com', '2015-01-01', '1111111111', '1222222222', 'OSDE', 'A001', '1111000000', 1, 0, NULL),
 ('SN-2002', 'Ezequiel', 'Gómez', '10100002', 'eze@socio.com', '2014-02-01', '1111111112', '1222222223', 'OSDE', 'A002', '1111000001', 1, 0, NULL),
--- Cadete
 ('SN-2101', 'Bruno', 'Acosta', '10200001', 'bruno@socio.com', '2010-03-01', '1111111113', '1222222224', 'Swiss', 'B001', '1111000002', 1, 0, NULL),
 ('SN-2102', 'Martina', 'Lopez', '10200002', 'martina@socio.com', '2011-04-01', '1111111114', '1222222225', 'Swiss', 'B002', '1111000003', 1, 0, NULL),
--- Mayor
 ('SN-2201', 'Lucía', 'Fernández', '10300001', 'lucia@socio.com', '1990-05-01', '1111111115', '1222222226', 'Medife', 'C001', '1111000004', 1, 0, NULL),
-('SN-2202', 'Marcos', 'Silva', '10300002', 'marcos@socio.com', '1985-06-01', '1111111116', '1222222227', 'Medife', 'C002', '1111000005', 1, 0, NULL);
+('SN-2202', 'Marcos', 'Silva', '10300002', 'marcos@socio.com', '1985-06-01', '1111111116', '1222222227', 'Medife', 'C002', '1111000005', 1, 0, NULL),
+('SN-2003', 'Julieta', 'Maidana', '10100003', 'julieta@socio.com', '2013-03-03', '1111111117', '1222222228', 'OSDE', 'A003', '1111000006', 1, 0, NULL),
+('SN-2103', 'Carlos', 'Benítez', '10200003', 'carlos@socio.com', '2010-03-03', '1111111118', '1222222229', 'Swiss', 'B003', '1111000007', 1, 0, NULL),
+('SN-2104', 'Rocío', 'Franco', '10200004', 'rocio@socio.com', '2011-04-04', '1111111119', '1222222230', 'Swiss', 'B004', '1111000008', 1, 0, NULL),
+('SN-2203', 'Tomás', 'Ibarra', '10300003', 'tomas@socio.com', '1989-07-07', '1111111120', '1222222231', 'Medife', 'C003', '1111000009', 1, 0, NULL),
+('SN-2204', 'Camila', 'Moreira', '10300004', 'camila@socio.com', '1988-08-08', '1111111121', '1222222232', 'Medife', 'C004', '1111000010', 1, 0, NULL),
+('SN-2205', 'Gustavo', 'Lagos', '10300005', 'gustavo@socio.com', '1985-09-09', '1111111122', '1222222233', 'Medife', 'C005', '1111000011', 1, 0, NULL);
 
 -- PROFESORES
 INSERT INTO psn.Profesor (dni, nombre, apellido, email, tel)
@@ -389,79 +389,75 @@ VALUES
 ('10000005', 'Roberto', 'Díaz', 'rob@prof.com', '1122330005'),
 ('10000006', 'Julieta', 'Alonso', 'jul@prof.com', '1122330006');
 
--- CLASES (una por actividad y categoría)
--- cod_categoria: 1=Menor, 2=Cadete, 3=Mayor
+-- CLASES
 INSERT INTO psn.Clase (categoria, cod_actividad, cod_prof, dia, horario)
 VALUES
-(1, 1, 1, 'Lunes', '09:00'),  -- Menor - Futsal
-(1, 2, 2, 'Lunes', '10:00'),  -- Menor - Vóley
-(2, 3, 3, 'Martes', '09:00'), -- Cadete - Taekwondo
-(2, 4, 4, 'Martes', '10:00'), -- Cadete - Baile artístico
-(3, 5, 5, 'Miercoles', '09:00'), -- Mayor - Natación
-(3, 6, 6, 'Miercoles', '10:00'); -- Mayor - Ajedrez
+(1, 1, 1, 'Lunes', '09:00'),
+(1, 2, 2, 'Lunes', '10:00'),
+(2, 3, 3, 'Martes', '09:00'),
+(2, 4, 4, 'Martes', '10:00'),
+(3, 5, 5, 'Miercoles', '09:00'),
+(3, 6, 6, 'Miercoles', '10:00');
 
--- SUSCRIPCIONES (1 por socio con categoría correspondiente)
-INSERT INTO psn.Suscripcion (fecha_suscripcion, fecha_vto, cod_socio, cod_categoria, tiempoSuscr)
+-- SUSCRIPCIONES
+INSERT INTO psn.Suscripcion (cod_socio, cod_categoria, fecha_suscripcion, fecha_vto, tiempoSuscr)
 VALUES
--- Menores
-('2025-05-01', '2025-06-01', 'SN-2001', 1, 'M'),
-('2025-05-01', '2025-06-01', 'SN-2002', 1, 'M'),
--- Cadetes
-('2025-05-01', '2025-06-01', 'SN-2101', 2, 'M'),
-('2025-05-01', '2025-06-01', 'SN-2102', 2, 'M'),
--- Mayores
-('2025-05-01', '2025-06-01', 'SN-2201', 3, 'M'),
-('2025-05-01', '2025-06-01', 'SN-2202', 3, 'M');
+('SN-2001', 1, '2025-05-01', '2025-06-01', 'M'),
+('SN-2002', 1, '2025-05-01', '2025-06-01', 'M'),
+('SN-2003', 1, '2025-05-01', '2025-06-01', 'M'),
+('SN-2101', 2, '2025-05-01', '2025-06-01', 'M'),
+('SN-2102', 2, '2025-05-01', '2025-06-01', 'M'),
+('SN-2103', 2, '2025-05-01', '2025-06-01', 'M'),
+('SN-2104', 2, '2025-05-01', '2025-06-01', 'M'),
+('SN-2201', 3, '2025-05-01', '2025-06-01', 'M'),
+('SN-2202', 3, '2025-05-01', '2025-06-01', 'M'),
+('SN-2203', 3, '2025-05-01', '2025-06-01', 'M'),
+('SN-2204', 3, '2025-05-01', '2025-06-01', 'M'),
+('SN-2205', 3, '2025-05-01', '2025-06-01', 'M');
 
--- INSCRIPCIONES (cada socio en una clase correspondiente a su categoría)
+-- INSCRIPCIONES
 INSERT INTO psn.Inscripto (fecha_inscripcion, estado, cod_socio, cod_clase)
 VALUES
--- Menor
 ('2025-05-02', 'Inscripto', 'SN-2001', 1),
 ('2025-05-02', 'Inscripto', 'SN-2002', 2),
--- Cadete
+('2025-05-02', 'Inscripto', 'SN-2003', 2),
 ('2025-05-02', 'Inscripto', 'SN-2101', 3),
 ('2025-05-02', 'Inscripto', 'SN-2102', 4),
--- Mayor
+('2025-05-02', 'Inscripto', 'SN-2103', 3),
+('2025-05-02', 'Inscripto', 'SN-2104', 3),
 ('2025-05-02', 'Inscripto', 'SN-2201', 5),
-('2025-05-02', 'Inscripto', 'SN-2202', 6);
+('2025-05-02', 'Inscripto', 'SN-2202', 6),
+('2025-05-02', 'Inscripto', 'SN-2203', 5),
+('2025-05-02', 'Inscripto', 'SN-2204', 5),
+('2025-05-02', 'Inscripto', 'SN-2205', 5);
 
 -- ASISTENCIAS
 
--- SN-2001 (Menor - Futsal): todas presentes
 INSERT INTO psn.Asiste (fecha, cod_socio, cod_clase, estado)
 VALUES
 ('2025-05-10', 'SN-2001', 1, 'P'),
-('2025-05-17', 'SN-2001', 1, 'P');
-
--- SN-2002 (Menor - Vóley): todas ausente
-INSERT INTO psn.Asiste (fecha, cod_socio, cod_clase, estado)
-VALUES
+('2025-05-17', 'SN-2001', 1, 'P'),
 ('2025-05-10', 'SN-2002', 2, 'A'),
-('2025-05-17', 'SN-2002', 2, 'A');
-
--- SN-2101 (Cadete - Taekwondo): faltó una
-INSERT INTO psn.Asiste (fecha, cod_socio, cod_clase, estado)
-VALUES
-('2025-05-10', 'SN-2101', 3, 'P'),
-('2025-05-17', 'SN-2101', 3, 'A');
-
--- SN-2102 (Cadete - Baile artístico): todas presentes
-INSERT INTO psn.Asiste (fecha, cod_socio, cod_clase, estado)
-VALUES
+('2025-05-17', 'SN-2002', 2, 'P'),
+('2025-05-10', 'SN-2003', 2, 'A'),
+('2025-05-17', 'SN-2003', 2, 'P'),
+('2025-05-10', 'SN-2101', 3, 'A'),
+('2025-05-17', 'SN-2101', 3, 'P'),
 ('2025-05-10', 'SN-2102', 4, 'P'),
-('2025-05-17', 'SN-2102', 4, 'P');
-
--- SN-2201 (Mayor - Natación): faltó una
-INSERT INTO psn.Asiste (fecha, cod_socio, cod_clase, estado)
-VALUES
-('2025-05-10', 'SN-2201', 5, 'P'),
-('2025-05-17', 'SN-2201', 5, 'A');
-
--- SN-2202 (Mayor - Ajedrez): todas presentes
-INSERT INTO psn.Asiste (fecha, cod_socio, cod_clase, estado)
-VALUES
-('2025-05-10', 'SN-2202', 6, 'P'),
+('2025-05-17', 'SN-2102', 4, 'P'),
+('2025-05-10', 'SN-2103', 3, 'A'),
+('2025-05-17', 'SN-2103', 3, 'A'),
+('2025-05-10', 'SN-2104', 3, 'A'),
+('2025-05-17', 'SN-2104', 3, 'A'),
+('2025-05-10', 'SN-2201', 5, 'A'),
+('2025-05-17', 'SN-2201', 5, 'A'),
+('2025-05-10', 'SN-2203', 5, 'A'),
+('2025-05-17', 'SN-2203', 5, 'A'),
+('2025-05-10', 'SN-2204', 5, 'A'),
+('2025-05-17', 'SN-2204', 5, 'A'),
+('2025-05-10', 'SN-2205', 5, 'A'),
+('2025-05-17', 'SN-2205', 5, 'A'),
+('2025-05-10', 'SN-2202', 6, 'A'),
 ('2025-05-17', 'SN-2202', 6, 'P');
 
 

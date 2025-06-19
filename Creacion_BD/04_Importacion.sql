@@ -1,6 +1,6 @@
 /*
 ====================================================================================
- Archivo		: 04_Procedimientos_Tablas.sql
+ Archivo		: 04_Importacion.sql
  Proyecto		: Institución Deportiva Sol Norte.
  Descripción	: Scripts para importar datos a las tablas desde xls y csv.
  Autor			: COM5600_G11
@@ -32,8 +32,10 @@ EXEC sp_MSset_oledb_prop N'Microsoft.ACE.OLEDB.12.0', N'DynamicParameters', 1;
 GO
 
 --Chequear nombre del servicio para  darle permiso de acceso a los directorios donde se guarda la información.
+/*
 SELECT servicename, service_account			
 FROM sys.dm_server_services;
+*/
 
 /*
 --	Registro el origen de los datos.
@@ -61,7 +63,7 @@ GO
 IF NOT EXISTS (SELECT * FROM sys.schemas WHERE name = 'imp')
 	BEGIN
 		EXEC('CREATE SCHEMA imp');
-		PRINT ' Schema creado exitosamente';
+		PRINT ' Esquema creado exitosamente';
 	END;
 GO
 
@@ -73,7 +75,6 @@ GO
 IF EXISTS (SELECT * FROM sys.procedures WHERE name = 'Importar_Pagos') 
 BEGIN
     DROP PROCEDURE imp.Importar_Pagos;
-    PRINT 'Importar_Pagos existía y fue borrado';
 END;
 GO
 
@@ -181,7 +182,6 @@ GO
 IF EXISTS (SELECT * FROM sys.procedures WHERE name = 'Importar_Socios') 
 BEGIN
     DROP PROCEDURE imp.Importar_Socios;
-    PRINT 'Importar_Socios existía y fue borrado';
 END;
 GO
 
@@ -327,7 +327,6 @@ GO
 IF EXISTS (SELECT * FROM sys.procedures WHERE name = 'Importar_Actividades') 
 BEGIN
     DROP PROCEDURE imp.Importar_Actividades;
-    PRINT 'Importar_Actividades existía y fue borrado';
 END;
 GO
 
@@ -432,7 +431,6 @@ GO
 IF EXISTS (SELECT * FROM sys.procedures WHERE name = 'Importar_Categorias') 
 BEGIN
     DROP PROCEDURE imp.Importar_Categorias;
-    PRINT 'Importar_Categorias existía y fue borrado';
 END;
 GO
 
@@ -542,7 +540,6 @@ GO
 IF EXISTS (SELECT * FROM sys.procedures WHERE name = 'Importar_Asistencias') 
 BEGIN
     DROP PROCEDURE imp.Importar_Asistencias;
-    PRINT 'Importar_Asistencias existía y fue borrado';
 END;
 GO
 

@@ -1,15 +1,26 @@
-
----- REPORTES
-
---Crear el Schema
+/*
+====================================================================================
+ Archivo		: 05_Reportes.sql
+ Proyecto		: Institución Deportiva Sol Norte.
+ Descripción	: Scripts para generar reportes.
+ Autor			: COM5600_G11
+ Fecha entrega	: 2025-06-20
+ Versión		: 1.0
+====================================================================================
+*/
+----------------------------------------------------------------------------------------------------------------
+--Crear el esquema
+----------------------------------------------------------------------------------------------------------------
 IF NOT EXISTS (SELECT * FROM sys.schemas WHERE name = 'Rep')
 	BEGIN
 		EXEC('CREATE SCHEMA Rep');
-		PRINT ' Schema creado exitosamente';
+		PRINT 'Esquema creado exitosamente';
 	END;
 go
 
+----------------------------------------------------------------------------------------------------------------
 -- REPORTE 1: Socios Morosos
+----------------------------------------------------------------------------------------------------------------
 
 IF EXISTS (SELECT * FROM sys.procedures WHERE name = 'Reporte_SociosMorosos_XML') 
 BEGIN
@@ -61,7 +72,9 @@ BEGIN
 END;
 GO
 
+----------------------------------------------------------------------------------------------------------------
 -- REPORTE 2: Ingresos Mensuales
+----------------------------------------------------------------------------------------------------------------
 
 IF EXISTS (SELECT * FROM sys.procedures WHERE name = 'Reporte_IngresosMensuales_XML') 
 BEGIN
@@ -120,7 +133,9 @@ BEGIN
 END;
 GO
 
+----------------------------------------------------------------------------------------------------------------
 -- REPORTE 3: Inasistencias por Categoria y Actividad
+----------------------------------------------------------------------------------------------------------------
 
 IF EXISTS (SELECT * FROM sys.procedures WHERE name = 'Reporte_Inasistencias_XML')
 BEGIN
@@ -202,7 +217,9 @@ BEGIN
 END;
 GO
 
+----------------------------------------------------------------------------------------------------------------
 -- REPORTE 4: Socios con Inasistencias
+----------------------------------------------------------------------------------------------------------------
 
 IF EXISTS (SELECT * FROM sys.procedures WHERE name = 'Reporte_SociosConInasistencias')
 BEGIN

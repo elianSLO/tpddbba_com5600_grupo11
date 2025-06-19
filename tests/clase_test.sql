@@ -8,25 +8,35 @@ GO
 
 -- Limpiar tablas para pruebas limpias y consistentes (si es seguro)
 DELETE FROM psn.Clase;
-DBCC CHECKIDENT ('psn.Clase', RESEED, 0);
 DELETE FROM psn.Categoria;
-DBCC CHECKIDENT ('psn.Categoria', RESEED, 0);
 DELETE FROM psn.Actividad;
+DELETE FROM psn.Profesor;
+
+DBCC CHECKIDENT ('psn.Profesor', RESEED, 0);
+DBCC CHECKIDENT ('psn.Clase', RESEED, 0);
+DBCC CHECKIDENT ('psn.Categoria', RESEED, 0);
 DBCC CHECKIDENT ('psn.Actividad', RESEED, 0);
-PRINT 'Tablas Clase, Categoria y Actividad limpiadas.';
 
 -- Insertar categorías usando SP
-EXEC stp.insertarCategoria 'Cadete', 14, 1800.00, '2025-12-31', 18000.00, '2025-12-31';
-EXEC stp.insertarCategoria 'Mayor', 25, 2300.00, '2025-12-31', 23000.00, '2025-12-31';
+EXEC stp.insertarCategoria 'Cadete', 17, 15000.00, '2025-12-31', 180000.00, '2025-12-31';
+EXEC stp.insertarCategoria 'Mayor', 99, 25000.00, '2025-12-31', 300000.00, '2025-12-31';
+EXEC stp.insertarCategoria 'Menor', 12, 10000.00, '2025-12-31', 120000.00, '2025-12-31';
 
 -- Insertar actividades usando SP
-EXEC stp.insertarActividad 'Fútbol', 2500.00, '2025-12-31';
+EXEC stp.insertarActividad 'Futsal', 2500.00, '2025-12-31';
 EXEC stp.insertarActividad 'Natación', 3000.00, '2025-12-31';
 
+-- Insertar profesor
+INSERT INTO psn.Profesor (dni, nombre, apellido, email, tel)
+VALUES 
+('11111111', 'Esteban', 'Gómez', 'esteban@prof.com', '1144556677'),
+('22222222', 'María', 'López', 'maria@prof.com', '1144556678'),
+('33333333', 'Jorge', 'Ramírez', 'jorge@prof.com', '1144556679');
+
 -- Insertar clases usando SP
-EXEC stp.insertarClase 1, 1, 'Lunes', '18:00';
-EXEC stp.insertarClase 1, 2, 'Martes', '19:00';
-EXEC stp.insertarClase 2, 2, 'Miércoles', '10:00';
+EXEC stp.insertarClase 1 ,1, 1, 'Lunes', '18:00';
+EXEC stp.insertarClase 2 ,2, 2, 'Martes', '19:00';
+EXEC stp.insertarClase 3 ,2, 3, 'Miercoles', '10:00';
 
 -- Mostrar clases insertadas
 

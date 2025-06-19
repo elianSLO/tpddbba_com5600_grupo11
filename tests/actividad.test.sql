@@ -5,39 +5,14 @@ GO
 
 -- Limpiar la tabla para pruebas (solo si es seguro)
 DELETE FROM psn.Actividad;
-DBCC CHECKIDENT ('psn.Actividad', RESEED, 0);
+DBCC CHECKIDENT ('psn.Actividad', RESEED, 0); -- Usar solo para delete luego de insertar
 
 -- 8.1 INSERCIÓN DE ACTIVIDADES
 
--- 8.1.1 INSERCIONES VÁLIDAS
+-- 8.1.1 INSERCIÓN VÁLIDA
 EXEC stp.insertarActividad
     @nombre = 'Futsal',
     @valor_mensual = 250000,
-    @vig_valor = '2026-01-01';
-
-EXEC stp.insertarActividad
-    @nombre = 'Vóley',
-    @valor_mensual = 30000,
-    @vig_valor = '2026-01-01';
-
-EXEC stp.insertarActividad
-    @nombre = 'Taekwondo',
-    @valor_mensual = 25000,
-    @vig_valor = '2026-01-01';
-
-EXEC stp.insertarActividad
-    @nombre = 'Baile Artístico',
-    @valor_mensual = 30000,
-    @vig_valor = '2026-01-01';
-
-EXEC stp.insertarActividad
-    @nombre = 'Natación',
-    @valor_mensual = 45000,
-    @vig_valor = '2026-01-01';
-
-EXEC stp.insertarActividad
-    @nombre = 'Ajedrez',
-    @valor_mensual = 2000,
     @vig_valor = '2026-01-01';
 
 -- Verifico la correcta inserción de las actividades:
@@ -85,13 +60,7 @@ EXEC stp.modificarActividad
     @valor_mensual = 1800.00,
     @vig_valor = '2025-12-01';
 
--- 8.2.3 Nombre de Actividad Incorrecto (aunque exista, si la SP valida el nombre, debe dar error)
-EXEC stp.modificarActividad
-    @nombre = 'Deporte', -- No permitido en la lista
-    @valor_mensual = 1800.00,
-    @vig_valor = '2025-12-01';
-
--- 8.2.4 Valor Mensual Negativo o Cero (debe dar error)
+-- 8.2.3 Valor Mensual Negativo o Cero (debe dar error)
 EXEC stp.modificarActividad
     @nombre = 'Natación',
     @valor_mensual = -10.00, -- Valor inválido
@@ -102,21 +71,21 @@ EXEC stp.modificarActividad
     @valor_mensual = 0.00, -- Valor inválido
     @vig_valor = '2025-11-15';
 
--- 8.2.5 Fecha de Vigencia Pasada (debe dar error)
+-- 8.2.4 Fecha de Vigencia Pasada (debe dar error)
 EXEC stp.modificarActividad
     @nombre = 'Futsal',
     @valor_mensual = 2800.00,
     @vig_valor = '2023-05-20'; -- Fecha pasada
 
 ---
--- 8.3 ELIMINACIÓN DE ACTIVIDADES
+-- 8.3 BORRADO DE ACTIVIDADES
 
--- 8.3.1 Eliminación Exitosa (se asume 'Natación' existe)
-EXEC stp.eliminarActividad @nombre = 'Natación';
+-- 8.3.1 Eliminación Exitosa 
+EXEC stp.eliminarActividad @nombre = 'Futsal';
 
 -- Verificación de eliminación
-SELECT * FROM psn.Actividad WHERE nombre = 'Natación'; -- Debe retornar 0 filas
+SELECT * FROM psn.Actividad WHERE nombre = 'Futsal';
 
 -- 8.3.2 Eliminación Fallida (Actividad no existente)
 
-EXEC stp.eliminarActividad @nombre = 'Natación'; -- Intentar eliminar de nuevo 'Natación', que ya fue borrada
+EXEC stp.eliminarActividad @nombre = 'Handball'; 

@@ -447,12 +447,12 @@ BEGIN
 		RETURN;
 	END;
 
-	-- Solo se valida que no tenga letras
+	/*-- Solo se valida que no tenga letras
 	IF @tel LIKE '%[^0-9 ()-/]%' OR @tel_emerg LIKE '%[^0-9 ()-/]%' OR @tel_cobertura LIKE '%[^0-9 ()-/]%'
 	BEGIN
 		PRINT 'Error: Los teléfonos solo deben contener números.';
 		RETURN;
-	END;
+	END;*/
 
 	-- Insertar socio
 	INSERT INTO psn.Socio (

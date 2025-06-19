@@ -1111,6 +1111,13 @@ BEGIN
 		RETURN;
 	END
 
+	IF @medio_pago NOT IN ('TARJETA','TRANSFERENCIA')
+	BEGIN
+		PRINT 'ERROR: Medio de pago incorrecto.';
+		RETURN;
+	END
+
+
 	IF @paga_socio IS NOT NULL AND NOT EXISTS (SELECT 1 FROM psn.Socio WHERE cod_socio = @paga_socio)
 	BEGIN
 		PRINT 'ERROR: El código de socio especificado no existe.';
@@ -1129,7 +1136,6 @@ BEGIN
 	PRINT 'Pago insertado correctamente.';
 END;
 GO
-
 
 ----------- STORED PROCEDURE PARA MODIFICACION DE PAGO
 
@@ -1185,6 +1191,12 @@ BEGIN
 	IF @medio_pago IS NULL OR LEN(@medio_pago) = 0
 	BEGIN
 		PRINT 'ERROR: El medio de pago debe ser informado.';
+		RETURN;
+	END
+
+	IF @medio_pago NOT IN ('TARJETA','TRANSFERENCIA')
+	BEGIN
+		PRINT 'ERROR: Medio de pago incorrecto.';
 		RETURN;
 	END
 

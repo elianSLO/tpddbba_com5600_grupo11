@@ -1,23 +1,38 @@
--- SCRIPT DE IMPORTACION DE DATOS --
--- Comision 5600 - Grupo 11
--- Fecha: 12/06/2025
--- Integrantes: 
+/*
+====================================================================================
+ Archivo		: 04_Procedimientos_Tablas.sql
+ Proyecto		: Institución Deportiva Sol Norte.
+ Descripción	: Scripts para importar datos a las tablas desde xls y csv.
+ Autor			: COM5600_G11
+ Fecha entrega	: 2025-06-20
+ Versión		: 1.0
+====================================================================================
+*/
 
 Use Com5600G11
 GO
 
-EXEC sp_configure 'show advanced options', 1;			--	Habilito config. opciones avanzadas.
+----------------------------------------------------------------------------------------------------------------
+--	CONFIGURACIONES INICIALES
+----------------------------------------------------------------------------------------------------------------
+
+--	Habilito config. opciones avanzadas.
+EXEC sp_configure 'show advanced options', 1;			
 RECONFIGURE;  
 
-EXEC sp_configure 'Ad Hoc Distributed Queries', 1;		--	Permito usar OPENROWSET y otras consultas distribuidas.
+--	Permito usar OPENROWSET y otras consultas distribuidas.
+EXEC sp_configure 'Ad Hoc Distributed Queries', 1;		
 RECONFIGURE;  
+
+--	Permito que el proveedor OLEDB (Microsoft.ACE.OLEDB.12.0) se ejecute dentro del proceso de SQL Server.
+EXEC sp_MSset_oledb_prop N'Microsoft.ACE.OLEDB.12.0', N'AllowInProcess', 1;		
+
+--	Habilito el pasaje de parámetros a las consultas dinámicas.
+EXEC sp_MSset_oledb_prop N'Microsoft.ACE.OLEDB.12.0', N'DynamicParameters', 1;		
 GO
 
-EXEC sp_MSset_oledb_prop N'Microsoft.ACE.OLEDB.12.0', N'AllowInProcess', 1;		--	Permito que el proveedor OLEDB (Microsoft.ACE.OLEDB.12.0) se ejecute dentro del proceso de SQL Server.
-EXEC sp_MSset_oledb_prop N'Microsoft.ACE.OLEDB.12.0', N'DynamicParameters', 1;		--	Habilito el pasaje de parámetros a las consultas dinámicas.
-GO
-
-SELECT servicename, service_account			--Chequear nombre del servicio para  darle permiso de acceso a los directorios donde se guarda la información.
+--Chequear nombre del servicio para  darle permiso de acceso a los directorios donde se guarda la información.
+SELECT servicename, service_account			
 FROM sys.dm_server_services;
 
 /*
@@ -35,11 +50,14 @@ GO
 SELECT * 
 FROM OPENQUERY(LinkerServer_EXCEL, 'SELECT TOP 1 * FROM [Tarifas$]');
 GO
-*/
+*/	-- En algunas importaciones se uso un linker server, en otras no.
+
+----------------------------------------------------------------------------------------------------------------
 
 
------------------------------------------------------------------------------------------------------------------------
---	Crear el esquema de importacion.
+----------------------------------------------------------------------------------------------------------------
+--	Crear el esquema.
+----------------------------------------------------------------------------------------------------------------
 IF NOT EXISTS (SELECT * FROM sys.schemas WHERE name = 'imp')
 	BEGIN
 		EXEC('CREATE SCHEMA imp');
@@ -47,10 +65,11 @@ IF NOT EXISTS (SELECT * FROM sys.schemas WHERE name = 'imp')
 	END;
 GO
 
+----------------------------------------------------------------------------------------------------------------
+--	IMPORTAR HOJA DE PAGOS
+----------------------------------------------------------------------------------------------------------------
 
------------------------------------------------------------------------------------------------------------------------
 --	Importar pagos.
-
 IF EXISTS (SELECT * FROM sys.procedures WHERE name = 'Importar_Pagos') 
 BEGIN
     DROP PROCEDURE imp.Importar_Pagos;
@@ -153,9 +172,11 @@ BEGIN
 END
 GO
 
+----------------------------------------------------------------------------------------------------------------
 
------------------------------------------------------------------------------------------------------------------------
---	Importar Socios.
+----------------------------------------------------------------------------------------------------------------
+--	IMPORTAR HOJA DE SOCIOS
+----------------------------------------------------------------------------------------------------------------
 
 IF EXISTS (SELECT * FROM sys.procedures WHERE name = 'Importar_Socios') 
 BEGIN
@@ -297,9 +318,11 @@ BEGIN
 END
 GO
 
+----------------------------------------------------------------------------------------------------------------
 
 -----------------------------------------------------------------------------------------------------------------------
---	Importar Actividades.
+--	IMPORTAR HOJA DE ACTIVIDADES
+----------------------------------------------------------------------------------------------------------------
 
 IF EXISTS (SELECT * FROM sys.procedures WHERE name = 'Importar_Actividades') 
 BEGIN
@@ -400,9 +423,11 @@ BEGIN
 END
 GO
 
+----------------------------------------------------------------------------------------------------------------
 
------------------------------------------------------------------------------------------------------------------------
---	Importar Categorias.
+----------------------------------------------------------------------------------------------------------------
+--	IMPORTAR HOJA DE CATEGORIAS
+----------------------------------------------------------------------------------------------------------------
 
 IF EXISTS (SELECT * FROM sys.procedures WHERE name = 'Importar_Categorias') 
 BEGIN
@@ -507,12 +532,12 @@ BEGIN
 END
 GO
 
+----------------------------------------------------------------------------------------------------------------
 
-EXEC imp.Importar_Categorias 'D:\repos\tpddbba_com5600_grupo11\Creacion_BD\import\Datos socios.xlsx'
-select * from psn.Categoria
 
 -----------------------------------------------------------------------------------------------------------------------
---	Importar Asistencias.
+--	IMPORTAR HOJA DE ASISTENCIAS
+----------------------------------------------------------------------------------------------------------------
 
 IF EXISTS (SELECT * FROM sys.procedures WHERE name = 'Importar_Asistencias') 
 BEGIN
@@ -801,8 +826,16 @@ BEGIN
 	IF OBJECT_ID('tempdb..#AsistenciasFinales') IS NOT NULL DROP TABLE #AsistenciasFinales;
 	IF OBJECT_ID('tempdb..#LogErroresImportacion') IS NOT NULL DROP TABLE #LogErroresImportacion;
 END
-
+GO
 --EXEC imp.Importar_Asistencias 
 --'C:\Users\matia\Desktop\BDDA\tpddbba_com5600_grupo11\Creacion_BD\import\Datos socios prueba.xlsx',
 --'presentismo_actividades',
 --1, 1
+
+----------------------------------------------------------------------------------------------------------------
+
+
+----------------------------------------------------------------------------------------------------------------
+--	EJECUCION DE LAS IMPORTACIONES
+----------------------------------------------------------------------------------------------------------------
+

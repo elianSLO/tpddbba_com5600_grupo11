@@ -8,6 +8,12 @@
  Versión		: 1.0
 ====================================================================================
 */
+
+----------------------------------------------------------------------------------------------------------------
+--Seleccionamos nuestra base de datos
+----------------------------------------------------------------------------------------------------------------
+USE Com5600G11
+GO
 ----------------------------------------------------------------------------------------------------------------
 --Crear el esquema
 ----------------------------------------------------------------------------------------------------------------
@@ -301,13 +307,26 @@ GO
 
 -- Nota: El reporte XML debe visualizarse con la opción "Results to Grid" (CTRL + D)
 
--------------------------------------------------------------------- REPORTE 1: SOCIOS MOROSOS
+-- Borramos las tablas a utilizar para las pruebas
 
--- Limpiar datos anteriores (solo para pruebas)
+DELETE FROM psn.Suscripcion;
 DELETE FROM psn.Factura;
+DELETE FROM psn.Categoria 
+DELETE FROM psn.Asiste;
+DELETE FROM psn.Inscripto;
+DELETE FROM psn.Clase;
+DELETE FROM psn.Actividad;
 DELETE FROM psn.Socio;
+DELETE FROM psn.Profesor;
 
-DBCC CHECKIDENT ('psn.Factura', RESEED, 0); -- Usar si ya se insertó en la tabla en estas pruebas y en las siguientes
+
+DBCC CHECKIDENT ('psn.Factura', RESEED, 0);
+DBCC CHECKIDENT ('psn.Categoria', RESEED, 0);
+DBCC CHECKIDENT ('psn.Clase', RESEED, 0);
+DBCC CHECKIDENT ('psn.Actividad', RESEED, 0);
+DBCC CHECKIDENT ('psn.Profesor', RESEED, 0);
+
+-------------------------------------------------------------------- REPORTE 1: SOCIOS MOROSOS
 
 -- Insertar socios de prueba
 INSERT INTO psn.Socio (cod_socio, nombre, apellido, dni, email, fecha_nac, tel, tel_emerg, nombre_cobertura, nro_afiliado, tel_cobertura, estado, saldo, cod_responsable)
@@ -345,7 +364,7 @@ EXEC Rep.Reporte_SociosMorosos_XML
 
 --------------------------------------------------------------------- REPORTE 2: INGRESOS MENSUALES Y ACUMULADO POR ACTIVIDAD
 
--- Limpiar datos anteriores para pruebas (solo si es seguro)
+-- Borrado de datos anteriores para pruebas 
 
 DELETE FROM psn.Factura;
 DELETE FROM psn.Socio;
@@ -435,7 +454,7 @@ EXEC Rep.Reporte_IngresosMensuales_XML;
 
 ---------------------------------------------------------------------- REPORTE 3: CANTIDAD DE INASISTENCIAS POR ACTIVIDAD Y CATEGORIA
 
--- Limpiar datos anteriores para pruebas (solo si es seguro)
+-- Borrado de datos anteriores para pruebas 
 
 DELETE FROM psn.Suscripcion;
 DELETE FROM psn.Factura;
@@ -575,7 +594,7 @@ EXEC Rep.Reporte_Inasistencias_XML;
 
 -----------------------------------------------------------------   REPORTE 4: SOCIOS CON INASISTENCIAS
 
--- Limpiar datos anteriores para pruebas (solo si es seguro)
+-- Borrado datos anteriores para pruebas
 
 DELETE FROM psn.Suscripcion;
 DELETE FROM psn.Factura;

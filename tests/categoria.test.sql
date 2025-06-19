@@ -13,11 +13,11 @@ DBCC CHECKIDENT ('psn.Categoria', RESEED, 0);
 
 EXEC stp.insertarCategoria 
     @descripcion = 'Mayor',
-	@edad_max = 40,
-    @valor_mensual = 1000.00, 
-    @vig_valor_mens = '10-05-2026', 
-    @valor_anual = 10000.00, 
-    @vig_valor_anual = '10-05-2025';
+	@edad_max = 99,
+    @valor_mensual = 25000.00, 
+    @vig_valor_mens = '2025-12-31', 
+    @valor_anual = 300000.00, 
+    @vig_valor_anual = '2025-12-31';
 
 -- Verificación de inserción
 
@@ -56,7 +56,7 @@ EXEC stp.insertarCategoria
 -- 7.1.5 Fecha pasada (debe dar error) 
 
 EXEC stp.insertarCategoria 
-    @descripcion = 'Mayor',
+    @descripcion = 'Cadete',
 	@edad_max = 40,
     @valor_mensual = 1200.00,
     @vig_valor_mens = '2023-01-01',  -- Fecha en el pasado
@@ -76,7 +76,7 @@ EXEC stp.insertarCategoria
 -- 7.1.7 Edad incorrecta
 
 EXEC stp.insertarCategoria 
-    @descripcion = 'Mayor',
+    @descripcion = 'Cadete',
 	@edad_max = -19,
     @valor_mensual = 1500.00,
     @vig_valor_mens = '2025-07-01',

@@ -350,6 +350,34 @@ GO
 --	STORED PROCEDURES PARA TABLA SOCIO
 ----------------------------------------------------------------------------------------------------------------
 
+--	Funcion para calcular edad a partir de una fecha.
+IF OBJECT_ID('stp.fn_CalcularEdad') IS NOT NULL
+    DROP FUNCTION stp.fn_CalcularEdad;
+GO
+
+CREATE FUNCTION stp.fn_CalcularEdad
+(
+    @fecha_nac DATE
+)
+RETURNS INT
+AS
+BEGIN
+    DECLARE @edad INT;
+
+    SET @edad = DATEDIFF(YEAR, @fecha_nac, GETDATE()) 
+              - CASE 
+                    WHEN MONTH(@fecha_nac) > MONTH(GETDATE()) 
+                      OR (MONTH(@fecha_nac) = MONTH(GETDATE()) AND DAY(@fecha_nac) > DAY(GETDATE()))
+                    THEN 1 
+                    ELSE 0 
+                END;
+
+    RETURN @edad;
+END;
+GO
+
+----------------------------------------------------------------------------------------------------------------
+
 -- SP PARA INSERTAR SOCIO
 IF  EXISTS (SELECT * FROM sys.procedures WHERE name = 'insertarSocio')
 BEGIN
@@ -371,17 +399,18 @@ CREATE OR ALTER PROCEDURE stp.insertarSocio
 	@nombre_cobertura	VARCHAR(50),
 	@nro_afiliado		VARCHAR(50),
 	@tel_cobertura		VARCHAR(50),
-	@cod_responsable	VARCHAR(15)
+	@cod_responsable	VARCHAR(15),
+	@cantAceptados		INT
 AS
 BEGIN
 	SET NOCOUNT ON;
 
-	/*-- Validación de campos obligatorios
-	IF @cod_socio IS NULL OR @dni IS NULL OR @nombre IS NULL OR @apellido IS NULL OR 
-	   @fecha_nac IS NULL OR @email IS NULL OR @tel IS NULL OR @tel_emerg IS NULL OR
-	   @estado IS NULL OR @saldo IS NULL OR @nombre_cobertura IS NULL OR @nro_afiliado IS NULL 
-	   OR @tel_cobertura IS NULL
-       -- cod_responsable puede ser null si es mayor
+	--	Validación de campos obligatorios
+	IF @cod_socio	IS NULL OR	@dni	IS NULL OR	@nombre				IS NULL OR	@apellido IS NULL OR 
+	   @fecha_nac	IS NULL OR	@email	IS NULL OR	@tel				IS NULL OR	@tel_emerg IS NULL OR
+	   @estado		IS NULL OR	@saldo	IS NULL OR	@nombre_cobertura	IS NULL OR	@nro_afiliado IS NULL OR 
+	   @tel_cobertura IS NULL
+       -- cod_responsable puede ser null si es mayor de edad el socio.
 	BEGIN
 		PRINT 'Error: Ningún campo puede ser NULL';
 		RETURN;
@@ -391,7 +420,16 @@ BEGIN
 	IF NOT (@cod_socio LIKE 'SN-[0-9][0-9][0-9][0-9][0-9]' OR
             @cod_socio LIKE 'SN-[0-9][0-9][0-9][0-9]')
 	BEGIN
-		PRINT 'El código de socio debe tener formato "SN-XXXXX".';
+		PRINT 'Error: El código de socio debe tener formato "SN-XXXXX".';
+		RETURN;
+	END;
+
+	DECLARE @edad INT;
+	SET @edad = stp.fn_CalcularEdad(@fecha_nac);
+
+	IF @edad < 18 AND @cod_responsable IS NULL
+	BEGIN
+		PRINT 'Error: El socio es menor de 18 años y debe tener un responsable asignado.';
 		RETURN;
 	END;
 
@@ -401,7 +439,7 @@ BEGIN
 	    @cod_responsable NOT LIKE 'NS-[0-9][0-9][0-9][0-9][0-9]' OR
         @cod_responsable NOT LIKE 'NS-[0-9][0-9][0-9][0-9]')
 	BEGIN
-		PRINT 'El código de responsable debe tener formato "SN-XXXXX" o "NS-XXXXX".';
+		PRINT 'Error: El código de responsable debe tener formato "SN-XXXXX" o "NS-XXXXX".';
 		RETURN;
     END;
 
@@ -443,7 +481,7 @@ BEGIN
 
 	IF @saldo < 0
 	BEGIN
-		PRINT 'Saldo inválido. No puede ser negativo.';
+		PRINT 'Error: Saldo inválido. No puede ser negativo.';
 		RETURN;
 	END;
 
@@ -455,7 +493,8 @@ BEGIN
 	END;*/
 
 	-- Insertar socio
-	INSERT INTO psn.Socio (
+	INSERT INTO psn.Socio 
+	(
 		cod_socio, dni, nombre, apellido, fecha_nac, email,
 		tel, tel_emerg, estado, saldo,
 		nombre_cobertura, nro_afiliado, tel_cobertura,
@@ -469,6 +508,7 @@ BEGIN
 	);
 
 	PRINT 'Socio insertado correctamente';
+	SET @cantAceptados = @cantAceptados+1;
 END;
 GO
 
@@ -1498,14 +1538,14 @@ BEGIN
 			@estado			VARCHAR(10),
 			@tipoSuscripc	CHAR(1),
 			@recargo		INT
-	SET @categoria = (SELECT cod_categoria FROM psn.Suscripcion WHERE @cod_socio = cod_socio)
-	SET @tipoSuscripc = (SELECT tiempoSuscr FROM psn.Suscripcion WHERE @cod_socio = cod_socio)
-	SET @monto = (SELECT valor_mensual from psn.Categoria WHERE cod_categoria = @categoria)
-	SET @fecha_emision = GETDATE();
-	SET @fecha_vto = DATEADD(DAY,5,@fecha_emision)
-	SET @fecha_seg_vto = DATEADD(DAY,5,@fecha_vto)
-	SET @estado = 'Pendiente'
-	SET @recargo = 0
+	SET @categoria		= (SELECT cod_categoria FROM psn.Suscripcion WHERE @cod_socio = cod_socio)
+	SET @tipoSuscripc	= (SELECT tiempoSuscr FROM psn.Suscripcion WHERE @cod_socio = cod_socio)
+	SET @monto			= (SELECT valor_mensual from psn.Categoria WHERE cod_categoria = @categoria)
+	SET @fecha_emision	= GETDATE();
+	SET @fecha_vto		= DATEADD(DAY,5,@fecha_emision)
+	SET @fecha_seg_vto	= DATEADD(DAY,5,@fecha_vto)
+	SET @estado			= 'Pendiente'
+	SET @recargo		= 0
 
 	INSERT INTO psn.Factura (monto,fecha_emision,fecha_vto,fecha_seg_vto,recargo,estado,cod_socio)
 	VALUES (@monto,@fecha_emision,@fecha_vto,@fecha_seg_vto, @recargo,@estado,@cod_socio)
@@ -2524,7 +2564,16 @@ BEGIN
     INSERT INTO psn.Item_Factura (cod_item, cod_Factura, monto, descripcion)
     VALUES (@cod_item, @cod_Factura, @monto, @descripcion);
 
+
+	-- Actualizar los datos del item
+    UPDATE psn.Item_Factura
+    SET monto = @monto,
+        descripcion = @descripcion
+    WHERE cod_Factura = @cod_Factura
+      AND cod_item = @cod_item;
+
     PRINT 'Item insertado correctamente.';
+	
 END;
 GO
 

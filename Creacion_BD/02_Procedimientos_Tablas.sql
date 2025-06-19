@@ -1070,6 +1070,7 @@ END;
 GO
 
 CREATE OR ALTER PROCEDURE stp.insertarPago
+	@cod_pago			BIGINT,
 	@monto				DECIMAL(10,2),
 	@fecha_pago			DATE,
 	@estado				VARCHAR(15),

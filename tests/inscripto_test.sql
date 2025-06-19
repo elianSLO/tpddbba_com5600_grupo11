@@ -8,6 +8,14 @@ GO
 -- Tabla Socio
 
 DELETE FROM psn.Socio 
+DELETE FROM psn.Factura
+DELETE FROM psn.Clase
+DELETE FROM psn.Actividad
+DELETE FROM psn.Inscripto
+
+DBCC CHECKIDENT ('psn.Factura', RESEED, 0);
+DBCC CHECKIDENT ('psn.Actividad', RESEED, 0);
+DBCC CHECKIDENT ('psn.Clase', RESEED, 0);
 
  INSERT INTO psn.Socio (cod_socio, dni, nombre, apellido, fecha_nac, email, tel, tel_emerg, estado, saldo) VALUES
  ('SN-00001', '12345678', 'Juan', 'Pérez', '1990-05-15', 'juan.perez@mail.com', '1122334455', '1133445566', 1, 0),
@@ -15,8 +23,7 @@ DELETE FROM psn.Socio
  ('SN-00003', '34567890', 'Lucas', 'Fernández', '2002-03-10', 'lucas.fernandez@mail.com', '1155667788', '1177889900', 1, 0);
 
  -- Tabla Actividad
- DELETE FROM psn.Actividad
- DBCC CHECKIDENT ('psn.Actividad', RESEED, 0);
+ 
 
  INSERT INTO psn.Actividad (nombre, valor_mensual, vig_valor) VALUES
 ('Futsal', 25000, '2025-12-31'),
@@ -28,9 +35,6 @@ DELETE FROM psn.Socio
 
 -- Tabla Profesor
 
-DELETE FROM psn.Profesor
-DBCC CHECKIDENT ('psn.Profesor', RESEED, 0);
-
 INSERT INTO psn.Profesor (dni, nombre, apellido, email, tel)
 VALUES 
     ('12345678', 'Ana', 'García', 'ana.garcia@mail.com', '1134567890'),
@@ -40,17 +44,11 @@ VALUES
 
 -- Tabla Clase
 
-DELETE FROM psn.Clase
-DBCC CHECKIDENT ('psn.Clase', RESEED, 0);
-
 INSERT INTO psn.Clase (categoria, cod_actividad, cod_prof, dia, horario)
 VALUES 
     (1, 1, 1, 'Lunes', '18:00'),       -- Ejemplo: Mayor, Futsal, Prof. 3
     (2, 2, 2, 'Miercoles', '17:30'),   -- Ejemplo: Cadete, Vóley, Prof. 2
     (3, 3, 3, 'Viernes', '19:15');     -- Ejemplo: Menor, Taekwondo, Prof. 1
-
--- Limpio tabla Inscripto
-DELETE FROM psn.Inscripto
 
 ----------------------------------------------------------------- PRUEBAS PARA insertarInscripto
 
@@ -168,7 +166,7 @@ EXEC stp.modificarInscripto
     @cod_socio_original = 'SN-00003',
     @cod_clase_original = 3,
     @nueva_fecha        = '2025-06-05',
-    @nuevo_estado       = 'Activo',  -- <- Inválido
+    @nuevo_estado       = NULL, 
     @nuevo_cod_socio    = 'SN-00003',
     @nuevo_cod_clase    = 3;
 
@@ -191,9 +189,6 @@ EXEC stp.modificarInscripto
     @nuevo_estado       = 'No Inscripto',
     @nuevo_cod_socio    = 'SN-00003',
     @nuevo_cod_clase    = 3;
-
--- Verificación final
-SELECT * FROM psn.Inscripto;
 
 
 ---------------------------------------------------------- PRUEBAS PARA borrarInscripto

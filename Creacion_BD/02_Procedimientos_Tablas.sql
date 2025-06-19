@@ -190,7 +190,7 @@ AS
 BEGIN
     SET NOCOUNT ON;
 
-    /*-- Validar el nombre de la actividad 
+    -- Validar el nombre de la actividad 
     IF @nombre COLLATE Modern_Spanish_CI_AI NOT IN (
         'Futsal',
         'Vóley',
@@ -202,7 +202,7 @@ BEGIN
     BEGIN
         PRINT 'El nombre de la actividad no es correcto.'
         RETURN;
-    END*/	
+    END	
 
     -- Validar que no exista ya una actividad con el mismo nombre
     IF EXISTS (SELECT 1 FROM psn.Actividad WHERE nombre = @nombre)

@@ -305,8 +305,9 @@ GO
 
 -- Limpiar datos anteriores (solo para pruebas)
 DELETE FROM psn.Factura;
-DBCC CHECKIDENT ('psn.Factura', RESEED, 0);
 DELETE FROM psn.Socio;
+
+DBCC CHECKIDENT ('psn.Factura', RESEED, 0); -- Usar si ya se insertó en la tabla en estas pruebas y en las siguientes
 
 -- Insertar socios de prueba
 INSERT INTO psn.Socio (cod_socio, nombre, apellido, dni, email, fecha_nac, tel, tel_emerg, nombre_cobertura, nro_afiliado, tel_cobertura, estado, saldo, cod_responsable)
@@ -347,15 +348,17 @@ EXEC Rep.Reporte_SociosMorosos_XML
 -- Limpiar datos anteriores para pruebas (solo si es seguro)
 
 DELETE FROM psn.Factura;
-DBCC CHECKIDENT ('psn.Factura', RESEED, 0);
 DELETE FROM psn.Socio;
 DELETE FROM psn.Item_Factura;
 DELETE FROM psn.Clase;
-DBCC CHECKIDENT ('psn.Clase', RESEED, 0);
 DELETE FROM psn.Actividad;
-DBCC CHECKIDENT ('psn.Actividad', RESEED, 0);
 DELETE FROM psn.Profesor;
-DBCC CHECKIDENT ('psn.Profesor', RESEED, 0);
+ 
+
+DBCC CHECKIDENT ('psn.Factura', RESEED, 0); 
+DBCC CHECKIDENT ('psn.Clase', RESEED, 0); 
+DBCC CHECKIDENT ('psn.Actividad', RESEED, 0); 
+DBCC CHECKIDENT ('psn.Profesor', RESEED, 0); 
 
 -- ACTIVIDADES (valores actualizados)
 INSERT INTO psn.Actividad (nombre, valor_mensual, vig_valor)
@@ -436,18 +439,20 @@ EXEC Rep.Reporte_IngresosMensuales_XML;
 
 DELETE FROM psn.Suscripcion;
 DELETE FROM psn.Factura;
-DBCC CHECKIDENT ('psn.Factura', RESEED, 0);
 DELETE FROM psn.Categoria
-DBCC CHECKIDENT ('psn.Categoria', RESEED, 0);
 DELETE FROM psn.Asiste;
 DELETE FROM psn.Inscripto;
 DELETE FROM psn.Clase;
-DBCC CHECKIDENT ('psn.Clase', RESEED, 0);
 DELETE FROM psn.Actividad;
-DBCC CHECKIDENT ('psn.Actividad', RESEED, 0);
 DELETE FROM psn.Socio;
 DELETE FROM psn.Profesor;
-DBCC CHECKIDENT ('psn.Profesor', RESEED, 0);
+
+
+DBCC CHECKIDENT ('psn.Factura', RESEED, 0);
+DBCC CHECKIDENT ('psn.Categoria', RESEED, 0);
+DBCC CHECKIDENT ('psn.Clase', RESEED, 0);
+DBCC CHECKIDENT ('psn.Actividad', RESEED, 0); 
+DBCC CHECKIDENT ('psn.Profesor', RESEED, 0); 
 
 
 -- ACTIVIDADES
@@ -574,17 +579,19 @@ EXEC Rep.Reporte_Inasistencias_XML;
 
 DELETE FROM psn.Suscripcion;
 DELETE FROM psn.Factura;
-DBCC CHECKIDENT ('psn.Factura', RESEED, 0);
-DELETE FROM psn.Categoria
-DBCC CHECKIDENT ('psn.Categoria', RESEED, 0);
+DELETE FROM psn.Categoria 
 DELETE FROM psn.Asiste;
 DELETE FROM psn.Inscripto;
 DELETE FROM psn.Clase;
-DBCC CHECKIDENT ('psn.Clase', RESEED, 0);
 DELETE FROM psn.Actividad;
-DBCC CHECKIDENT ('psn.Actividad', RESEED, 0);
 DELETE FROM psn.Socio;
 DELETE FROM psn.Profesor;
+
+
+DBCC CHECKIDENT ('psn.Factura', RESEED, 0);
+DBCC CHECKIDENT ('psn.Categoria', RESEED, 0);
+DBCC CHECKIDENT ('psn.Clase', RESEED, 0);
+DBCC CHECKIDENT ('psn.Actividad', RESEED, 0);
 DBCC CHECKIDENT ('psn.Profesor', RESEED, 0);
 
 

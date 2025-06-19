@@ -1,28 +1,45 @@
---Crear la Base de datos
-drop database Com5600G11
+/*
+====================================================================================
+ Archivo		: 01_Creacion.sql
+ Proyecto		: Institución Deportiva Sol Norte.
+ Descripción	: Scripts para creación/eliminación de la base de datos.
+ Autor			: COM5600_G11
+ Fecha entrega	: 2025-06-20
+ Versión		: 1.0
+====================================================================================
+*/
+
+
+----------------------------------------------
+--	Crear la base de datos.
+----------------------------------------------
 IF NOT EXISTS (SELECT * FROM sys.databases WHERE name = 'Com5600G11')
 	BEGIN
 		CREATE DATABASE Com5600G11;
 		PRINT 'Base de datos creada exitosamente';
 	END;
-go
+GO
 
 USE Com5600G11
-go
+GO
 
-
---Crear el esquema
+----------------------------------------------
+--	Crear el esquema.	
+----------------------------------------------
 IF NOT EXISTS (SELECT * FROM sys.schemas WHERE name = 'psn')
 	BEGIN
 		EXEC('CREATE SCHEMA psn');
 		PRINT 'Esquema creado exitosamente';
 	END;
-go
+GO
 
---Creacion de tablas
+
+----------------------------------------------
+--	Creacion de las tablas.
+----------------------------------------------
+
 
 -- TABLA SOCIO
-
 IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'Com5600G11.psn.Socio') AND type = N'U') -- 'U' tabla creada por el usuario 'N' es que sea unicode
 	BEGIN
 		CREATE TABLE psn.Socio (
@@ -48,10 +65,11 @@ ELSE
 	BEGIN
 		PRINT 'La tabla Socio ya existe.';
 	END;
-go
+GO
+
+----------------------------------------------------------------------------------------------------------------
 
 -- TABLA INVITADO
-
 IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'Com5600G11.psn.Invitado') AND type = N'U') -- 'U' tabla creada por el usuario 'N' es que sea unicode
 	BEGIN
 		CREATE TABLE psn.Invitado (
@@ -78,10 +96,11 @@ ELSE
 	BEGIN
 		PRINT 'La tabla Invitado ya existe.';
 	END;
-go
+GO
+
+----------------------------------------------------------------------------------------------------------------
 
 -- TABLA PROFESOR
-
 IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'Com5600G11.psn.Profesor') AND type = N'U')
 	BEGIN
 		CREATE TABLE psn.Profesor (
@@ -98,10 +117,11 @@ ELSE
 	BEGIN
 		PRINT 'La tabla Profesor ya existe.';
 	END;
-go
+GO
+
+----------------------------------------------------------------------------------------------------------------
 
 -- TABLA RESPONSABLE
-
 IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'Com5600G11.psn.Responsable') AND type = N'U')
 	BEGIN
 		CREATE TABLE psn.Responsable (
@@ -123,10 +143,11 @@ ELSE
 	BEGIN
 		PRINT 'La tabla Responsable ya existe.';
 	END;
-go
+GO
+
+----------------------------------------------------------------------------------------------------------------
 
 -- TABLA CATEGORIA
-
 IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'Com5600G11.psn.Categoria') AND type = N'U') 
 	BEGIN
 		CREATE TABLE psn.Categoria (
@@ -144,10 +165,11 @@ ELSE
 	BEGIN
 		PRINT 'La tabla Categoria ya existe.';
 	END;
-go
+GO
+
+----------------------------------------------------------------------------------------------------------------
 
 -- TABLA SUSCRIPCION
-
 IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'Com5600G11.psn.Suscripcion') AND type = N'U') 
 	BEGIN
 		CREATE TABLE psn.Suscripcion (
@@ -164,11 +186,11 @@ ELSE
 	BEGIN
 		PRINT 'La tabla Suscripcion ya existe.';
 	END;
-go
+GO
 
+----------------------------------------------------------------------------------------------------------------
 
 -- TABLA ACTIVIDAD
-
 IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'Com5600G11.psn.Actividad') AND type = N'U') 
 	BEGIN
 		CREATE TABLE psn.Actividad (
@@ -183,7 +205,9 @@ ELSE
 	BEGIN
 		PRINT 'La tabla Actividad ya existe.';
 	END;
-go
+GO
+
+----------------------------------------------------------------------------------------------------------------
 
 -- TABLA PAGO
 
@@ -206,10 +230,11 @@ ELSE
 	BEGIN
 		PRINT 'La tabla Pago ya existe.';
 	END;
-go
+GO
+
+----------------------------------------------------------------------------------------------------------------
 
 -- TABLA FACTURA
-
 IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'Com5600G11.psn.Factura') AND type = N'U') 
 	BEGIN
 		CREATE TABLE psn.Factura (
@@ -228,10 +253,11 @@ ELSE
 	BEGIN
 		PRINT 'La tabla Factura ya existe.';
 	END;
-go
+GO
+
+----------------------------------------------------------------------------------------------------------------
 
 -- TABLA REEMBOLSO
-
 IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'Com5600G11.psn.Reembolso') AND type = N'U') 
 	BEGIN
 		CREATE TABLE psn.Reembolso (
@@ -247,10 +273,11 @@ ELSE
 	BEGIN
 		PRINT 'La tabla Reembolso ya existe.';
 	END;
-go
+GO
+
+----------------------------------------------------------------------------------------------------------------
 
 -- TABLA RESERVA
-
 IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'Com5600G11.psn.Reserva') AND type = N'U') 
 	BEGIN
 		CREATE TABLE psn.Reserva (
@@ -268,10 +295,11 @@ ELSE
 	BEGIN
 		PRINT 'La tabla Reserva ya existe.';
 	END;
-go
+GO
+
+----------------------------------------------------------------------------------------------------------------
 
 -- TABLA CLASE
-
 IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'Com5600G11.psn.Clase') AND type = N'U') 
 	BEGIN
 		CREATE TABLE psn.Clase (
@@ -288,10 +316,11 @@ ELSE
 	BEGIN
 		PRINT 'La tabla Clase ya existe.';
 	END;
-go
+GO
+
+----------------------------------------------------------------------------------------------------------------
 
 -- TABLA INSCRIPTO
-
 IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'Com5600G11.psn.Inscripto') AND type = N'U') 
 	BEGIN
 		CREATE TABLE psn.Inscripto (
@@ -306,10 +335,11 @@ ELSE
 	BEGIN
 		PRINT 'La tabla Inscripto ya existe.';
 	END;
-go
+GO
+
+----------------------------------------------------------------------------------------------------------------
 
 -- TABLA ASISTE
-
 IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'Com5600G11.psn.Asiste') AND type = N'U') 
 	BEGIN
 		CREATE TABLE psn.Asiste (
@@ -327,9 +357,10 @@ ELSE
 		PRINT 'La tabla Asiste ya existe.';
 	END;
 GO
- 
--- TABLA ITEM_FACTURA
 
+----------------------------------------------------------------------------------------------------------------
+
+-- TABLA ITEM_FACTURA
 IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'Com5600G11.psn.Item_Factura') AND type = N'U') 
 	BEGIN
 		CREATE TABLE psn.Item_Factura (
@@ -350,8 +381,9 @@ ELSE
 	END;
 GO
 
-
--- Una vez creadas todas las tablas, defino claves.
+----------------------------------------------
+--	Claves y restricciones.
+----------------------------------------------
 
 alter table psn.Socio add constraint fk_responsable FOREIGN KEY (cod_responsable) references psn.Responsable(cod_responsable);
 
@@ -384,4 +416,4 @@ constraint pk_asiste primary key (fecha,cod_socio,cod_clase),
 constraint fk_socio_asiste foreign key (cod_socio) references psn.Socio(cod_socio),
 constraint fk_clase_asiste foreign key (cod_clase) references psn.Clase(cod_clase);
 
-go
+GO

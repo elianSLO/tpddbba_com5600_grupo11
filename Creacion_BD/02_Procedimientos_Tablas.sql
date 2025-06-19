@@ -399,22 +399,20 @@ CREATE OR ALTER PROCEDURE stp.insertarSocio
 	@nombre_cobertura	VARCHAR(50),
 	@nro_afiliado		VARCHAR(50),
 	@tel_cobertura		VARCHAR(50),
-	@cod_responsable	VARCHAR(15),
-	@cantAceptados		INT
+	@cod_responsable	VARCHAR(15)
 AS
 BEGIN
 	SET NOCOUNT ON;
 
 	--	Validación de campos obligatorios
-	IF @cod_socio	IS NULL OR	@dni	IS NULL OR	@nombre				IS NULL OR	@apellido IS NULL OR 
-	   @fecha_nac	IS NULL OR	@email	IS NULL OR	@tel				IS NULL OR	@tel_emerg IS NULL OR
-	   @estado		IS NULL OR	@saldo	IS NULL OR	@nombre_cobertura	IS NULL OR	@nro_afiliado IS NULL OR 
-	   @tel_cobertura IS NULL
+	IF	@cod_socio			IS NULL OR	@dni			IS NULL OR	@nombre		IS NULL OR	@apellido IS NULL OR 
+		@fecha_nac			IS NULL OR	@email			IS NULL OR	@tel		IS NULL OR	@tel_emerg IS NULL OR
+		@nombre_cobertura	IS NULL OR	@nro_afiliado	IS NULL OR	@tel_cobertura IS NULL
        -- cod_responsable puede ser null si es mayor de edad el socio.
 	BEGIN
-		PRINT 'Error: Ningún campo puede ser NULL';
+		PRINT 'Error: Faltan datos.';
 		RETURN;
-	END;*/
+	END;
 
 	-- Validaciones
 	IF NOT (@cod_socio LIKE 'SN-[0-9][0-9][0-9][0-9][0-9]' OR
@@ -508,7 +506,7 @@ BEGIN
 	);
 
 	PRINT 'Socio insertado correctamente';
-	SET @cantAceptados = @cantAceptados+1;
+	RETURN 1;
 END;
 GO
 

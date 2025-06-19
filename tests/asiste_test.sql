@@ -3,8 +3,10 @@
 -- Para las pruebas tengo que insertar datos en las tablas Socio, Clase, Actividad y Categoria
 
 -- Limpiar tablas para pruebas limpias y consistentes (si es seguro)
+
 SET NOCOUNT ON;
 
+DELETE FROM psn.Suscripcion
 DELETE FROM psn.Inscripto
 DELETE FROM psn.Asiste;
 DELETE FROM psn.Clase;
@@ -36,7 +38,8 @@ EXEC stp.insertarSocio
     @cod_responsable = NULL;
 GO
 
--- Insertar socio menor de edad (con responsable)
+-- Insertar socio 2
+
 EXEC stp.insertarSocio
     @cod_socio = 'SN-00002',
     @dni = '87654321',
@@ -57,7 +60,8 @@ GO
 EXEC stp.insertarCategoria 'Cadete', 14, 1800.00, '2025-12-31', 18000.00, '2025-12-31';
 EXEC stp.insertarCategoria 'Mayor', 25, 2300.00, '2025-12-31', 23000.00, '2025-12-31';
 
-EXEC stp.insertarActividad 'Fútbol', 2500.00, '2025-12-31';
+delete from psn.Suscripcion
+EXEC stp.insertarActividad 'Futsal', 2500.00, '2025-12-31';
 EXEC stp.insertarActividad 'Natación', 3000.00, '2025-12-31';
 
 EXEC stp.insertarProfesor 12123123, 'Pablo', 'Ramirez', 'pablo@mail.com', '1112312323';
@@ -310,7 +314,7 @@ EXEC stp.modificarAsiste
     @nueva_fecha        = '2025-06-16',
     @nuevo_cod_socio    = 'SN-00002',
     @nuevo_estado       = 'G',
-    @nuevo_cod_clase    = -3;
+    @nuevo_cod_clase    =  3;
 GO
 
 -- 12. Estado inválido (NULL)

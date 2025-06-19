@@ -1,6 +1,21 @@
+/*
+====================================================================================
+ Archivo		: 02_Procedimientos_Tablas.sql
+ Proyecto		: Institución Deportiva Sol Norte.
+ Descripción	: Scripts para inserción, modificación y eliminación en tablas.
+ Autor			: COM5600_G11
+ Fecha entrega	: 2025-06-20
+ Versión		: 1.0
+====================================================================================
+*/
+
+
 USE Com5600G11
 go
 
+----------------------------------------------
+--	Crear el esquema.	
+----------------------------------------------
 IF NOT EXISTS (SELECT * FROM sys.schemas WHERE name = 'stp')
 	BEGIN
 		EXEC('CREATE SCHEMA stp');
@@ -8,9 +23,15 @@ IF NOT EXISTS (SELECT * FROM sys.schemas WHERE name = 'stp')
 	END;
 go
 
--- STORED PROCEDURES PARA CATEGORIA ----------------------------------------------------------------
--- INSERCION DE CATEGORIA
+----------------------------------------------
+--	Creacion SPs.	
+----------------------------------------------
 
+----------------------------------------------------------------------------------------------------------------
+-- STORED PROCEDURES PARA CATEGORIA
+----------------------------------------------------------------------------------------------------------------
+
+-- SP PARA INSERTAR CATEGORIA
 IF  EXISTS (SELECT * FROM sys.procedures WHERE name = 'insertarCategoria')
 BEGIN
     DROP PROCEDURE stp.insertarCategoria;
@@ -70,8 +91,9 @@ BEGIN
 END
 GO
 
--- SP PARA MODIFICAR CATEGORIA
+----------------------------------------------------------------------------------------------------------------
 
+-- SP PARA MODIFICAR CATEGORIA
 IF  EXISTS (SELECT * FROM sys.procedures WHERE name = 'modificarCategoria')
 BEGIN
     DROP PROCEDURE stp.modificarCategoria;
@@ -149,13 +171,15 @@ BEGIN
 END
 GO
 
--- SP PARA BORRAR CATEGORIA
+----------------------------------------------------------------------------------------------------------------
 
+-- SP PARA BORRAR CATEGORIA
 IF EXISTS (SELECT * FROM sys.procedures WHERE name = 'borrarCategoria')
 BEGIN
     DROP PROCEDURE stp.borrarCategoria;
 END;
 GO
+
 CREATE OR ALTER PROCEDURE stp.borrarCategoria
         @cod_categoria INT
     AS
@@ -174,8 +198,14 @@ CREATE OR ALTER PROCEDURE stp.borrarCategoria
 GO
 
 ----------------------------------------------------------------------------------------------------------------
---	STORED PROCEDURES PARA TABLA ACTIVIDAD
 
+
+
+----------------------------------------------------------------------------------------------------------------
+--	STORED PROCEDURES PARA TABLA ACTIVIDAD
+----------------------------------------------------------------------------------------------------------------
+
+--	SP PARA INSERTAR ACTIVIDAD
 IF EXISTS (SELECT * FROM sys.procedures WHERE name = 'insertarActividad')
 BEGIN
     DROP PROCEDURE stp.insertarActividad;
@@ -232,6 +262,9 @@ BEGIN
 END
 GO
 
+----------------------------------------------------------------------------------------------------------------
+
+--	SP PARA MODIFICAR ACTIVIDAD
 IF EXISTS (SELECT * FROM sys.procedures WHERE name = 'modificarActividad')
 BEGIN
     DROP PROCEDURE stp.modificarActividad;
@@ -283,6 +316,9 @@ BEGIN
 END
 GO
 
+----------------------------------------------------------------------------------------------------------------
+
+--	SP PARA ELIMINAR ACTIVIDAD
 IF EXISTS (SELECT * FROM sys.procedures WHERE name = 'eliminarActividad')
 BEGIN
     DROP PROCEDURE stp.eliminarActividad;
@@ -306,12 +342,15 @@ BEGIN
 END
 GO
 
-
 ----------------------------------------------------------------------------------------------------------------
 
---	STORED PROCEDURES PARA TABLA SOCIO
--- SP PARA INSERTAR SOCIO
 
+
+----------------------------------------------------------------------------------------------------------------
+--	STORED PROCEDURES PARA TABLA SOCIO
+----------------------------------------------------------------------------------------------------------------
+
+-- SP PARA INSERTAR SOCIO
 IF  EXISTS (SELECT * FROM sys.procedures WHERE name = 'insertarSocio')
 BEGIN
     DROP PROCEDURE stp.insertarSocio;
@@ -433,6 +472,7 @@ BEGIN
 END;
 GO
 
+----------------------------------------------------------------------------------------------------------------
 
 -- SP PARA MODIFICAR SOCIO
 IF EXISTS (SELECT * FROM sys.procedures WHERE name = 'modificarSocio')
@@ -550,7 +590,7 @@ BEGIN
 END;
 GO
 
-
+----------------------------------------------------------------------------------------------------------------
 
 -- SP PARA BORRAR SOCIO
 IF EXISTS (SELECT * FROM sys.procedures WHERE name = 'borrarSocio')
@@ -558,6 +598,7 @@ BEGIN
     DROP PROCEDURE stp.borrarSocio;
 END;
 GO
+
 CREATE OR ALTER PROCEDURE stp.borrarSocio
         @cod_socio VARCHAR(15)
     AS
@@ -581,16 +622,19 @@ CREATE OR ALTER PROCEDURE stp.borrarSocio
     END
 GO
 
+----------------------------------------------------------------------------------------------------------------
+
 ---------------------------------------------------------------------------------------------------------------------------------------------------
 -- STORED PROCEDURES PARA TABLA PROFESOR
+----------------------------------------------------------------------------------------------------------------
 
 -- SP PARA INSERTAR PROFESOR
-
 IF  EXISTS (SELECT * FROM sys.procedures WHERE name = 'insertarProfesor')
 BEGIN
     DROP PROCEDURE stp.insertarProfesor;
 END;
 GO
+
 CREATE OR ALTER PROCEDURE stp.insertarProfesor
 	@dni				CHAR(8),
 	@nombre				VARCHAR(50),
@@ -660,8 +704,9 @@ BEGIN
 END;
 GO
 
---SP PARA MODIFICAR PROFESOR
+----------------------------------------------------------------------------------------------------------------
 
+--SP PARA MODIFICAR PROFESOR
 IF EXISTS (SELECT * FROM sys.procedures WHERE name = 'modificarProfesor')
 BEGIN
     DROP PROCEDURE stp.modificarProfesor;
@@ -742,13 +787,15 @@ BEGIN
 END;
 GO
 
--- SP PARA BORRAR PROFESOR
+----------------------------------------------------------------------------------------------------------------
 
+-- SP PARA BORRAR PROFESOR
 IF EXISTS (SELECT * FROM sys.procedures WHERE name = 'borrarProfesor')
 BEGIN
     DROP PROCEDURE stp.borrarProfesor;
 END;
 GO
+
 CREATE OR ALTER PROCEDURE stp.borrarProfesor
         @cod_prof INT
     AS
@@ -766,16 +813,20 @@ CREATE OR ALTER PROCEDURE stp.borrarProfesor
     END
 GO
 
+----------------------------------------------------------------------------------------------------------------
+
+
 ---------------------------------------------------------------------------------------------------------------------------------------------------------
 -- STORED PROCEDURES PARA TABLA INVITADO
+----------------------------------------------------------------------------------------------------------------
 
 -- SP PARA INSERTAR INVITADO
-
 IF EXISTS (SELECT * FROM sys.procedures WHERE name = 'insertarInvitado')
 BEGIN
     DROP PROCEDURE stp.insertarInvitado;
 END;
 GO
+
 CREATE OR ALTER PROCEDURE stp.insertarInvitado
     @cod_invitado       VARCHAR(15),
     @dni                CHAR(8),
@@ -900,14 +951,15 @@ BEGIN
 END;
 GO
 
+----------------------------------------------------------------------------------------------------------------
 
 -- SP PARA MODIFICAR INVITADO
-
 IF EXISTS (SELECT * FROM sys.procedures WHERE name = 'modificarInvitado')
 BEGIN
     DROP PROCEDURE stp.modificarInvitado;
 END;
 GO
+
 CREATE OR ALTER PROCEDURE stp.modificarInvitado
     @cod_invitado       VARCHAR(15),
     @dni                CHAR(8),
@@ -1026,14 +1078,15 @@ BEGIN
 END;
 GO
 
+----------------------------------------------------------------------------------------------------------------
 
 -- SP PARA BORRAR INVITADO
-
 IF EXISTS (SELECT * FROM sys.procedures WHERE name = 'borrarInvitado')
 BEGIN
     DROP PROCEDURE stp.borrarInvitado;
 END;
 GO
+
 CREATE OR ALTER PROCEDURE stp.borrarInvitado
     @cod_invitado VARCHAR(15)
 AS
@@ -1059,10 +1112,11 @@ BEGIN
 END;
 GO
 
-------------------------------------------- SP PARA TABLA PAGO
+----------------------------------------------------------------------------------------------------------------
+-- STORED PROCEDURES PARA TABLA PAGO
+----------------------------------------------------------------------------------------------------------------
 
------------ STORED PROCEDURE PARA INSERCION DE PAGO
-
+-- SP PARA INSERCION DE PAGO
 IF EXISTS (SELECT * FROM sys.procedures WHERE name = 'insertarPago')
 BEGIN
     DROP PROCEDURE stp.insertarPago;
@@ -1138,8 +1192,9 @@ BEGIN
 END;
 GO
 
------------ STORED PROCEDURE PARA MODIFICACION DE PAGO
+----------------------------------------------------------------------------------------------------------------
 
+-- SP PARA MODIFICACION DE PAGO
 IF EXISTS (SELECT * FROM sys.procedures WHERE name = 'modificarPago')
 BEGIN
     DROP PROCEDURE stp.modificarPago;
@@ -1226,10 +1281,9 @@ BEGIN
 END;
 GO
 
+----------------------------------------------------------------------------------------------------------------
 
-
------------ STORED PROCEDURE PARA BORRAR PAGO
-
+--	SP PARA BORRAR PAGO
 IF EXISTS (SELECT * FROM sys.procedures WHERE name = 'borrarPago')
 BEGIN
     DROP PROCEDURE stp.borrarPago;
@@ -1257,10 +1311,14 @@ BEGIN
 END;
 GO
 
+----------------------------------------------------------------------------------------------------------------
 
 
---------- SPs SUSCRIBIR 
+----------------------------------------------------------------------------------------------------------------
+-- STORED PROCEDURES PARA TABLA PAGO
+----------------------------------------------------------------------------------------------------------------
 
+--	SP PARA INSERTAR SUSCRIPCIÓN
 IF EXISTS (SELECT * FROM sys.procedures WHERE name = 'insertarSuscripcion')
 BEGIN
     DROP PROCEDURE stp.insertarSuscripcion;
@@ -1314,6 +1372,9 @@ BEGIN
 END
 GO
 
+----------------------------------------------------------------------------------------------------------------
+
+--	SP PARA MODIFICAR SUSCRIPCIÓN
 IF EXISTS (SELECT * FROM sys.procedures WHERE name = 'modificarSuscripcion')
 BEGIN
     DROP PROCEDURE stp.modificarSuscripcion;
@@ -1378,6 +1439,9 @@ BEGIN
 END;
 GO
 
+----------------------------------------------------------------------------------------------------------------
+
+--	SP PARA BORRAR SUSCRIPCIÓN
 IF EXISTS (SELECT * FROM sys.procedures WHERE name = 'borrarSuscripcion')
 BEGIN
     DROP PROCEDURE stp.borrarSuscripcion;
@@ -1404,15 +1468,18 @@ BEGIN
 END;
 GO
 
------------------------------------------------------------------------------------------
---	SP PARA FACTURAS
+----------------------------------------------------------------------------------------------------------------
 
+----------------------------------------------------------------------------------------------------------------
+--	STORED PROCEDURES PARA TABLA FACTURA
+----------------------------------------------------------------------------------------------------------------
+
+--	SP PARA INSERTAR FACTURA
 IF EXISTS (SELECT * FROM sys.procedures WHERE name = 'emitirFactura')
 BEGIN
     DROP PROCEDURE stp.emitirFactura;
 END;
 GO
-
 
 CREATE OR ALTER PROCEDURE stp.emitirFactura
 	@cod_socio		VARCHAR(15)
@@ -1448,6 +1515,9 @@ BEGIN
 END
 GO
 
+----------------------------------------------------------------------------------------------------------------
+
+--	SP PARA MODIFICAR FACTURA
 IF EXISTS (SELECT * FROM sys.procedures WHERE name = 'modificarFactura')
 BEGIN
     DROP PROCEDURE stp.modificarFactura;
@@ -1510,7 +1580,9 @@ BEGIN
 END
 GO
 
+----------------------------------------------------------------------------------------------------------------
 
+--	SP PARA BORRAR FACTURA
 IF EXISTS (SELECT * FROM sys.procedures WHERE name = 'borrarFactura')
 BEGIN
     DROP PROCEDURE stp.borrarFactura;
@@ -1537,11 +1609,11 @@ BEGIN
 END;
 GO
 
-----------------------------------------------------------------------------------------------------------------------------------------------------
------ SP PARA REEMBOLSO
+----------------------------------------------------------------------------------------------------------------
+-- STORED PROCEDURES PARA TABLA REEMBOLSO
+----------------------------------------------------------------------------------------------------------------
 
---- INSERCION REEMBOLSO
-
+--- SP PARA INSERTAR REEMBOLSO
 IF EXISTS (SELECT * FROM sys.procedures WHERE name = 'insertarReembolso')
 BEGIN
     DROP PROCEDURE stp.insertarReembolso;
@@ -1593,8 +1665,9 @@ BEGIN
 END;
 GO
 
---- MODIFICACION REEMBOLSO
+----------------------------------------------------------------------------------------------------------------
 
+--	SP PARA MODIFICAR REEMBOLSO
 IF EXISTS (SELECT * FROM sys.procedures WHERE name = 'modificarReembolso')
 BEGIN
     DROP PROCEDURE stp.modificarReembolso;
@@ -1659,8 +1732,9 @@ BEGIN
 END;
 GO
 
---- BORRADO REEMBOLSO
+----------------------------------------------------------------------------------------------------------------
 
+--	SP PARA BORRAR REEMBOLSO
 IF EXISTS (SELECT * FROM sys.procedures WHERE name = 'borrarReembolso')
 BEGIN
     DROP PROCEDURE stp.borrarReembolso;
@@ -1688,7 +1762,7 @@ BEGIN
 END;
 GO
 
------------------------------------------------------------------------------------------------------------------------------------------------------------
+----------------------------------------------------------------------------------------------------------------
 
 --- STORED PROCEDURES PARA TABLA RESPONSABLE
 

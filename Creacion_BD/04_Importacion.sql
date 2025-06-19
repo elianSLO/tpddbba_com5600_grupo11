@@ -275,9 +275,9 @@ BEGIN
 		SET @tel_cobertura			= LEFT(LTRIM(RTRIM(@ttel_cobertura)), 15);
 
 		-- Validación
-		IF @cod_socio IS NOT NULL AND @nombre <> '' AND @apellido <> '' AND @dni <> ''
+		DECLARE @resultado INT = 0;
 		BEGIN TRY
-			EXEC stp.insertarSocio
+			EXEC @resultado = stp.insertarSocio
 				@cod_socio = @cod_socio,
 				@nombre = @nombre,
 				@apellido = @apellido,
@@ -289,21 +289,20 @@ BEGIN
 				@nombre_cobertura = @nombre_cobertura,
 				@nro_afiliado = @nro_afiliado,
 				@tel_cobertura = @tel_cobertura,
-				@cod_responsable = 'NS-0000',
-				@estado = 1,
-				@saldo = 0.0;
-			SET @filas_importadas += 1;
+				@cod_responsable = NULL,
+				@estado = NULL,
+				@saldo = NULL;
+			IF @resultado = 1 
+			BEGIN
+				SET @filas_importadas += 1;
+			END
+			ELSE
+			BEGIN
+				SET @filas_ignoradas += 1;
+			END
 		END TRY
 		BEGIN CATCH
 			SET @filas_ignoradas += 1;
-
-			-- Mostrar información útil
-			PRINT 'Fila ignorada: Socio=' + ISNULL(@cod_socio, 'NULL') +
-				  ', Nombre=' + ISNULL(@nombre, 'NULL') +
-				  ', Apellido=' + ISNULL(@apellido, 'NULL') +
-				  ', DNI=' + ISNULL(@dni, 'NULL');
-
-			PRINT 'Error: ' + ERROR_MESSAGE();
 		END CATCH
 
 		FETCH NEXT FROM cur INTO 
@@ -560,15 +559,16 @@ BEGIN
 
 -- Crear la tabla para registrar errores de importacion
 	IF OBJECT_ID('tempdb..#LogErroresImportacion') IS NOT NULL DROP TABLE #LogErroresImportacion;
-	CREATE TABLE #LogErroresImportacion (
-		Id              INT IDENTITY(1,1) PRIMARY KEY,
-   		FechaHoraError  DATETIME DEFAULT GETDATE(),
-   		Nro_Socio_Excel VARCHAR(15) NULL,
-   		Actividad_Excel VARCHAR(50) NULL,
-   		Fecha_Asistencia_Excel NVARCHAR(50) NULL,
+	CREATE TABLE #LogErroresImportacion 
+	(
+		Id             			INT IDENTITY(1,1) PRIMARY KEY,
+   		FechaHoraError 			DATETIME DEFAULT GETDATE(),
+   		Nro_Socio_Excel			VARCHAR(15) NULL,
+   		Actividad_Excel			VARCHAR(50) NULL,
+   		Fecha_Asistencia_Excel	NVARCHAR(50) NULL,
    		Asistencia_Estado_Excel VARCHAR(5) NULL,
-   		Profesor_Excel  VARCHAR(50) NULL,
-   		Motivo_Error    VARCHAR(MAX)
+   		Profesor_Excel 			VARCHAR(50) NULL,
+   		Motivo_Error   			VARCHAR(MAX)
 	);
 
 	BEGIN TRANSACTION;
@@ -577,13 +577,13 @@ BEGIN
 		SET LANGUAGE 'Spanish';
 		
    		IF OBJECT_ID('tempdb..#AsistenciaCruda') IS NOT NULL DROP TABLE #AsistenciaCruda;
-
-   		CREATE TABLE #AsistenciaCruda (
-       		Nro_Socio_Excel     VARCHAR(15),
-       		Actividad_Excel     VARCHAR(50),
-       		Fecha_Asistencia_Excel NVARCHAR(50),
-       		Asistencia_Estado_Excel VARCHAR(5),
-       		Profesor_Excel      VARCHAR(50)
+   		CREATE TABLE #AsistenciaCruda 
+		(
+       		Nro_Socio_Excel   			VARCHAR(15),
+       		Actividad_Excel     		VARCHAR(50),
+       		Fecha_Asistencia_Excel		NVARCHAR(50),
+       		Asistencia_Estado_Excel		VARCHAR(5),
+       		Profesor_Excel     			VARCHAR(50)
    		);
 
 		DECLARE @Comando NVARCHAR(MAX);
@@ -605,21 +605,20 @@ BEGIN
    		-- Validar existencias de Socio, Actividad y Profesor y transformar la fecha.
 
    		IF OBJECT_ID('tempdb..#AsistenciaValidadaPaso1') IS NOT NULL DROP TABLE #AsistenciaValidadaPaso1;
-
    		CREATE TABLE #AsistenciaValidadaPaso1 (
-       		id_cruda            INT IDENTITY(1,1) PRIMARY KEY,
-       		Nro_Socio_Excel_Src VARCHAR(15),
-       		Actividad_Excel_Src VARCHAR(50),
-       		Fecha_Asistencia_Excel_Src NVARCHAR(50),
-       		Asistencia_Estado_Excel_Src VARCHAR(5),
-       		Profesor_Excel_Src  VARCHAR(50),
+       		id_cruda           				INT IDENTITY(1,1) PRIMARY KEY,
+       		Nro_Socio_Excel_Src				VARCHAR(15),
+       		Actividad_Excel_Src				VARCHAR(50),
+       		Fecha_Asistencia_Excel_Src		NVARCHAR(50),
+       		Asistencia_Estado_Excel_Src		VARCHAR(5),
+       		Profesor_Excel_Src 				VARCHAR(50),
 
-       		cod_socio           VARCHAR(15) NOT NULL,
-       		cod_actividad       INT NOT NULL,
-       		cod_profesor        INT NOT NULL,
-       		fecha_asistencia    DATE NOT NULL,
-       		estado_asistencia   CHAR(1) NOT NULL,
-       		dia_semana_asistencia VARCHAR(9) NOT NULL -- dia de semana ('Lunes', 'Martes')
+       		cod_socio           			VARCHAR(15) NOT NULL,
+       		cod_actividad       			INT NOT NULL,
+       		cod_profesor       				INT NOT NULL,
+       		fecha_asistencia   				DATE NOT NULL,
+       		estado_asistencia   			CHAR(1) NOT NULL,
+       		dia_semana_asistencia			VARCHAR(9) NOT NULL -- dia de semana ('Lunes', 'Martes')
    		);
 
    		-- Insertar en la tabla validada y registrar errores de no existencia
@@ -825,12 +824,13 @@ BEGIN
 END
 GO
 --EXEC imp.Importar_Asistencias 
+ 'D:\repos\tpddbba_com5600_grupo11\Creacion_BD\import\Datos socios.xlsx','presentismo_actividades',1,0
 --'C:\Users\matia\Desktop\BDDA\tpddbba_com5600_grupo11\Creacion_BD\import\Datos socios prueba.xlsx',
 --'presentismo_actividades',
 --1, 1
 
 ----------------------------------------------------------------------------------------------------------------
-
+select * from psn.Asiste
 
 ----------------------------------------------------------------------------------------------------------------
 --	EJECUCION DE LAS IMPORTACIONES

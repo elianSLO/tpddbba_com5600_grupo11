@@ -41,6 +41,7 @@ GO
 CREATE OR ALTER PROCEDURE stp.insertarCategoria
 	@descripcion		VARCHAR(50),
 	@edad_max			INT,
+	@edad_min			INT,
 	@valor_mensual		DECIMAL(10,2),
 	@vig_valor_mens		DATE,
 	@valor_anual		DECIMAL(10,2),
@@ -64,14 +65,26 @@ BEGIN
 	END
 
 	-- Validar que la edad máxima sea mayor a 0
-	IF (@edad_max <= 0)
+	IF (@edad_max <= 0 AND @edad_max < @edad_min)
+	BEGIN
+		PRINT 'La edad máxima debe ser un número mayor a 0.'
+		RETURN;
+	END
+
+	IF (@edad_min <= 0 AND @edad_min > @edad_max)
 	BEGIN
 		PRINT 'La edad máxima debe ser un número mayor a 0.'
 		RETURN;
 	END
 
 	-- Validar que los montos no sean nulos o negativos
-	IF (@valor_mensual <= 0 OR @valor_mensual IS NULL OR @valor_anual <= 0 OR @valor_anual IS NULL)
+	IF	@valor_mensual <= 0 OR @valor_mensual IS NULL 
+	BEGIN
+		PRINT 'El valor de la suscripción mensual debe ser mayor a cero'
+		RETURN;
+	END
+
+	/*IF	@valor_anual <= 0 OR @valor_anual IS NULL 
 	BEGIN
 		PRINT 'El valor de la suscripción debe ser mayor a cero'
 		RETURN;
@@ -80,14 +93,15 @@ BEGIN
 	-- Validar que las fechas de vigencia no sean anteriores a hoy
 	IF (@vig_valor_mens < CAST(GETDATE() AS DATE) OR @vig_valor_anual < CAST(GETDATE() AS DATE))
 	BEGIN
-		PRINT 'Fecha de vigencia inválida'
+		PRINT 'Fecha de vigencia anual inválida'
 		RETURN;
-	END
+	END*/
 
 	INSERT INTO psn.Categoria(descripcion,edad_max,valor_mensual,vig_valor_mens,valor_anual,vig_valor_anual)
 	VALUES (@descripcion,@edad_max,@valor_mensual,@vig_valor_mens,@valor_anual,@vig_valor_anual);
 
 	PRINT 'Categoría insertada correctamente'
+	RETURN 1;
 END
 GO
 
@@ -220,7 +234,7 @@ AS
 BEGIN
     SET NOCOUNT ON;
 
-    -- Validar el nombre de la actividad 
+    /*-- Validar el nombre de la actividad 
     IF @nombre COLLATE Modern_Spanish_CI_AI NOT IN (
         'Futsal',
         'Vóley',
@@ -233,6 +247,7 @@ BEGIN
         PRINT 'El nombre de la actividad no es correcto.'
         RETURN;
     END	
+	*/
 
     -- Validar que no exista ya una actividad con el mismo nombre
     IF EXISTS (SELECT 1 FROM psn.Actividad WHERE nombre = @nombre)
@@ -259,6 +274,7 @@ BEGIN
     VALUES (@nombre, @valor_mensual, @vig_valor)
 
     PRINT 'Actividad agregada correctamente.'
+	RETURN 1;
 END
 GO
 

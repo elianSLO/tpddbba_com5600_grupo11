@@ -371,8 +371,7 @@ BEGIN
         ''Microsoft.ACE.OLEDB.12.0'',
         ''Excel 12.0;HDR=NO;IMEX=1;Database=' + @RutaArchivo + ''',
         ''SELECT * FROM [Tarifas$B2:D8]''
-    )
-    WHERE F1 IS NOT NULL';
+    )';
 	EXEC sp_executesql @SQL;
 	
 	-- Elimina encabezado
@@ -404,21 +403,24 @@ BEGIN
 		SET @nombre					= LEFT(LTRIM(RTRIM(@tnombre)), 50);
 		SET @valor_mensual			= TRY_CONVERT(DECIMAL(10,2),REPLACE(LTRIM(RTRIM(@tvalor_mensual)), CHAR(160), ''));
 		SET @vig_valor				= TRY_CONVERT(DATE, REPLACE(LTRIM(RTRIM(@tvig_valor)), CHAR(160), ''), 103); -- dd/MM/yyyy
-
-		IF @nombre IS NOT NULL AND @vig_valor IS NOT NULL AND @valor_mensual IS NOT NULL
+		
+		DECLARE @resultado INT = 0;
 		BEGIN TRY
-			EXEC stp.insertarActividad
+			EXEC @resultado = stp.insertarActividad
 				@nombre = @nombre,
 				@vig_valor = @vig_valor,
 				@valor_mensual = @valor_mensual;
-			SET @filas_importadas += 1;
+			IF @resultado = 1 
+			BEGIN
+				SET @filas_importadas += 1;
+			END
+			ELSE
+			BEGIN
+				SET @filas_ignoradas += 1;
+			END
 		END TRY
 		BEGIN CATCH
 			SET @filas_ignoradas += 1;
-			PRINT 'Fila ignorada: Nombre=' + ISNULL(@nombre, 'NULL') +
-				  ', Valor=' + ISNULL(CAST(@valor_mensual AS VARCHAR(20)), 'NULL') +
-				  ', Vig=' + ISNULL(CONVERT(VARCHAR, @vig_valor, 103), 'NULL');
-			PRINT 'Error: ' + ERROR_MESSAGE();
 		END CATCH
 
 		-- Fetch siguiente para continuar el loop
@@ -481,12 +483,11 @@ BEGIN
         ''Microsoft.ACE.OLEDB.12.0'',
         ''Excel 12.0;HDR=NO;IMEX=1;Database=' + @RutaArchivo + ''',
         ''SELECT * FROM [Tarifas$B10:D13]''
-    )
-    WHERE F1 IS NOT NULL';
+    )';
 	EXEC sp_executesql @SQL;
 	
 	-- Elimina encabezado
-	DELETE FROM ##Temp WHERE tdescripcion = 'Actividad';
+	DELETE FROM ##Temp WHERE tdescripcion = 'Categoria socio';
 	-- Variables cursor
 	DECLARE 
 		@tdescripcion			VARCHAR(255),
@@ -497,7 +498,9 @@ BEGIN
 	DECLARE 
 		@descripcion	VARCHAR(50),
 		@valor_mensual	DECIMAL(10,2),
-		@vig_valor_mens	DATE;
+		@vig_valor_mens	DATE,
+		@edad_min		INT,
+		@edad_max		INT;
 
 	DECLARE cur CURSOR LOCAL FAST_FORWARD FOR 
 		SELECT tdescripcion, tvalor_mensual, tvig_valor_mens FROM ##Temp;
@@ -506,31 +509,48 @@ BEGIN
 
 	-- Primer fetch antes del WHILE
 	FETCH NEXT FROM cur INTO @tdescripcion, @tvalor_mensual, @tvig_valor_mens;
-
+	
 	WHILE @@FETCH_STATUS = 0
 	BEGIN
 		-- Limpieza y conversión
-		SET @descripcion					= LEFT(LTRIM(RTRIM(@tdescripcion)), 50);
+		SET @descripcion			= LEFT(LTRIM(RTRIM(@tdescripcion)), 50);
 		SET @valor_mensual			= TRY_CONVERT(DECIMAL(10,2),REPLACE(LTRIM(RTRIM(@tvalor_mensual)), CHAR(160), ''));
-		SET @vig_valor_mens				= TRY_CONVERT(DATE, REPLACE(LTRIM(RTRIM(@tvig_valor_mens)), CHAR(160), ''), 103); -- dd/MM/yyyy
+		SET @vig_valor_mens			= TRY_CONVERT(DATE, REPLACE(LTRIM(RTRIM(@tvig_valor_mens)), CHAR(160), ''), 103); -- dd/MM/yyyy
+		SET @edad_min = CASE @descripcion
+			WHEN 'Menor'	THEN 0
+			WHEN 'Cadete'	THEN 13
+			WHEN 'Mayor'	THEN 18
+			ELSE NULL
+		END;
 
-		IF @descripcion IS NOT NULL AND @valor_mensual IS NOT NULL AND @vig_valor_mens IS NOT NULL
+		SET @edad_max = CASE @descripcion
+			WHEN 'Menor'	THEN 12
+			WHEN 'Cadete'	THEN 17
+			WHEN 'Mayor'	THEN 99
+			ELSE NULL
+		END;
+
+		DECLARE @resultado INT = 0;
 		BEGIN TRY
-			EXEC stp.insertarCategoria
-				@descripcion = @descripcion,
-				@vig_valor_mens = @vig_valor_mens,
-				@valor_mensual = @valor_mensual,
-				@edad_max = 10,
-				@valor_anual = 10.0,
-				@vig_valor_anual = '27/07/2031';
-			SET @filas_importadas += 1;
+			EXEC @resultado = stp.insertarCategoria
+				@descripcion	= @descripcion,
+				@edad_max		= @edad_max,	
+				@edad_min		= @edad_min,	
+				@valor_mensual	= @valor_mensual,
+				@vig_valor_mens	= @vig_valor_mens,
+				@valor_anual	= NULL,	
+				@vig_valor_anual= NULL;	
+			IF @resultado = 1 
+			BEGIN
+				SET @filas_importadas += 1;
+			END
+			ELSE
+			BEGIN
+				SET @filas_ignoradas += 1;
+			END
 		END TRY
 		BEGIN CATCH
 			SET @filas_ignoradas += 1;
-			PRINT 'Fila ignorada: Nombre=' + ISNULL(@descripcion, 'NULL') +
-				  ', Valor=' + ISNULL(CAST(@valor_mensual AS VARCHAR(20)), 'NULL') +
-				  ', Vig=' + ISNULL(CONVERT(VARCHAR, @vig_valor_mens, 103), 'NULL');
-			PRINT 'Error: ' + ERROR_MESSAGE();
 		END CATCH
 
 		-- Fetch siguiente para continuar el loop
@@ -544,6 +564,11 @@ BEGIN
 	PRINT 'Filas ignoradas: ' + CAST(@filas_ignoradas AS VARCHAR);
 END
 GO
+
+
+--delete from  psn.Categoria
+select * from psn.Categoria
+exec imp.Importar_Categorias'D:\repos\tpddbba_com5600_grupo11\Creacion_BD\import\Datos socios.xlsx'
 
 ----------------------------------------------------------------------------------------------------------------
 

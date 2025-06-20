@@ -1376,7 +1376,7 @@ BEGIN
 	PRINT 'Pago eliminado correctamente.';
 END;
 GO
-*/
+
 ----------------------------------------------------------------------------------------------------------------
 
 
@@ -1842,18 +1842,48 @@ END;
 GO
 
 CREATE OR ALTER PROCEDURE stp.insertarResponsable
-    @cod_responsable VARCHAR(15),
-    @dni         CHAR(8),
-    @nombre      VARCHAR(50),
-    @apellido    VARCHAR(50),
-    @email       VARCHAR(100),
-    @parentezco  VARCHAR(50),
-    @fecha_nac   DATE,
-    @nro_socio   INT,
-    @tel         VARCHAR(15)
+    @cod_responsable	VARCHAR(15),
+    @nombre				VARCHAR(50) = NULL,		--	Se asignan con valores por defecto para chequear si ya es socio.
+    @apellido			VARCHAR(50)	= NULL,
+	@dni				CHAR(8)		= NULL,
+    @email				VARCHAR(100)= NULL,
+	@fecha_nac			DATE		= NULL,
+	@tel				VARCHAR(15)	= NULL,
+    @parentezco			VARCHAR(50)	= NULL
 AS
 BEGIN
     SET NOCOUNT ON;
+
+	DECLARE @esSocio INT = 0;
+
+	IF	@cod_responsable	IS NULL
+	BEGIN
+		PRINT 'Falta codigo de responsable';
+		RETURN;
+	END
+
+	IF @cod_responsable LIKE ('SN%')
+	BEGIN
+		SET @esSocio = 1
+	END
+	ELSE IF @cod_responsable LIKE ('NS%')
+	BEGIN
+		SET @esSocio = 0;
+	END
+
+	IF @esSocio = 1
+	BEGIN
+		RETURN
+	END
+
+
+	--	Validación de campos obligatorios
+	IF(	@nombre		IS NULL OR	@apellido		IS NULL OR	@dni	IS NULL OR
+		@fecha_nac	IS NULL OR	@email			IS NULL OR	@tel	IS NULL)
+	BEGIN
+		PRINT 'Error: Faltan datos.'
+		RETURN;
+	END
 
     -- Validaciones
     IF @dni IS NULL OR LEN(@dni) != 8 OR @dni NOT LIKE '%[0-9]%'
@@ -1867,7 +1897,7 @@ BEGIN
         @cod_responsable LIKE 'NS-[0-9][0-9][0-9][0-9]' OR
         @cod_responsable LIKE 'NS-[0-9][0-9][0-9][0-9][0-9]')
     BEGIN
-        PRINT 'Error: Formato erróneo para cod_responsable.';
+        PRINT 'Error: Formato erroneo para cod_responsable.';
         RETURN;
     END
 
@@ -1910,12 +1940,6 @@ BEGIN
         RETURN;
     END
 
-    IF @nro_socio IS NULL OR @nro_socio <= 0
-    BEGIN
-        PRINT 'Error: El número de socio debe ser un número positivo.';
-        RETURN;
-    END
-
     IF @tel IS NULL OR @tel LIKE '%[^0-9]%' OR LEN(@tel) < 10 OR LEN(@tel) > 14
     BEGIN
         PRINT 'Error: El teléfono debe contener solo números y tener entre 10 y 14 dígitos.';
@@ -1923,8 +1947,8 @@ BEGIN
     END
 
     -- Inserción
-    INSERT INTO psn.Responsable (dni, nombre, apellido, email, parentezco, fecha_nac, nro_socio, tel)
-    VALUES (@dni, @nombre, @apellido, @email, @parentezco, @fecha_nac, @nro_socio, @tel);
+    INSERT INTO psn.Responsable (cod_responsable, nombre, apellido, dni, email, fecha_nac, tel, parentezco)
+    VALUES (@cod_responsable, @nombre, @apellido, @dni, @email, @fecha_nac, @tel, @parentezco);
 
     PRINT 'Responsable insertado correctamente.';
 END;

@@ -473,8 +473,11 @@ BEGIN
 
 	CREATE TABLE ##Temp2
 	(
-		tvalor_dia_socios	VARCHAR(255),
-		tvalor_dia_invi		VARCHAR(255),
+		tvalor_dia_socios_ad	VARCHAR(255),
+		tvalor_dia_socios_men	VARCHAR(255),
+		tvalor_dia_invi_ad		VARCHAR(255),
+		tvalor_dia_invi_men		VARCHAR(255),
+
 		tvalor_anual		VARCHAR(255),
 		tvig_valor_anual	VARCHAR(255)
 	);
@@ -492,7 +495,7 @@ BEGIN
     FROM OPENROWSET(
         ''Microsoft.ACE.OLEDB.12.0'',
         ''Excel 12.0;HDR=NO;IMEX=1;Database=' + @RutaArchivo + ''',
-        ''SELECT * FROM [Tarifas$B10:D13]''
+        ''SELECT * FROM [Tarifas$B11:D13]''
     )';
 	EXEC sp_executesql @SQL;
 	
@@ -905,15 +908,15 @@ select * from psn.Asiste
 
 --delete from  psn.Socio
 select * from psn.Socio
-exec imp.Importar_Responsables 'D:\repos\tpddbba_com5600_grupo11\Creacion_BD\import\Datos socios.xlsx'
+exec imp.Importar_SociosConResponsable 'D:\repos\tpddbba_com5600_grupo11\Creacion_BD\import\Datos socios.xlsx'
 
-IF EXISTS (SELECT * FROM sys.procedures WHERE name = 'Importar_Responsables') 
+IF EXISTS (SELECT * FROM sys.procedures WHERE name = 'Importar_SociosConResponsable') 
 BEGIN
-    DROP PROCEDURE imp.Importar_Responsables;
+    DROP PROCEDURE imp.Importar_SociosConResponsable;
 END;
 GO
 
-CREATE OR ALTER PROCEDURE imp.Importar_Responsables
+CREATE OR ALTER PROCEDURE imp.Importar_SociosConResponsable
 	@RutaArchivo NVARCHAR(255)
 AS
 BEGIN
@@ -925,17 +928,18 @@ BEGIN
 
 	CREATE TABLE ##Temp
 	(
-		tcod_socio            VARCHAR(255),
-		tnombre               VARCHAR(255),
-		tapellido             VARCHAR(255),
-		tdni                  VARCHAR(255),
-		temail                VARCHAR(255),
-		tfecha_nac            VARCHAR(255),
-		ttel                  VARCHAR(255),
-		ttel_emerg            VARCHAR(255),
-		tnombre_cobertura     VARCHAR(255),
-		tnro_afiliado         VARCHAR(255),
-		ttel_cobertura        VARCHAR(255)
+		tcod_socio				VARCHAR(255),
+		tcod_responsable		VARCHAR(255),		
+		tnombre					VARCHAR(255),
+		tapellido				VARCHAR(255),
+		tdni					VARCHAR(255),
+		temail					VARCHAR(255),
+		tfecha_nac				VARCHAR(255),
+		ttel					VARCHAR(255),
+		ttel_emerg				VARCHAR(255),
+		tnombre_cobertura		VARCHAR(255),
+		tnro_afiliado			VARCHAR(255),
+		ttel_cobertura			VARCHAR(255)
 	);
 
 	DECLARE @filas_importadas INT = 0, @filas_ignoradas INT = 0;
@@ -954,11 +958,12 @@ BEGIN
 			CONVERT(VARCHAR(255), F8),
 			CONVERT(VARCHAR(255), F9),
 			CONVERT(VARCHAR(255), F10),
-			CONVERT(VARCHAR(255), F11)
+			CONVERT(VARCHAR(255), F11),
+			CONVERT(VARCHAR(255), F12)
 		FROM OPENROWSET(
 			''Microsoft.ACE.OLEDB.12.0'',
 			''Excel 12.0;HDR=NO;IMEX=1;Database=' + @RutaArchivo + ''',
-			''SELECT * FROM [Responsables de Pago$]''
+			''SELECT * FROM [Grupo Familiar$]''
 		)';
 	EXEC sp_executesql @SQL;
 
@@ -967,14 +972,13 @@ BEGIN
 
 	-- Variables de cursor
 	DECLARE 
-		@tcod_socio VARCHAR(255), @tnombre VARCHAR(255), @tapellido VARCHAR(255),
-		@tdni VARCHAR(255), @temail VARCHAR(255), @tfecha_nac VARCHAR(255),
-		@ttel VARCHAR(255), @ttel_emerg VARCHAR(255), @tnombre_cobertura VARCHAR(255),
-		@tnro_afiliado VARCHAR(255), @ttel_cobertura VARCHAR(255);
+		@tcod_socio VARCHAR(255), @tcod_responsable	VARCHAR(255), @tnombre		VARCHAR(255), @tapellido	VARCHAR(255),
+		@tdni		VARCHAR(255), @temail			VARCHAR(255), @tfecha_nac	VARCHAR(255), @ttel			VARCHAR(255),
+		@ttel_emerg VARCHAR(255), @tnombre_cobertura VARCHAR(255),@tnro_afiliado VARCHAR(255), @ttel_cobertura VARCHAR(255);
 
 	-- Variables formateadas
 	DECLARE 
-		@cod_socio VARCHAR(15), @nombre VARCHAR(50), @apellido VARCHAR(50),
+		@cod_socio VARCHAR(15), @cod_responsable VARCHAR(15),@nombre VARCHAR(50), @apellido VARCHAR(50),
 		@dni CHAR(8), @email VARCHAR(100), @fecha_nac DATE,
 		@tel VARCHAR(15), @tel_emerg VARCHAR(15), @nombre_cobertura VARCHAR(50),
 		@nro_afiliado VARCHAR(50), @tel_cobertura VARCHAR(15);
@@ -984,13 +988,14 @@ BEGIN
 
 	OPEN cur;
 	FETCH NEXT FROM cur INTO 
-		@tcod_socio, @tnombre, @tapellido, @tdni, @temail, @tfecha_nac,
+		@tcod_socio,  @tcod_responsable, @tnombre, @tapellido, @tdni, @temail, @tfecha_nac,
 		@ttel, @ttel_emerg, @tnombre_cobertura, @tnro_afiliado, @ttel_cobertura;
 
 	WHILE @@FETCH_STATUS = 0
 	BEGIN
 		-- Limpieza y conversión
 		SET @cod_socio				= LEFT(LTRIM(RTRIM(@tcod_socio)), 15);
+		SET @cod_responsable		= LEFT(LTRIM(RTRIM(@tcod_socio)), 15);
 		SET @nombre					= LEFT(LTRIM(RTRIM(@tnombre)), 50);
 		SET @apellido				= LEFT(LTRIM(RTRIM(@tapellido)), 50);
 		SET @dni					= LEFT(LTRIM(RTRIM(@tdni)), 8);
@@ -1004,6 +1009,13 @@ BEGIN
 
 		-- Validación
 		DECLARE @resultado INT = 0;
+		BEGIN TRY
+			EXEC @resultado = stp.insertarResponsable
+				@cod_responsable = @cod_responsable
+		END TRY
+		BEGIN CATCH
+
+		END CATCH
 		BEGIN TRY
 			EXEC @resultado = stp.insertarSocio
 				@cod_socio = @cod_socio,
@@ -1034,7 +1046,7 @@ BEGIN
 		END CATCH
 
 		FETCH NEXT FROM cur INTO 
-			@tcod_socio, @tnombre, @tapellido, @tdni, @temail, @tfecha_nac,
+			@tcod_socio,  @tcod_responsable, @tnombre, @tapellido, @tdni, @temail, @tfecha_nac,
 			@ttel, @ttel_emerg, @tnombre_cobertura, @tnro_afiliado, @ttel_cobertura;
 	END
 	CLOSE cur;

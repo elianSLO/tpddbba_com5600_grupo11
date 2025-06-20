@@ -74,7 +74,7 @@ BEGIN
 		FROM psn.Empleado e
 		INNER JOIN inserted i ON e.id_empleado = i.id_empleado;
 
-		-- Opcional: Eliminar los datos visibles o ponerlos en NULL (si no se van a necesitar)
+		-- Eliminar los datos visibles o ponerlos en NULL (si no se van a necesitar)
 		UPDATE e
 		SET 
 			e.nombre = NULL,

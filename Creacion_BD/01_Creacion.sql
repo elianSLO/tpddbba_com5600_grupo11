@@ -213,15 +213,14 @@ GO
 
 IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'Com5600G11.psn.Pago') AND type = N'U') 
 	BEGIN
-		CREATE TABLE psn.Pago (
+		CREATE TABLE psn.Pago 
+		(
 			cod_pago			BIGINT PRIMARY KEY,
 			monto				DECIMAL(10,2),
 			fecha_pago			DATE,
 			estado				VARCHAR(15),
-			paga_socio			VARCHAR(15) CHECK (paga_socio LIKE 'SN-[0-9][0-9][0-9][0-9][0-9]' OR 
-												   paga_socio LIKE 'SN-[0-9][0-9][0-9][0-9]'),
-			paga_invitado		VARCHAR(15) CHECK (paga_invitado LIKE 'NS-[0-9][0-9][0-9][0-9][0-9]' OR 
-												   paga_invitado LIKE 'NS-[0-9][0-9][0-9][0-9]'),
+			responsable			VARCHAR(15) CHECK (responsable LIKE 'SN-[0-9][0-9][0-9][0-9][0-9]' OR 
+												   responsable LIKE 'SN-[0-9][0-9][0-9][0-9]'),
 			medio_pago			VARCHAR(15)
 		);
 		PRINT 'Tabla Pago creada correctamente.';
@@ -390,10 +389,6 @@ alter table psn.Socio add constraint fk_responsable FOREIGN KEY (cod_responsable
 alter table psn.Suscripcion add 		
 	constraint fk_socio_sus foreign key	(cod_socio) references psn.Socio(cod_socio),
 	constraint fk_cat_sus foreign key (cod_categoria) references psn.Categoria(cod_categoria);
-
-alter table psn.Pago add 		
-	constraint fk_socio_pago foreign key (paga_socio) references psn.Socio(cod_socio),
-	constraint fk_invit_pago foreign key (paga_invitado) references psn.Invitado(cod_invitado);
 
 alter table psn.Factura add 		
 	constraint fk_socio_fact foreign key (cod_socio) references psn.Socio(cod_socio);

@@ -97,8 +97,8 @@ BEGIN
 		RETURN;
 	END*/
 
-	INSERT INTO psn.Categoria(descripcion,edad_max,valor_mensual,vig_valor_mens,valor_anual,vig_valor_anual)
-	VALUES (@descripcion,@edad_max,@valor_mensual,@vig_valor_mens,@valor_anual,@vig_valor_anual);
+	INSERT INTO psn.Categoria(descripcion,edad_max,valor_mensual,vig_valor_mens,valor_anual,vig_valor_anual, edad_min)
+	VALUES (@descripcion,@edad_max,@valor_mensual,@vig_valor_mens,@valor_anual,@vig_valor_anual, @edad_min);
 
 	PRINT 'Categoría insertada correctamente'
 	RETURN 1;

@@ -516,17 +516,18 @@ BEGIN
 		SET @descripcion			= LEFT(LTRIM(RTRIM(@tdescripcion)), 50);
 		SET @valor_mensual			= TRY_CONVERT(DECIMAL(10,2),REPLACE(LTRIM(RTRIM(@tvalor_mensual)), CHAR(160), ''));
 		SET @vig_valor_mens			= TRY_CONVERT(DATE, REPLACE(LTRIM(RTRIM(@tvig_valor_mens)), CHAR(160), ''), 103); -- dd/MM/yyyy
-		SET @edad_min = CASE @descripcion
-			WHEN 'Menor'	THEN 0
-			WHEN 'Cadete'	THEN 13
-			WHEN 'Mayor'	THEN 18
-			ELSE NULL
-		END;
 
 		SET @edad_max = CASE @descripcion
 			WHEN 'Menor'	THEN 12
 			WHEN 'Cadete'	THEN 17
 			WHEN 'Mayor'	THEN 99
+			ELSE NULL
+		END;
+
+		SET @edad_min = CASE @edad_max
+			WHEN 12		THEN 0
+			WHEN 17		THEN 13
+			WHEN 99		THEN 18
 			ELSE NULL
 		END;
 

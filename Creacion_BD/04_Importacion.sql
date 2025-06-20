@@ -465,10 +465,20 @@ BEGIN
 	(
 		tdescripcion		VARCHAR(255),
 		tvalor_mensual		VARCHAR(255),
-		tvig_valor_mens		VARCHAR(255)--,
-		--tvalor_anual		VARCHAR(255),
-		--tvig_valor_anual	VARCHAR(255)
+		tvig_valor_mens		VARCHAR(255)
 	);
+
+	IF OBJECT_ID('tempdb..##Temp2') IS NOT NULL
+		DROP TABLE ##Temp2;
+
+	CREATE TABLE ##Temp2
+	(
+		tvalor_dia_socios	VARCHAR(255),
+		tvalor_dia_invi		VARCHAR(255),
+		tvalor_anual		VARCHAR(255),
+		tvig_valor_anual	VARCHAR(255)
+	);
+
 
 	DECLARE @filas_importadas INT = 0, @filas_ignoradas INT = 0;
 
@@ -486,8 +496,20 @@ BEGIN
     )';
 	EXEC sp_executesql @SQL;
 	
-	-- Elimina encabezado
-	DELETE FROM ##Temp WHERE tdescripcion = 'Categoria socio';
+	SET @SQL = '
+    INSERT INTO ##Temp2
+    SELECT 
+        CONVERT(VARCHAR(255), F1),
+        CONVERT(VARCHAR(255), F2),
+		CONVERT(VARCHAR(255), F3)
+    FROM OPENROWSET(
+        ''Microsoft.ACE.OLEDB.12.0'',
+        ''Excel 12.0;HDR=NO;IMEX=1;Database=' + @RutaArchivo + ''',
+        ''SELECT * FROM [Tarifas$D17:F22]''
+    )';
+	EXEC sp_executesql @SQL;
+	
+	
 	-- Variables cursor
 	DECLARE 
 		@tdescripcion			VARCHAR(255),
@@ -560,7 +582,10 @@ BEGIN
 
 	CLOSE cur;
 	DEALLOCATE cur;
+	select * from ##Temp
+	select * from ##Temp2
 	DROP TABLE ##Temp;
+	DROP TABLE ##Temp2;
 	PRINT 'Filas importadas: ' + CAST(@filas_importadas AS VARCHAR);
 	PRINT 'Filas ignoradas: ' + CAST(@filas_ignoradas AS VARCHAR);
 END

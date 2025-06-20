@@ -2,7 +2,11 @@
 
 --------- 7. PROTECCIÓN DE DATOS SENSIBLES DE LOS EMPLEADOS
 
+USE Com5600G11
+GO
+
 ---- CREO TABLA EMPLEADO
+
 
 IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'Com5600G11.psn.Empleado') AND type = N'U')
 	BEGIN
@@ -17,9 +21,9 @@ IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'Com5600G1
 			email_empresarial VARCHAR(255),
 			turno VARCHAR(50),
 			rol VARCHAR(50),
-			area VARCHAR(50),
+			area VARCHAR(50)
 		);
-		PRINT 'Tabla Empelado creada correctamente.';
+		PRINT 'Tabla Empleado creada correctamente.';
 	END
 ELSE
 	BEGIN

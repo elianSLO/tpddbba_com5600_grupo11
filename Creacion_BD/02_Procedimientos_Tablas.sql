@@ -97,8 +97,8 @@ BEGIN
 		RETURN;
 	END*/
 
-	INSERT INTO psn.Categoria(descripcion,edad_max,valor_mensual,vig_valor_mens,valor_anual,vig_valor_anual, edad_min)
-	VALUES (@descripcion,@edad_max,@valor_mensual,@vig_valor_mens,@valor_anual,@vig_valor_anual, @edad_min);
+	INSERT INTO psn.Categoria(descripcion,edad_max,valor_mensual,vig_valor_mens,valor_anual,vig_valor_anual)
+	VALUES (@descripcion,@edad_max,@valor_mensual,@vig_valor_mens,@valor_anual,@vig_valor_anual);
 
 	PRINT 'Categoría insertada correctamente'
 	RETURN 1;
@@ -1263,7 +1263,7 @@ GO
 ----------------------------------------------------------------------------------------------------------------
 
 -- SP PARA MODIFICACION DE PAGO
-/*IF EXISTS (SELECT * FROM sys.procedures WHERE name = 'modificarPago')
+IF EXISTS (SELECT * FROM sys.procedures WHERE name = 'modificarPago')
 BEGIN
     DROP PROCEDURE stp.modificarPago;
 END;
@@ -1274,8 +1274,7 @@ CREATE OR ALTER PROCEDURE stp.modificarPago
 	@monto				DECIMAL(10,2),
 	@fecha_pago			DATE,
 	@estado				VARCHAR(15),
-	@paga_socio			VARCHAR(15) = NULL,
-	@paga_invitado		VARCHAR(15) = NULL,
+	@responsable		VARCHAR(15),
 	@medio_pago			VARCHAR(15)
 AS
 BEGIN
@@ -1305,13 +1304,6 @@ BEGIN
 		RETURN;
 	END
 
-	IF (@paga_socio IS NULL AND @paga_invitado IS NULL) OR
-	   (@paga_socio IS NOT NULL AND @paga_invitado IS NOT NULL)
-	BEGIN
-		PRINT 'ERROR: Debe especificar solo uno entre paga_socio o paga_invitado.';
-		RETURN;
-	END
-
 	IF @medio_pago IS NULL OR LEN(@medio_pago) = 0
 	BEGIN
 		PRINT 'ERROR: El medio de pago debe ser informado.';
@@ -1324,15 +1316,14 @@ BEGIN
 		RETURN;
 	END
 
-	IF @paga_socio IS NOT NULL AND NOT EXISTS (SELECT 1 FROM psn.Socio WHERE cod_socio = @paga_socio)
+	IF @responsable IS NOT NULL AND 
+	(
+		NOT EXISTS (SELECT 1 FROM psn.Socio WHERE cod_socio = @responsable)
+		AND
+		NOT EXISTS (SELECT 1 FROM psn.Responsable WHERE cod_responsable = @responsable)
+	)
 	BEGIN
-		PRINT 'ERROR: El código de socio especificado no existe.';
-		RETURN;
-	END
-
-	IF @paga_invitado IS NOT NULL AND NOT EXISTS (SELECT 1 FROM psn.Invitado WHERE cod_invitado = @paga_invitado)
-	BEGIN
-		PRINT 'ERROR: El código de invitado especificado no existe.';
+		PRINT CONCAT('ERROR: El código de responsable especificado no existe (', @responsable, ')');
 		RETURN;
 	END
 
@@ -1340,8 +1331,7 @@ BEGIN
 	SET monto = @monto,
 		fecha_pago = @fecha_pago,
 		estado = @estado,
-		paga_socio = @paga_socio,
-		paga_invitado = @paga_invitado,
+		responsable = @responsable,
 		medio_pago = @medio_pago
 	WHERE cod_pago = @cod_pago;
 

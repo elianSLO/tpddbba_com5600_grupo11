@@ -5,17 +5,12 @@
 USE Com5600G11
 GO
 
--- Limpio las tablas a utilizar
+-- Borrado de tablas
 
--- Tabla Factura
-DELETE psn.Factura
-DBCC CHECKIDENT ('psn.Factura', RESEED, 0);
+DELETE FROM psn.Socio 
+DELETE FROM psn.Factura
+DELETE FROM psn.Item_Factura
 
--- Tabla Socio
-DELETE psn.Socio 
-
--- Tabla Item_Fctura
-DELETE psn.Item_Factura
 
 ------------------------------------------------------------ 1. PRUEBAS insertarItem_Factura
 

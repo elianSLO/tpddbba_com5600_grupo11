@@ -117,6 +117,7 @@ GO
 CREATE OR ALTER PROCEDURE stp.modificarCategoria
     @cod_categoria      INT,
     @descripcion        VARCHAR(50),
+	@edad_min			INT,
     @edad_max           INT,
     @valor_mensual      DECIMAL(10,2),
     @vig_valor_mens     DATE,
@@ -151,11 +152,17 @@ BEGIN
     END
 
     -- Validar que la edad máxima sea mayor a 0
-    IF (@edad_max <= 0)
-    BEGIN
-        PRINT 'La edad máxima debe ser un número mayor a 0.'
-        RETURN;
-    END
+	IF (@edad_max <= 0 AND @edad_max < @edad_min)
+	BEGIN
+		PRINT 'La edad máxima debe ser un número mayor a 0.'
+		RETURN;
+	END
+
+	IF (@edad_min <= 0 AND @edad_min > @edad_max)
+	BEGIN
+		PRINT 'La edad máxima debe ser un número mayor a 0.'
+		RETURN;
+	END
 
     -- Validar que los montos no sean nulos o negativos
     IF (@valor_mensual <= 0 OR @valor_mensual IS NULL OR @valor_anual <= 0 OR @valor_anual IS NULL)
@@ -174,6 +181,7 @@ BEGIN
     -- Actualizar la categoría
     UPDATE psn.Categoria
     SET descripcion = @descripcion,
+		edad_min = @edad_min,
         edad_max = @edad_max,
         valor_mensual = @valor_mensual,
         vig_valor_mens = @vig_valor_mens,

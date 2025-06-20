@@ -449,7 +449,7 @@ BEGIN
 
 	IF EXISTS (SELECT 1 FROM psn.Socio WHERE dni = @dni)
 	BEGIN
-		PRINT 'Error: Ya existe un socio con ese DNI';
+		PRINT CONCAT ('Error: Ya existe un socio con ese DNI (', @dni, ')');
 		RETURN;
 	END;
 
@@ -1166,12 +1166,31 @@ CREATE OR ALTER PROCEDURE stp.insertarPago
 	@monto				DECIMAL(10,2),
 	@fecha_pago			DATE,
 	@estado				VARCHAR(15),
-	@paga_socio			VARCHAR(15) = NULL,
-	@paga_invitado		VARCHAR(15) = NULL,
+	@responsable		VARCHAR(15),
 	@medio_pago			VARCHAR(15)
 AS
 BEGIN
 	SET NOCOUNT ON;
+
+	--	Validación de campos obligatorios
+	IF	@cod_pago		IS NULL OR	@monto		IS NULL OR		@fecha_pago	IS NULL OR	
+		@responsable	IS NULL	OR	@estado		IS NULL 
+	BEGIN
+		PRINT 'ERROR: Faltan datos.';
+		RETURN;
+	END
+
+	IF @cod_pago <= 0
+	BEGIN
+		PRINT 'ERROR: El codigo de pago debe ser mayor a 0.';
+		RETURN;
+	END
+
+	IF EXISTS (SELECT 1 FROM psn.Pago WHERE cod_pago = @cod_pago)
+	BEGIN
+		PRINT CONCAT('ERROR: El codigo de pago ya existe. (', @cod_pago, ')');
+		RETURN;
+	END
 
 	IF @monto <= 0
 	BEGIN
@@ -1191,49 +1210,44 @@ BEGIN
 		RETURN;
 	END
 
-	IF (@paga_socio IS NULL AND @paga_invitado IS NULL) OR
-	   (@paga_socio IS NOT NULL AND @paga_invitado IS NOT NULL)
-	BEGIN
-		PRINT 'ERROR: Debe especificar solo uno entre paga_socio o paga_invitado.';
-		RETURN;
-	END
-
 	IF @medio_pago IS NULL OR LEN(@medio_pago) = 0
 	BEGIN
 		PRINT 'ERROR: El medio de pago debe ser informado.';
 		RETURN;
 	END
 
-	IF @medio_pago NOT IN ('TARJETA','TRANSFERENCIA')
+	IF @medio_pago NOT IN ('TARJETA','TRANSFERENCIA','EFECTIVO')
 	BEGIN
 		PRINT 'ERROR: Medio de pago incorrecto.';
 		RETURN;
 	END
 
 
-	IF @paga_socio IS NOT NULL AND NOT EXISTS (SELECT 1 FROM psn.Socio WHERE cod_socio = @paga_socio)
+	IF @responsable IS NOT NULL AND 
+	(
+		NOT EXISTS (SELECT 1 FROM psn.Socio WHERE cod_socio = @responsable)
+		AND
+		NOT EXISTS (SELECT 1 FROM psn.Responsable WHERE cod_responsable = @responsable)
+	)
 	BEGIN
-		PRINT 'ERROR: El código de socio especificado no existe.';
+		PRINT CONCAT('ERROR: El código de responsable especificado no existe (', @responsable, ')');
 		RETURN;
 	END
 
-	IF @paga_invitado IS NOT NULL AND NOT EXISTS (SELECT 1 FROM psn.Invitado WHERE cod_invitado = @paga_invitado)
-	BEGIN
-		PRINT 'ERROR: El código de invitado especificado no existe.';
-		RETURN;
-	END
 
-	INSERT INTO psn.Pago (monto, fecha_pago, estado, paga_socio, paga_invitado, medio_pago)
-	VALUES (@monto, @fecha_pago, @estado, @paga_socio, @paga_invitado, @medio_pago);
+	
+	INSERT INTO psn.Pago (cod_pago, monto, fecha_pago, estado, responsable, medio_pago)
+	VALUES (@cod_pago,@monto, @fecha_pago, @estado, @responsable, @medio_pago);
 
 	PRINT 'Pago insertado correctamente.';
+	RETURN 1;
 END;
 GO
 
 ----------------------------------------------------------------------------------------------------------------
 
 -- SP PARA MODIFICACION DE PAGO
-IF EXISTS (SELECT * FROM sys.procedures WHERE name = 'modificarPago')
+/*IF EXISTS (SELECT * FROM sys.procedures WHERE name = 'modificarPago')
 BEGIN
     DROP PROCEDURE stp.modificarPago;
 END;
@@ -1348,7 +1362,7 @@ BEGIN
 	PRINT 'Pago eliminado correctamente.';
 END;
 GO
-
+*/
 ----------------------------------------------------------------------------------------------------------------
 
 

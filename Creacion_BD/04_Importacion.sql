@@ -56,7 +56,6 @@ GO
 
 ----------------------------------------------------------------------------------------------------------------
 
-
 ----------------------------------------------------------------------------------------------------------------
 --	Crear el esquema.
 ----------------------------------------------------------------------------------------------------------------
@@ -70,6 +69,10 @@ GO
 ----------------------------------------------------------------------------------------------------------------
 --	IMPORTAR HOJA DE PAGOS
 ----------------------------------------------------------------------------------------------------------------
+--delete from  psn.Pago
+select * from psn.Pago	
+exec imp.Importar_Pagos 'D:\repos\tpddbba_com5600_grupo11\Creacion_BD\import\Datos socios.xlsx'
+
 
 --	Importar pagos.
 IF EXISTS (SELECT * FROM sys.procedures WHERE name = 'Importar_Pagos') 
@@ -77,6 +80,7 @@ BEGIN
     DROP PROCEDURE imp.Importar_Pagos;
 END;
 GO
+ 
 
 CREATE OR ALTER PROCEDURE imp.Importar_Pagos
     @RutaArchivo NVARCHAR(255)
@@ -84,92 +88,96 @@ AS
 BEGIN
     SET NOCOUNT ON;
 
-    IF OBJECT_ID('tempdb..##Temp') IS NOT NULL				--	Tabla temporal que trae toda la info. como cadena de texto.
+    IF OBJECT_ID('tempdb..##Temp') IS NOT NULL
         DROP TABLE ##Temp;
+
     CREATE TABLE ##Temp
     (
-        tcod_pago				VARCHAR(255),
-        tfecha_pago				VARCHAR(255),	
-        tresponsable_pago		VARCHAR(255),
-        tmonto					VARCHAR(255),
-        tmedio_pago				VARCHAR(255)
+        tcod_pago       VARCHAR(255),
+        tfecha_pago     VARCHAR(255),    
+        tresponsable    VARCHAR(255),
+        tmonto          VARCHAR(255),
+        tmedio_pago     VARCHAR(255)
     );
 
-	DECLARE	@filas_importadas		INT = 0,				--	Variables para control.
-			@filas_ignoradas		INT = 0;
+    DECLARE @filas_importadas INT = 0,
+            @filas_ignoradas INT = 0;
 
-    DECLARE @SQL NVARCHAR(MAX);								-- Consulta dinámica que carga ##Temp desde el Excel.
+    DECLARE @SQL NVARCHAR(MAX);
+
     SET @SQL = '
         INSERT INTO ##Temp
-		SELECT 
-			tcod_pago			= CONVERT(VARCHAR(255), F1),
-			tfecha_pago			= CONVERT(VARCHAR(255), F2),
-			tresponsable_pago	= CONVERT(VARCHAR(255), F3),
-			tmonto				= CONVERT(VARCHAR(255), F4),
-			tmedio_pago			= CONVERT(VARCHAR(255), F5)
-		FROM OPENROWSET(
-			''Microsoft.ACE.OLEDB.12.0'',
-			''Excel 12.0;HDR=NO;IMEX=1;Database=D:\repos\tpddbba_com5600_grupo11\Creacion_BD\import\Datos socios.xlsx'',
-			''SELECT * FROM [pago cuotas$]''
-		)';
+        SELECT 
+            CONVERT(VARCHAR(255), F1),
+            CONVERT(VARCHAR(255), F2),
+            CONVERT(VARCHAR(255), F3),
+            CONVERT(VARCHAR(255), F4),
+            CONVERT(VARCHAR(255), F5)
+        FROM OPENROWSET(
+            ''Microsoft.ACE.OLEDB.12.0'',
+            ''Excel 12.0;HDR=NO;IMEX=1;Database=' + @RutaArchivo + ''',
+            ''SELECT * FROM [pago cuotas$]''
+        )';
     EXEC sp_executesql @SQL;
 
-	DELETE FROM ##Temp Where tcod_pago LIKE ('Id de pago');		--	Elimino encabezado.
+    DELETE FROM ##Temp WHERE tcod_pago LIKE ('Id de pago');
 
-	DECLARE	@cod_pago		BIGINT,								--	Variables para dar formato.
-			@fecha_pago		DATE,
-			@responsable	VARCHAR(15),
-			@monto			DECIMAL(10,2),
-			@medio_pago		VARCHAR(15);
+    DECLARE 
+        @tcod_pago VARCHAR(255),
+        @tfecha_pago VARCHAR(255),    
+        @tresponsable VARCHAR(255),
+        @tmonto VARCHAR(255),
+        @tmedio_pago VARCHAR(255);
 
-	DECLARE cur CURSOR FOR		--	Cursor para recorrer fila a fila ##Temp.
-	SELECT 
-		tcod_pago, 
-		tfecha_pago, 
-		tresponsable_pago, 
-		tmonto, 
-		tmedio_pago
-	FROM ##Temp
+    DECLARE
+        @cod_pago BIGINT,
+        @fecha_pago DATE,
+        @responsable VARCHAR(15),
+        @monto DECIMAL(10,2),
+        @medio_pago VARCHAR(15);
 
-	OPEN cur
-	FETCH NEXT FROM cur INTO @cod_pago, @fecha_pago, @responsable, @monto, @medio_pago
+    DECLARE cur CURSOR LOCAL FAST_FORWARD FOR
+    SELECT * FROM ##Temp;
 
-	WHILE @@FETCH_STATUS = 0
-	BEGIN
-		--	Intento castear lo que llega de ##Temp
-		SET @cod_pago		= TRY_CAST(@cod_pago AS BIGINT)
-		SET @fecha_pago		= TRY_CAST(@fecha_pago AS DATE)
-		SET @responsable	= LEFT(@responsable, 15)
-		SET @monto			= TRY_CAST(@monto AS DECIMAL(10,2))
-		SET @medio_pago		= LEFT(@medio_pago, 15)
+    OPEN cur;
+    FETCH NEXT FROM cur INTO @tcod_pago, @tfecha_pago, @tresponsable, @tmonto, @tmedio_pago;
 
-		IF @cod_pago IS NOT NULL AND @fecha_pago IS NOT NULL AND @monto IS NOT NULL
-        BEGIN
-		-- Llamo al SP que tiene las reglas de negocio para insertar.
-			EXEC stp.insertarPago 
-				@monto = @monto,
-				@fecha_pago = @fecha_pago,
-				@estado = 'PAGADO',  
-				@paga_socio = @responsable,
-				@paga_invitado = NULL,
-				@medio_pago = @medio_pago
-			SET @filas_importadas += 1
-		END
-		ELSE
-		BEGIN
-			SET @filas_ignoradas += 1
-		END
-		FETCH NEXT FROM cur INTO @cod_pago, @fecha_pago, @responsable, @monto, @medio_pago
-	END
+    WHILE @@FETCH_STATUS = 0
+    BEGIN
+        SET @cod_pago = TRY_CAST(@tcod_pago AS BIGINT);
+        SET @fecha_pago = TRY_CONVERT(DATE, @tfecha_pago, 103);
+        SET @responsable = LEFT(LTRIM(RTRIM(@tresponsable)), 15);
+        SET @monto = TRY_CAST(@tmonto AS DECIMAL(10,2));
+        SET @medio_pago = LEFT(LTRIM(RTRIM(@tmedio_pago)), 15);
+        DECLARE @resultado INT = 0;
+        BEGIN TRY
+            EXEC @resultado = stp.insertarPago
+                @fecha_pago = @fecha_pago,
+                @monto = @monto,
+                @cod_pago = @cod_pago,
+                @estado = 'Pagado',
+                @responsable = @responsable,
+                @medio_pago = @medio_pago;
 
-	CLOSE cur
-	DEALLOCATE cur
+            IF @resultado = 1 
+                SET @filas_importadas += 1;
+            ELSE
+                SET @filas_ignoradas += 1;
+        END TRY
+        BEGIN CATCH
+            SET @filas_ignoradas += 1;
+        END CATCH
 
+        FETCH NEXT FROM cur INTO @tcod_pago, @tfecha_pago, @tresponsable, @tmonto, @tmedio_pago;
+    END
+
+    CLOSE cur;
+    DEALLOCATE cur;
 
     DROP TABLE ##Temp;
-    PRINT CONCAT('Filas importadas: ', @filas_importadas);
-    PRINT CONCAT('Filas ignoradas: ', @filas_ignoradas);
-    PRINT 'Importe completo.';
+
+    PRINT 'Filas importadas: ' + CAST(@filas_importadas AS VARCHAR);
+    PRINT 'Filas ignoradas: ' + CAST(@filas_ignoradas AS VARCHAR);
 END
 GO
 
@@ -178,6 +186,10 @@ GO
 ----------------------------------------------------------------------------------------------------------------
 --	IMPORTAR HOJA DE SOCIOS
 ----------------------------------------------------------------------------------------------------------------
+
+--delete from  psn.Socio
+select * from psn.Socio
+exec imp.Importar_Socios'D:\repos\tpddbba_com5600_grupo11\Creacion_BD\import\Datos socios.xlsx'
 
 IF EXISTS (SELECT * FROM sys.procedures WHERE name = 'Importar_Socios') 
 BEGIN
@@ -420,6 +432,10 @@ BEGIN
 	PRINT 'Filas ignoradas: ' + CAST(@filas_ignoradas AS VARCHAR);
 END
 GO
+
+--delete from  psn.Actividad
+select * from psn.Actividad
+exec imp.Importar_Actividades 'D:\repos\tpddbba_com5600_grupo11\Creacion_BD\import\Datos socios.xlsx'
 
 ----------------------------------------------------------------------------------------------------------------
 

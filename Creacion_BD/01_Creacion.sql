@@ -124,18 +124,21 @@ GO
 -- TABLA RESPONSABLE
 IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'Com5600G11.psn.Responsable') AND type = N'U')
 	BEGIN
-		CREATE TABLE psn.Responsable (
-			cod_responsable		VARCHAR(15) PRIMARY KEY CHECK (
-			cod_responsable LIKE 'SN-[0-9][0-9][0-9][0-9][0-9]' OR
-			cod_responsable LIKE 'NS-[0-9][0-9][0-9][0-9][0-9]'),
-			dni					CHAR(8) UNIQUE, 
+		CREATE TABLE psn.Responsable 
+		(
+			cod_responsable		VARCHAR(15) PRIMARY KEY	CHECK (	cod_responsable LIKE 'NS-[0-9][0-9][0-9][0-9][0-9]' OR 
+																cod_responsable LIKE 'NS-[0-9][0-9][0-9][0-9]'		OR
+																cod_responsable LIKE 'SN-[0-9][0-9][0-9][0-9][0-9]' OR 
+																cod_responsable LIKE 'SN-[0-9][0-9][0-9][0-9]'),
 			nombre				VARCHAR(50),
 			apellido			VARCHAR(50),
+			dni					CHAR(8) UNIQUE,			
 			email				VARCHAR(100),
+			fecha_nac			DATE,	
+			tel					VARCHAR(50)				/*check (	tel NOT LIKE '%[^0-9 -]%')*/
 			parentezco			VARCHAR(50),
-			fecha_nac			DATE,
-			nro_socio			INT,				
-			tel					VARCHAR(50) check (	tel NOT LIKE '%[^0-9 -]%')
+						
+			
 		);
 		PRINT 'Tabla Responsable creada correctamente.';
 	END

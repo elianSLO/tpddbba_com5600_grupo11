@@ -900,6 +900,155 @@ GO
 select * from psn.Asiste
 
 ----------------------------------------------------------------------------------------------------------------
+--	IMPORTAR HOJA DE GRUPOS FAMILIARES
+----------------------------------------------------------------------------------------------------------------
+
+--delete from  psn.Socio
+select * from psn.Socio
+exec imp.Importar_Responsables 'D:\repos\tpddbba_com5600_grupo11\Creacion_BD\import\Datos socios.xlsx'
+
+IF EXISTS (SELECT * FROM sys.procedures WHERE name = 'Importar_Responsables') 
+BEGIN
+    DROP PROCEDURE imp.Importar_Responsables;
+END;
+GO
+
+CREATE OR ALTER PROCEDURE imp.Importar_Responsables
+	@RutaArchivo NVARCHAR(255)
+AS
+BEGIN
+	SET NOCOUNT ON;
+
+	-- Limpieza tabla temporal si existe
+	IF OBJECT_ID('tempdb..##Temp') IS NOT NULL
+		DROP TABLE ##Temp;
+
+	CREATE TABLE ##Temp
+	(
+		tcod_socio            VARCHAR(255),
+		tnombre               VARCHAR(255),
+		tapellido             VARCHAR(255),
+		tdni                  VARCHAR(255),
+		temail                VARCHAR(255),
+		tfecha_nac            VARCHAR(255),
+		ttel                  VARCHAR(255),
+		ttel_emerg            VARCHAR(255),
+		tnombre_cobertura     VARCHAR(255),
+		tnro_afiliado         VARCHAR(255),
+		ttel_cobertura        VARCHAR(255)
+	);
+
+	DECLARE @filas_importadas INT = 0, @filas_ignoradas INT = 0;
+
+	DECLARE @SQL NVARCHAR(MAX);
+	SET @SQL = '
+		INSERT INTO ##Temp
+		SELECT 
+			CONVERT(VARCHAR(255), F1),
+			CONVERT(VARCHAR(255), F2),
+			CONVERT(VARCHAR(255), F3),
+			CONVERT(VARCHAR(255), F4),
+			CONVERT(VARCHAR(255), F5),
+			CONVERT(VARCHAR(255), F6),
+			CONVERT(VARCHAR(255), F7),
+			CONVERT(VARCHAR(255), F8),
+			CONVERT(VARCHAR(255), F9),
+			CONVERT(VARCHAR(255), F10),
+			CONVERT(VARCHAR(255), F11)
+		FROM OPENROWSET(
+			''Microsoft.ACE.OLEDB.12.0'',
+			''Excel 12.0;HDR=NO;IMEX=1;Database=' + @RutaArchivo + ''',
+			''SELECT * FROM [Responsables de Pago$]''
+		)';
+	EXEC sp_executesql @SQL;
+
+	-- Elimina encabezado
+	DELETE FROM ##Temp WHERE tcod_socio = 'Nro de Socio';
+
+	-- Variables de cursor
+	DECLARE 
+		@tcod_socio VARCHAR(255), @tnombre VARCHAR(255), @tapellido VARCHAR(255),
+		@tdni VARCHAR(255), @temail VARCHAR(255), @tfecha_nac VARCHAR(255),
+		@ttel VARCHAR(255), @ttel_emerg VARCHAR(255), @tnombre_cobertura VARCHAR(255),
+		@tnro_afiliado VARCHAR(255), @ttel_cobertura VARCHAR(255);
+
+	-- Variables formateadas
+	DECLARE 
+		@cod_socio VARCHAR(15), @nombre VARCHAR(50), @apellido VARCHAR(50),
+		@dni CHAR(8), @email VARCHAR(100), @fecha_nac DATE,
+		@tel VARCHAR(15), @tel_emerg VARCHAR(15), @nombre_cobertura VARCHAR(50),
+		@nro_afiliado VARCHAR(50), @tel_cobertura VARCHAR(15);
+
+	DECLARE cur CURSOR LOCAL FAST_FORWARD FOR
+	SELECT * FROM ##Temp;
+
+	OPEN cur;
+	FETCH NEXT FROM cur INTO 
+		@tcod_socio, @tnombre, @tapellido, @tdni, @temail, @tfecha_nac,
+		@ttel, @ttel_emerg, @tnombre_cobertura, @tnro_afiliado, @ttel_cobertura;
+
+	WHILE @@FETCH_STATUS = 0
+	BEGIN
+		-- Limpieza y conversión
+		SET @cod_socio				= LEFT(LTRIM(RTRIM(@tcod_socio)), 15);
+		SET @nombre					= LEFT(LTRIM(RTRIM(@tnombre)), 50);
+		SET @apellido				= LEFT(LTRIM(RTRIM(@tapellido)), 50);
+		SET @dni					= LEFT(LTRIM(RTRIM(@tdni)), 8);
+		SET @email					= LEFT(LTRIM(RTRIM(@temail)), 100);
+		SET @fecha_nac				= TRY_CONVERT(DATE, REPLACE(LTRIM(RTRIM(@tfecha_nac)), CHAR(160), ''), 103); -- dd/MM/yyyy
+		SET @tel					= LEFT(LTRIM(RTRIM(@ttel)), 15);
+		SET @tel_emerg				= LEFT(LTRIM(RTRIM(@ttel_emerg)), 15);
+		SET @nombre_cobertura		= LEFT(LTRIM(RTRIM(@tnombre_cobertura)), 50);
+		SET @nro_afiliado			= LEFT(LTRIM(RTRIM(@tnro_afiliado)), 50);
+		SET @tel_cobertura			= LEFT(LTRIM(RTRIM(@ttel_cobertura)), 15);
+
+		-- Validación
+		DECLARE @resultado INT = 0;
+		BEGIN TRY
+			EXEC @resultado = stp.insertarSocio
+				@cod_socio = @cod_socio,
+				@nombre = @nombre,
+				@apellido = @apellido,
+				@dni = @dni,
+				@email = @email,
+				@fecha_nac = @fecha_nac,
+				@tel = @tel,
+				@tel_emerg = @tel_emerg,
+				@nombre_cobertura = @nombre_cobertura,
+				@nro_afiliado = @nro_afiliado,
+				@tel_cobertura = @tel_cobertura,
+				@cod_responsable = NULL,
+				@estado = NULL,
+				@saldo = NULL;
+			IF @resultado = 1 
+			BEGIN
+				SET @filas_importadas += 1;
+			END
+			ELSE
+			BEGIN
+				SET @filas_ignoradas += 1;
+			END
+		END TRY
+		BEGIN CATCH
+			SET @filas_ignoradas += 1;
+		END CATCH
+
+		FETCH NEXT FROM cur INTO 
+			@tcod_socio, @tnombre, @tapellido, @tdni, @temail, @tfecha_nac,
+			@ttel, @ttel_emerg, @tnombre_cobertura, @tnro_afiliado, @ttel_cobertura;
+	END
+	CLOSE cur;
+	DEALLOCATE cur;
+	DROP TABLE ##Temp
+	PRINT 'Filas importadas: ' + CAST(@filas_importadas AS VARCHAR);
+	PRINT 'Filas ignoradas: ' + CAST(@filas_ignoradas AS VARCHAR);
+END
+GO
+
+
+
+
+----------------------------------------------------------------------------------------------------------------
 --	EJECUCION DE LAS IMPORTACIONES
 ----------------------------------------------------------------------------------------------------------------
 

@@ -1,11 +1,19 @@
+/*
+====================================================================================
+ Archivo		: 01_Encriptacion.sql
+ Proyecto		: Institución Deportiva Sol Norte.
+ Descripción	: Scripts para protección de datos sensibles de los empleados registrados en la base de datos.
+ Autor			: COM5600_G11
+ Fecha entrega	: 2025-06-20
+ Versión		: 1.0
+====================================================================================
+*/
 
-
---------- 7. PROTECCIÓN DE DATOS SENSIBLES DE LOS EMPLEADOS
 
 USE Com5600G11
 GO
 
----- CREO TABLA EMPLEADO
+-- CREO TABLA EMPLEADO
 
 
 IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'Com5600G11.psn.Empleado') AND type = N'U')

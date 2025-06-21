@@ -2725,41 +2725,43 @@ AS
 BEGIN
     SET NOCOUNT ON;
 
-    -- Validar que exista la factura
     IF NOT EXISTS (SELECT 1 FROM psn.Factura WHERE cod_Factura = @cod_Factura)
     BEGIN
-        PRINT 'La factura no existe.';
+        PRINT 'Error: La factura con el código ' + CAST(@cod_Factura AS VARCHAR) + ' no existe.';
         RETURN;
     END
 
-    -- Validar que exista el ítem en esa factura
-    IF NOT EXISTS (
-        SELECT 1
-        FROM psn.Item_Factura
-        WHERE cod_Factura = @cod_Factura AND cod_item = @cod_item
-    )
-    BEGIN
-        PRINT 'El ítem no existe en la factura especificada.';
-        RETURN;
-    END
+    DECLARE @monto_item_a_borrar DECIMAL(10,2);
 
-    -- Eliminar el ítem
-    DELETE FROM psn.Item_Factura
+    SELECT @monto_item_a_borrar = monto
+    FROM psn.Item_Factura
     WHERE cod_Factura = @cod_Factura AND cod_item = @cod_item;
 
-    -- Actualizar el monto total de la factura
-    UPDATE psn.Factura
-    SET monto = (
-        SELECT ISNULL(SUM(monto), 0)
-        FROM psn.Item_Factura
-        WHERE cod_Factura = @cod_Factura
-    )
-    WHERE cod_Factura = @cod_Factura;
+    IF @monto_item_a_borrar IS NULL
+    BEGIN
+        PRINT 'Error: El ítem con el código ' + CAST(@cod_item AS VARCHAR) + ' no existe en la factura ' + CAST(@cod_Factura AS VARCHAR) + '.';
+        RETURN;
+    END
 
-    PRINT 'Ítem eliminado y monto actualizado en la factura.';
+    BEGIN TRANSACTION;
+    BEGIN TRY
+        DELETE FROM psn.Item_Factura
+        WHERE cod_Factura = @cod_Factura AND cod_item = @cod_item;
+
+        UPDATE psn.Factura
+        SET monto = monto - @monto_item_a_borrar
+        WHERE cod_Factura = @cod_Factura;
+
+        COMMIT TRANSACTION;
+        PRINT 'Item eliminado y monto actualizado en la factura correctamente.';
+    END TRY
+    BEGIN CATCH
+        ROLLBACK TRANSACTION;
+        PRINT 'Error: El item no se pudo eliminar o el monto de la factura no se pudo actualizar.';
+        THROW
+    END CATCH
 END;
 GO
-
 
 
 ----------------------- SPs ASISTE

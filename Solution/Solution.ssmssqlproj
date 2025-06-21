@@ -34,6 +34,96 @@
           <AssociatedConnUserName />
           <FullPath>02_Procedimientos_Tablas.sql</FullPath>
         </FileNode>
+        <FileNode Name="03_01_actividad.test.sql">
+          <AssociatedConnectionMoniker />
+          <AssociatedConnSrvName />
+          <AssociatedConnUserName />
+          <FullPath>03_01_actividad.test.sql</FullPath>
+        </FileNode>
+        <FileNode Name="03_02_asiste_test.sql">
+          <AssociatedConnectionMoniker />
+          <AssociatedConnSrvName />
+          <AssociatedConnUserName />
+          <FullPath>03_02_asiste_test.sql</FullPath>
+        </FileNode>
+        <FileNode Name="03_03_categoria.test.sql">
+          <AssociatedConnectionMoniker />
+          <AssociatedConnSrvName />
+          <AssociatedConnUserName />
+          <FullPath>03_03_categoria.test.sql</FullPath>
+        </FileNode>
+        <FileNode Name="03_04_clase_test.sql">
+          <AssociatedConnectionMoniker />
+          <AssociatedConnSrvName />
+          <AssociatedConnUserName />
+          <FullPath>03_04_clase_test.sql</FullPath>
+        </FileNode>
+        <FileNode Name="03_05_factura_test.sql">
+          <AssociatedConnectionMoniker />
+          <AssociatedConnSrvName />
+          <AssociatedConnUserName />
+          <FullPath>03_05_factura_test.sql</FullPath>
+        </FileNode>
+        <FileNode Name="03_06_inscripto_test.sql">
+          <AssociatedConnectionMoniker />
+          <AssociatedConnSrvName />
+          <AssociatedConnUserName />
+          <FullPath>03_06_inscripto_test.sql</FullPath>
+        </FileNode>
+        <FileNode Name="03_07_invitado.test.sql">
+          <AssociatedConnectionMoniker />
+          <AssociatedConnSrvName />
+          <AssociatedConnUserName />
+          <FullPath>03_07_invitado.test.sql</FullPath>
+        </FileNode>
+        <FileNode Name="03_08_item_factura_test.sql">
+          <AssociatedConnectionMoniker />
+          <AssociatedConnSrvName />
+          <AssociatedConnUserName />
+          <FullPath>03_08_item_factura_test.sql</FullPath>
+        </FileNode>
+        <FileNode Name="03_09_pago.test.sql">
+          <AssociatedConnectionMoniker />
+          <AssociatedConnSrvName />
+          <AssociatedConnUserName />
+          <FullPath>03_09_pago.test.sql</FullPath>
+        </FileNode>
+        <FileNode Name="03_10_profesor.test.sql">
+          <AssociatedConnectionMoniker />
+          <AssociatedConnSrvName />
+          <AssociatedConnUserName />
+          <FullPath>03_10_profesor.test.sql</FullPath>
+        </FileNode>
+        <FileNode Name="03_11_reembolso.test.sql">
+          <AssociatedConnectionMoniker />
+          <AssociatedConnSrvName />
+          <AssociatedConnUserName />
+          <FullPath>03_11_reembolso.test.sql</FullPath>
+        </FileNode>
+        <FileNode Name="03_12_reserva.test.sql">
+          <AssociatedConnectionMoniker />
+          <AssociatedConnSrvName />
+          <AssociatedConnUserName />
+          <FullPath>03_12_reserva.test.sql</FullPath>
+        </FileNode>
+        <FileNode Name="03_13_responsable.test.sql">
+          <AssociatedConnectionMoniker />
+          <AssociatedConnSrvName />
+          <AssociatedConnUserName />
+          <FullPath>03_13_responsable.test.sql</FullPath>
+        </FileNode>
+        <FileNode Name="03_14_socio.test.sql">
+          <AssociatedConnectionMoniker />
+          <AssociatedConnSrvName />
+          <AssociatedConnUserName />
+          <FullPath>03_14_socio.test.sql</FullPath>
+        </FileNode>
+        <FileNode Name="03_15_suscripcion_test.sql">
+          <AssociatedConnectionMoniker />
+          <AssociatedConnSrvName />
+          <AssociatedConnUserName />
+          <FullPath>03_15_suscripcion_test.sql</FullPath>
+        </FileNode>
         <FileNode Name="04.1_Importaciones.sql">
           <AssociatedConnectionMoniker>8c91a03d-f9b4-46c0-a305-b5dcc79ff907:localhost\SQLEXPRESS:True</AssociatedConnectionMoniker>
           <AssociatedConnSrvName>localhost\SQLEXPRESS</AssociatedConnSrvName>

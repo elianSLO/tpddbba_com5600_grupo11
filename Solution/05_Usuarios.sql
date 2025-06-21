@@ -1,8 +1,13 @@
-/*	Chequear estado de la base de datos.
-SELECT name, state_desc 
-FROM sys.databases;
+/*
+====================================================================================
+ Archivo		: 06_Usuarios.sql
+ Proyecto		: Institución Deportiva Sol Norte.
+ Descripción	: Scripts para los login y usuarios.
+ Autor			: COM5600_G11
+ Fecha entrega	: 2025-06-20
+ Versión		: 1.0
+====================================================================================
 */
-
 use Com5600G11
 go
 
@@ -39,14 +44,3 @@ go
 select name from sys.sql_logins			--	Ver los usuarios.
 
 
-SELECT
-    session_id,
-    login_name,
-    status,
-    host_name,
-    program_name,
-    login_time,
-    last_request_start_time,
-    last_request_end_time
-FROM sys.dm_exec_sessions
-WHERE is_user_process = 1;

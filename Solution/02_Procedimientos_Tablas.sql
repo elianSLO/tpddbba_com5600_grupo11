@@ -429,14 +429,14 @@ BEGIN
 	SET NOCOUNT ON;
 
 	--	Validación de campos obligatorios
-	IF	@cod_socio			IS NULL OR	@dni			IS NULL OR	@nombre		IS NULL OR	@apellido IS NULL OR 
-		@fecha_nac			IS NULL OR	@email			IS NULL OR	@tel		IS NULL OR	@tel_emerg IS NULL OR
+	/*IF	@cod_socio			IS NULL OR	@dni			IS NULL OR	@nombre		IS NULL OR	@apellido IS NULL OR 
+		@fecha_nac			IS NULL /*OR	@email			IS NULL OR	@tel		IS NULL*/ OR	@tel_emerg IS NULL OR
 		@nombre_cobertura	IS NULL OR	@nro_afiliado	IS NULL OR	@tel_cobertura IS NULL
        -- cod_responsable puede ser null si es mayor de edad el socio.
 	BEGIN
 		PRINT 'Error: Faltan datos.';
 		RETURN;
-	END;
+	END;*/
 
 	-- Validaciones
 	IF NOT (@cod_socio LIKE 'SN-[0-9][0-9][0-9][0-9][0-9]' OR
@@ -2060,7 +2060,6 @@ BEGIN
         email = @email,
         parentezco = @parentezco,
         fecha_nac = @fecha_nac,
-        nro_socio = @nro_socio,
         tel = @tel
     WHERE cod_responsable = @cod_responsable;
 

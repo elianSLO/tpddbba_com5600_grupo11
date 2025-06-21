@@ -81,7 +81,7 @@ IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'Com5600G1
 																cod_responsable LIKE 'SN-[0-9][0-9][0-9][0-9]'),
 			nombre				VARCHAR(50), 
 			apellido			VARCHAR(50),
-			dni					CHAR(8) UNIQUE,			
+			dni					CHAR(8) /*UNIQUE*/ , 			
 			email				VARCHAR(100),
 			fecha_nac			DATE,	
 			tel					VARCHAR(50),				/*check (	tel NOT LIKE '%[^0-9 -]%')*/

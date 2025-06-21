@@ -52,7 +52,7 @@ GO
 SELECT * 
 FROM OPENQUERY(LinkerServer_EXCEL, 'SELECT TOP 1 * FROM [Tarifas$]');
 GO
-*/	-- En algunas importaciones se uso un linker server, en otras no.
+*/	
 
 ----------------------------------------------------------------------------------------------------------------
 

@@ -57,8 +57,18 @@ BEGIN
         CAST(ROUND(SUM(F3) / 100.0, 2) AS DECIMAL(6,2)),
         CAST(ROUND(AVG(F4), 0) AS DECIMAL(5,0)),
         CAST(ROUND(AVG(F5) / 10.0, 1) AS DECIMAL(6,1))
-    FROM ##TempData
-    WHERE F1 IS NOT NULL AND F2 IS NOT NULL AND F3 IS NOT NULL AND F4 IS NOT NULL AND F5 IS NOT NULL
+    FROM ##TempData AS T
+    WHERE T.F1 IS NOT NULL
+      AND T.F2 IS NOT NULL
+      AND T.F3 IS NOT NULL
+      AND T.F4 IS NOT NULL
+      AND T.F5 IS NOT NULL
+      AND TRY_CAST(SUBSTRING(T.F1, 1, 10) AS DATE) IS NOT NULL
+      AND NOT EXISTS (
+            SELECT 1
+            FROM imp.ClimaDiario AS CD
+            WHERE CD.[time] = TRY_CAST(SUBSTRING(T.F1, 1, 10) AS DATE)
+        )
     GROUP BY SUBSTRING(F1, 1, 10)
     ORDER BY [time];
 
@@ -67,4 +77,4 @@ BEGIN
 END;
 GO
 
---EXEC imp.Importar_Clima @RutaArchivo = N'C:\Users\matia\Desktop\open-meteo-buenosaires_2024.csv';
+--EXEC imp.Importar_Clima @RutaArchivo = N'C:\Users\matia\Desktop\BDDA\tpddbba_com5600_grupo11\TPI-2025-1C\open-meteo-buenosaires_2025.csv';

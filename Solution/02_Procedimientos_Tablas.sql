@@ -2683,14 +2683,29 @@ BEGIN
         RETURN;
     END
 
-    -- Actualizar los datos del item
-    UPDATE psn.Item_Factura
-    SET monto = @monto,
-        descripcion = @descripcion
-    WHERE cod_Factura = @cod_Factura
-      AND cod_item = @cod_item;
+    -- Actualizar los datos del item y factura
+    BEGIN TRANSACTION;
+    BEGIN TRY
+        DECLARE @monto_anterior DECIMAL(10,2) = (SELECT monto FROM psn.Item_Factura WHERE cod_Factura = @cod_Factura AND cod_item = @cod_item);
 
-    PRINT 'Item de factura modificado correctamente.';
+        UPDATE psn.Item_Factura
+        SET monto = @monto,
+            descripcion = @descripcion
+        WHERE cod_Factura = @cod_Factura
+          AND cod_item = @cod_item;
+
+        UPDATE psn.Factura
+        SET monto = monto - @monto_anterior + @monto
+        WHERE cod_Factura = @cod_Factura;
+
+        COMMIT TRANSACTION;
+        PRINT 'Item de factura modificado correctamente.';
+    END TRY
+    BEGIN CATCH
+        ROLLBACK TRANSACTION;
+        PRINT 'Item no se pudo modificar correctamente.';
+        THROW;
+    END CATCH;
 END;
 GO
 

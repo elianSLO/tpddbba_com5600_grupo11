@@ -115,6 +115,7 @@ GO
 
 -- PRUEBAS
 
+DELETE FROM psn.Empleado
 
 INSERT INTO psn.Empleado (
 	id_empleado, nombre, apellido, dni, direccion, cuil, 
@@ -122,7 +123,7 @@ INSERT INTO psn.Empleado (
 )
 VALUES (
 	1, 'Juan', 'Pérez', 30123456, 'Av. Siempre Viva 742', '20-30123456-3',
-	'juan.perez@gmail.com', 'jperez@solnorte.com', 'Mañana', 'Profesor', 'Natación'
+	'juan.perez@gmail.com', 'jperez@solnorte.com', 'Mañana', 'Tesorería', 'Jefe de Tesorería'
 );
 
 select * FROM psn.Empleado

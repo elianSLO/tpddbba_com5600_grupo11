@@ -1,6 +1,6 @@
 /*
 ====================================================================================
- Archivo		: 01_Encriptacion.sql
+ Archivo		: 07_Encriptacion.sql
  Proyecto		: Institución Deportiva Sol Norte.
  Descripción	: Scripts para protección de datos sensibles de los empleados registrados en la base de datos.
  Autor			: COM5600_G11

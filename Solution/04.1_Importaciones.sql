@@ -1,6 +1,6 @@
 /*
 ====================================================================================
- Archivo		: 04_Importacion.sql
+ Archivo		: 04.1_Importacion.sql
  Proyecto		: Institución Deportiva Sol Norte.
  Descripción	: Scripts para importar datos a las tablas desde xls y csv.
  Autor			: COM5600_G11
@@ -69,12 +69,6 @@ GO
 ----------------------------------------------------------------------------------------------------------------
 --	IMPORTAR HOJA DE PAGOS
 ----------------------------------------------------------------------------------------------------------------
---delete from  psn.Pago
-select * from psn.Pago	
-exec imp.Importar_Pagos 'D:\repos\tpddbba_com5600_grupo11\Creacion_BD\import\Datos socios.xlsx'
-
-
---	Importar pagos.
 IF EXISTS (SELECT * FROM sys.procedures WHERE name = 'Importar_Pagos') 
 BEGIN
     DROP PROCEDURE imp.Importar_Pagos;
@@ -183,14 +177,10 @@ GO
 
 ----------------------------------------------------------------------------------------------------------------
 
+
 ----------------------------------------------------------------------------------------------------------------
 --	IMPORTAR HOJA DE SOCIOS
 ----------------------------------------------------------------------------------------------------------------
-
---delete from  psn.Socio
-select * from psn.Socio
-exec imp.Importar_Socios'D:\repos\tpddbba_com5600_grupo11\Creacion_BD\import\Datos socios.xlsx'
-
 IF EXISTS (SELECT * FROM sys.procedures WHERE name = 'Importar_Socios') 
 BEGIN
     DROP PROCEDURE imp.Importar_Socios;
@@ -334,7 +324,6 @@ GO
 -----------------------------------------------------------------------------------------------------------------------
 --	IMPORTAR HOJA DE ACTIVIDADES
 ----------------------------------------------------------------------------------------------------------------
-
 IF EXISTS (SELECT * FROM sys.procedures WHERE name = 'Importar_Actividades') 
 BEGIN
     DROP PROCEDURE imp.Importar_Actividades;
@@ -435,16 +424,12 @@ BEGIN
 END
 GO
 
---delete from  psn.Actividad
-select * from psn.Actividad
-exec imp.Importar_Actividades 'D:\repos\tpddbba_com5600_grupo11\Creacion_BD\import\Datos socios.xlsx'
 
 ----------------------------------------------------------------------------------------------------------------
 
 ----------------------------------------------------------------------------------------------------------------
 --	IMPORTAR HOJA DE CATEGORIAS
 ----------------------------------------------------------------------------------------------------------------
-
 IF EXISTS (SELECT * FROM sys.procedures WHERE name = 'Importar_Categorias') 
 BEGIN
     DROP PROCEDURE imp.Importar_Categorias;
@@ -594,18 +579,12 @@ BEGIN
 END
 GO
 
-
---delete from  psn.Categoria
-select * from psn.Categoria
-exec imp.Importar_Categorias'D:\repos\tpddbba_com5600_grupo11\Creacion_BD\import\Datos socios.xlsx'
-
 ----------------------------------------------------------------------------------------------------------------
 
 
 -----------------------------------------------------------------------------------------------------------------------
 --	IMPORTAR HOJA DE ASISTENCIAS
 ----------------------------------------------------------------------------------------------------------------
-
 IF EXISTS (SELECT * FROM sys.procedures WHERE name = 'Importar_Asistencias') 
 BEGIN
     DROP PROCEDURE imp.Importar_Asistencias;
@@ -614,7 +593,6 @@ GO
 
 CREATE OR ALTER PROCEDURE imp.Importar_Asistencias
     @RutaArchivo NVARCHAR(255),
-	@nombreHoja NVARCHAR(255),
 	@mostrarErrores INT,
 	@mostrarImportadas INT
 AS
@@ -668,7 +646,7 @@ BEGIN
 			FROM OPENROWSET(
 				''Microsoft.ACE.OLEDB.12.0'',
 				''Excel 12.0;Database=' + @RutaArchivo + ';HDR=YES;'',
-				''SELECT * FROM [' + @nombreHoja + '$]''
+				''SELECT * FROM [presentismo_actividades$]''
 			);';
    		
 		EXEC(@Comando);
@@ -894,22 +872,16 @@ BEGIN
 END
 GO
 --EXEC imp.Importar_Asistencias 
- 'D:\repos\tpddbba_com5600_grupo11\Creacion_BD\import\Datos socios.xlsx','presentismo_actividades',1,0
+--'D:\repos\tpddbba_com5600_grupo11\Solution\import\Datos socios.xlsx','presentismo_actividades',1,0
 --'C:\Users\matia\Desktop\BDDA\tpddbba_com5600_grupo11\Creacion_BD\import\Datos socios prueba.xlsx',
 --'presentismo_actividades',
 --1, 1
 
 ----------------------------------------------------------------------------------------------------------------
-select * from psn.Asiste
 
 ----------------------------------------------------------------------------------------------------------------
 --	IMPORTAR HOJA DE GRUPOS FAMILIARES
 ----------------------------------------------------------------------------------------------------------------
-
---delete from  psn.Socio
-select * from psn.Socio
-exec imp.Importar_SociosConResponsable 'D:\repos\tpddbba_com5600_grupo11\Creacion_BD\import\Datos socios.xlsx'
-
 IF EXISTS (SELECT * FROM sys.procedures WHERE name = 'Importar_SociosConResponsable') 
 BEGIN
     DROP PROCEDURE imp.Importar_SociosConResponsable;
@@ -917,150 +889,181 @@ END;
 GO
 
 CREATE OR ALTER PROCEDURE imp.Importar_SociosConResponsable
-	@RutaArchivo NVARCHAR(255)
+    @RutaArchivo NVARCHAR(255)
 AS
 BEGIN
-	SET NOCOUNT ON;
+    SET NOCOUNT ON;
 
-	-- Limpieza tabla temporal si existe
-	IF OBJECT_ID('tempdb..##Temp') IS NOT NULL
-		DROP TABLE ##Temp;
+    -- Limpieza tabla temporal si existe
+    IF OBJECT_ID('tempdb..##Temp') IS NOT NULL
+        DROP TABLE ##Temp;
 
-	CREATE TABLE ##Temp
-	(
-		tcod_socio				VARCHAR(255),
-		tcod_responsable		VARCHAR(255),		
-		tnombre					VARCHAR(255),
-		tapellido				VARCHAR(255),
-		tdni					VARCHAR(255),
-		temail					VARCHAR(255),
-		tfecha_nac				VARCHAR(255),
-		ttel					VARCHAR(255),
-		ttel_emerg				VARCHAR(255),
-		tnombre_cobertura		VARCHAR(255),
-		tnro_afiliado			VARCHAR(255),
-		ttel_cobertura			VARCHAR(255)
-	);
+    CREATE TABLE ##Temp
+    (
+        tcod_socio              VARCHAR(255),
+        tcod_responsable        VARCHAR(255),        
+        tnombre                 VARCHAR(255),
+        tapellido               VARCHAR(255),
+        tdni                    VARCHAR(255),
+        temail                  VARCHAR(255),
+        tfecha_nac              VARCHAR(255),
+        ttel                    VARCHAR(255),
+        ttel_emerg              VARCHAR(255),
+        tnombre_cobertura       VARCHAR(255),
+        tnro_afiliado           VARCHAR(255),
+        ttel_cobertura          VARCHAR(255)
+    );
 
-	DECLARE @filas_importadas INT = 0, @filas_ignoradas INT = 0;
+    DECLARE @filas_importadas INT = 0, @filas_ignoradas INT = 0;
 
-	DECLARE @SQL NVARCHAR(MAX);
-	SET @SQL = '
-		INSERT INTO ##Temp
-		SELECT 
-			CONVERT(VARCHAR(255), F1),
-			CONVERT(VARCHAR(255), F2),
-			CONVERT(VARCHAR(255), F3),
-			CONVERT(VARCHAR(255), F4),
-			CONVERT(VARCHAR(255), F5),
-			CONVERT(VARCHAR(255), F6),
-			CONVERT(VARCHAR(255), F7),
-			CONVERT(VARCHAR(255), F8),
-			CONVERT(VARCHAR(255), F9),
-			CONVERT(VARCHAR(255), F10),
-			CONVERT(VARCHAR(255), F11),
-			CONVERT(VARCHAR(255), F12)
-		FROM OPENROWSET(
-			''Microsoft.ACE.OLEDB.12.0'',
-			''Excel 12.0;HDR=NO;IMEX=1;Database=' + @RutaArchivo + ''',
-			''SELECT * FROM [Grupo Familiar$]''
-		)';
-	EXEC sp_executesql @SQL;
+    DECLARE @SQL NVARCHAR(MAX);
+    SET @SQL = '
+        INSERT INTO ##Temp
+        SELECT 
+            CONVERT(VARCHAR(255), F1),
+            CONVERT(VARCHAR(255), F2),
+            CONVERT(VARCHAR(255), F3),
+            CONVERT(VARCHAR(255), F4),
+            CONVERT(VARCHAR(255), F5),
+            CONVERT(VARCHAR(255), F6),
+            CONVERT(VARCHAR(255), F7),
+            CONVERT(VARCHAR(255), F8),
+            CONVERT(VARCHAR(255), F9),
+            CONVERT(VARCHAR(255), F10),
+            CONVERT(VARCHAR(255), F11),
+            CONVERT(VARCHAR(255), F12)
+        FROM OPENROWSET(
+            ''Microsoft.ACE.OLEDB.12.0'',
+            ''Excel 12.0;HDR=NO;IMEX=1;Database=' + @RutaArchivo + ''',
+            ''SELECT * FROM [Grupo Familiar$]''
+        )';
+    EXEC sp_executesql @SQL;
 
-	-- Elimina encabezado
-	DELETE FROM ##Temp WHERE tcod_socio = 'Nro de Socio';
+    -- Elimina encabezado
+    DELETE FROM ##Temp WHERE tcod_socio = 'Nro de Socio';
 
-	-- Variables de cursor
-	DECLARE 
-		@tcod_socio VARCHAR(255), @tcod_responsable	VARCHAR(255), @tnombre		VARCHAR(255), @tapellido	VARCHAR(255),
-		@tdni		VARCHAR(255), @temail			VARCHAR(255), @tfecha_nac	VARCHAR(255), @ttel			VARCHAR(255),
-		@ttel_emerg VARCHAR(255), @tnombre_cobertura VARCHAR(255),@tnro_afiliado VARCHAR(255), @ttel_cobertura VARCHAR(255);
+    -- Variables de cursor
+    DECLARE 
+        @tcod_socio VARCHAR(255), @tcod_responsable VARCHAR(255), @tnombre VARCHAR(255), @tapellido VARCHAR(255),
+        @tdni VARCHAR(255), @temail VARCHAR(255), @tfecha_nac VARCHAR(255), @ttel VARCHAR(255),
+        @ttel_emerg VARCHAR(255), @tnombre_cobertura VARCHAR(255), @tnro_afiliado VARCHAR(255), @ttel_cobertura VARCHAR(255);
 
-	-- Variables formateadas
-	DECLARE 
-		@cod_socio VARCHAR(15), @cod_responsable VARCHAR(15),@nombre VARCHAR(50), @apellido VARCHAR(50),
-		@dni CHAR(8), @email VARCHAR(100), @fecha_nac DATE,
-		@tel VARCHAR(15), @tel_emerg VARCHAR(15), @nombre_cobertura VARCHAR(50),
-		@nro_afiliado VARCHAR(50), @tel_cobertura VARCHAR(15);
+    -- Variables formateadas
+    DECLARE 
+        @cod_socio VARCHAR(15), @cod_responsable VARCHAR(15), @nombre VARCHAR(50), @apellido VARCHAR(50),
+        @dni CHAR(8), @email VARCHAR(100), @fecha_nac DATE,
+        @tel VARCHAR(15), @tel_emerg VARCHAR(15), @nombre_cobertura VARCHAR(50),
+        @nro_afiliado VARCHAR(50), @tel_cobertura VARCHAR(15);
 
-	DECLARE cur CURSOR LOCAL FAST_FORWARD FOR
-	SELECT * FROM ##Temp;
+    DECLARE cur CURSOR LOCAL FAST_FORWARD FOR
+    SELECT * FROM ##Temp;
 
-	OPEN cur;
-	FETCH NEXT FROM cur INTO 
-		@tcod_socio,  @tcod_responsable, @tnombre, @tapellido, @tdni, @temail, @tfecha_nac,
-		@ttel, @ttel_emerg, @tnombre_cobertura, @tnro_afiliado, @ttel_cobertura;
+    OPEN cur;
+    FETCH NEXT FROM cur INTO 
+        @tcod_socio, @tcod_responsable, @tnombre, @tapellido, @tdni, @temail, @tfecha_nac,
+        @ttel, @ttel_emerg, @tnombre_cobertura, @tnro_afiliado, @ttel_cobertura;
 
-	WHILE @@FETCH_STATUS = 0
-	BEGIN
-		-- Limpieza y conversión
-		SET @cod_socio				= LEFT(LTRIM(RTRIM(@tcod_socio)), 15);
-		SET @cod_responsable		= LEFT(LTRIM(RTRIM(@tcod_socio)), 15);
-		SET @nombre					= LEFT(LTRIM(RTRIM(@tnombre)), 50);
-		SET @apellido				= LEFT(LTRIM(RTRIM(@tapellido)), 50);
-		SET @dni					= LEFT(LTRIM(RTRIM(@tdni)), 8);
-		SET @email					= LEFT(LTRIM(RTRIM(@temail)), 100);
-		SET @fecha_nac				= TRY_CONVERT(DATE, REPLACE(LTRIM(RTRIM(@tfecha_nac)), CHAR(160), ''), 103); -- dd/MM/yyyy
-		SET @tel					= LEFT(LTRIM(RTRIM(@ttel)), 15);
-		SET @tel_emerg				= LEFT(LTRIM(RTRIM(@ttel_emerg)), 15);
-		SET @nombre_cobertura		= LEFT(LTRIM(RTRIM(@tnombre_cobertura)), 50);
-		SET @nro_afiliado			= LEFT(LTRIM(RTRIM(@tnro_afiliado)), 50);
-		SET @tel_cobertura			= LEFT(LTRIM(RTRIM(@ttel_cobertura)), 15);
+    WHILE @@FETCH_STATUS = 0
+    BEGIN
+        -- Limpieza y conversion
+        SET @cod_socio           = LEFT(LTRIM(RTRIM(@tcod_socio)), 15);
+        SET @cod_responsable     = LEFT(LTRIM(RTRIM(@tcod_responsable)), 15);
+        SET @nombre              = LEFT(LTRIM(RTRIM(@tnombre)), 50);
+        SET @apellido            = LEFT(LTRIM(RTRIM(@tapellido)), 50);
+        SET @dni                 = LEFT(LTRIM(RTRIM(@tdni)), 8);
+        SET @email               = LEFT(LTRIM(RTRIM(@temail)), 100);
+        SET @fecha_nac           = TRY_CONVERT(DATE, REPLACE(LTRIM(RTRIM(@tfecha_nac)), CHAR(160), ''), 103);
+        SET @tel                 = LEFT(LTRIM(RTRIM(@ttel)), 15);
+        SET @tel_emerg           = LEFT(LTRIM(RTRIM(@ttel_emerg)), 15);
+        SET @nombre_cobertura    = LEFT(LTRIM(RTRIM(@tnombre_cobertura)), 50);
+        SET @nro_afiliado        = LEFT(LTRIM(RTRIM(@tnro_afiliado)), 50);
+        SET @tel_cobertura       = LEFT(LTRIM(RTRIM(@ttel_cobertura)), 15);
 
-		-- Validación
-		DECLARE @resultado INT = 0;
-		BEGIN TRY
-			EXEC @resultado = stp.insertarResponsable
-				@cod_responsable = @cod_responsable
-		END TRY
-		BEGIN CATCH
+        -- Agregar responsable si no existe
+        IF NOT EXISTS (SELECT 1 FROM psn.Responsable WHERE cod_responsable = @cod_responsable)
+        BEGIN
+            INSERT INTO psn.Responsable (cod_responsable, nombre, apellido, dni, email, fecha_nac, tel)
+            VALUES (@cod_responsable, 'AUTO', 'GENERADO', NULL, NULL, NULL, NULL);
 
-		END CATCH
-		BEGIN TRY
-			EXEC @resultado = stp.insertarSocio
-				@cod_socio = @cod_socio,
-				@nombre = @nombre,
-				@apellido = @apellido,
-				@dni = @dni,
-				@email = @email,
-				@fecha_nac = @fecha_nac,
-				@tel = @tel,
-				@tel_emerg = @tel_emerg,
-				@nombre_cobertura = @nombre_cobertura,
-				@nro_afiliado = @nro_afiliado,
-				@tel_cobertura = @tel_cobertura,
-				@cod_responsable = NULL,
-				@estado = NULL,
-				@saldo = NULL;
-			IF @resultado = 1 
-			BEGIN
-				SET @filas_importadas += 1;
-			END
-			ELSE
-			BEGIN
-				SET @filas_ignoradas += 1;
-			END
-		END TRY
-		BEGIN CATCH
-			SET @filas_ignoradas += 1;
-		END CATCH
+            PRINT 'Responsable agregado directo: ' + @cod_responsable;
+        END
 
-		FETCH NEXT FROM cur INTO 
-			@tcod_socio,  @tcod_responsable, @tnombre, @tapellido, @tdni, @temail, @tfecha_nac,
-			@ttel, @ttel_emerg, @tnombre_cobertura, @tnro_afiliado, @ttel_cobertura;
-	END
-	CLOSE cur;
-	DEALLOCATE cur;
-	DROP TABLE ##Temp
-	PRINT 'Filas importadas: ' + CAST(@filas_importadas AS VARCHAR);
-	PRINT 'Filas ignoradas: ' + CAST(@filas_ignoradas AS VARCHAR);
+        DECLARE @resultado INT = 0;
+        BEGIN TRY
+            EXEC @resultado = stp.insertarSocio
+                @cod_socio = @cod_socio,
+                @nombre = @nombre,
+                @apellido = @apellido,
+                @dni = @dni,
+                @email = @email,
+                @fecha_nac = @fecha_nac,
+                @tel = @tel,
+                @tel_emerg = @tel_emerg,
+                @nombre_cobertura = @nombre_cobertura,
+                @nro_afiliado = @nro_afiliado,
+                @tel_cobertura = @tel_cobertura,
+                @cod_responsable = @cod_responsable,
+                @estado = NULL,
+                @saldo = NULL;
+            IF @resultado = 1 
+            BEGIN
+                SET @filas_importadas += 1;
+                PRINT 'Socio importado: ' + @cod_socio;
+            END
+            ELSE
+            BEGIN
+                SET @filas_ignoradas += 1;
+                PRINT 'Socio ignorado por insertarSocio: ' + @cod_socio;
+            END
+        END TRY
+        BEGIN CATCH
+            SET @filas_ignoradas += 1;
+            PRINT 'Error en socio ' + ISNULL(@cod_socio, 'NULO') + ': ' + ERROR_MESSAGE();
+        END CATCH
+
+        FETCH NEXT FROM cur INTO 
+            @tcod_socio, @tcod_responsable, @tnombre, @tapellido, @tdni, @temail, @tfecha_nac,
+            @ttel, @ttel_emerg, @tnombre_cobertura, @tnro_afiliado, @ttel_cobertura;
+    END
+    CLOSE cur;
+    DEALLOCATE cur;
+
+    DROP TABLE ##Temp;
+
+    PRINT 'Filas importadas: ' + CAST(@filas_importadas AS VARCHAR);
+    PRINT 'Filas ignoradas: ' + CAST(@filas_ignoradas AS VARCHAR);
 END
 GO
 
 
-
-
+/*
 ----------------------------------------------------------------------------------------------------------------
 --	EJECUCION DE LAS IMPORTACIONES
 ----------------------------------------------------------------------------------------------------------------
 
+--DELETE FROM psn.Socio
+EXEC imp.Importar_Socios 'D:\repos\tpddbba_com5600_grupo11\Solution\import\Datos socios.xlsx'
+SELECT * FROM psn.Socio
+
+--DELETE FROM psn.Pago
+EXEC imp.Importar_Pagos 'D:\repos\tpddbba_com5600_grupo11\Solution\import\Datos socios.xlsx'
+SELECT * FROM psn.Pago
+
+--DELETE FROM psn.Actividad
+EXEC imp.Importar_Actividades 'D:\repos\tpddbba_com5600_grupo11\Solution\import\Datos socios.xlsx'
+SELECT * FROM psn.Actividad
+
+--DELETE FROM psn.Categoria
+EXEC imp.Importar_Categorias 'D:\repos\tpddbba_com5600_grupo11\Solution\import\Datos socios.xlsx'
+SELECT * FROM psn.Categoria
+
+--DELETE FROM psn.Asiste
+EXEC imp.Importar_Asistencias 'D:\repos\tpddbba_com5600_grupo11\Solution\import\Datos socios.xlsx',1,1
+SELECT * FROM psn.Asiste
+
+--DELETE FROM psn.Socios
+EXEC imp.Importar_SociosConResponsable 'D:\repos\tpddbba_com5600_grupo11\Solution\import\Datos socios.xlsx'
+SELECT * FROM psn.Responsable
+SELECT * FROM psn.Socio
+
+*/

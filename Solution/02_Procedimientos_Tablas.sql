@@ -2611,19 +2611,23 @@ BEGIN
     END
 
     -- Inserción
-    INSERT INTO psn.Item_Factura (cod_item, cod_Factura, monto, descripcion)
-    VALUES (@cod_item, @cod_Factura, @monto, @descripcion);
+    BEGIN TRANSACTION;
+    BEGIN TRY
+        INSERT INTO psn.Item_Factura (cod_item, cod_Factura, monto, descripcion)
+        VALUES (@cod_item, @cod_Factura, @monto, @descripcion);
 
+        UPDATE psn.Factura
+        SET monto = monto + @monto
+        WHERE cod_Factura = @cod_Factura;
 
-	-- Actualizar los datos del item
-    UPDATE psn.Item_Factura
-    SET monto = @monto,
-        descripcion = @descripcion
-    WHERE cod_Factura = @cod_Factura
-      AND cod_item = @cod_item;
-
-    PRINT 'Item insertado correctamente.';
-	
+        COMMIT TRANSACTION;
+        PRINT 'Item insertado correctamente.';
+    END TRY
+    BEGIN CATCH
+        ROLLBACK TRANSACTION;
+        PRINT 'Item no se pudo insertar correctamente.';
+        THROW;
+    END CATCH;
 END;
 GO
 

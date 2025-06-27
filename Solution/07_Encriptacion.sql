@@ -76,41 +76,42 @@ ON psn.Empleado
 AFTER INSERT
 AS
 BEGIN
-		-- Encriptar y actualizar las columnas encriptadas
-		UPDATE e
-		SET 
-			e.nombre_enc = ENCRYPTBYPASSPHRASE('Xg7#pV@1zK$9mTqW', i.nombre),
-			e.apellido_enc = ENCRYPTBYPASSPHRASE('Xg7#pV@1zK$9mTqW', i.apellido),
-			e.dni_enc = ENCRYPTBYPASSPHRASE('Xg7#pV@1zK$9mTqW', CAST(i.dni AS VARCHAR)),
-			e.direccion_enc = ENCRYPTBYPASSPHRASE('Xg7#pV@1zK$9mTqW', i.direccion),
-			e.cuil_enc = ENCRYPTBYPASSPHRASE('Xg7#pV@1zK$9mTqW', i.cuil),
-			e.email_personal_enc = ENCRYPTBYPASSPHRASE('Xg7#pV@1zK$9mTqW', i.email_personal),
-			e.email_empresarial_enc = ENCRYPTBYPASSPHRASE('Xg7#pV@1zK$9mTqW', i.email_empresarial),
-			e.turno_enc = ENCRYPTBYPASSPHRASE('Xg7#pV@1zK$9mTqW', i.turno),
-			e.rol_enc = ENCRYPTBYPASSPHRASE('Xg7#pV@1zK$9mTqW', i.rol),
-			e.area_enc = ENCRYPTBYPASSPHRASE('Xg7#pV@1zK$9mTqW', i.area)
-			
-		FROM psn.Empleado e
-		INNER JOIN inserted i ON e.id_empleado = i.id_empleado;
+    DECLARE @passphrase NVARCHAR(100) = 'Xg7#pV@1zK$9mTqW';
 
-		-- Eliminar los datos visibles o ponerlos en NULL (si no se van a necesitar)
-		UPDATE e
-		SET 
-			e.nombre = NULL,
-			e.apellido = NULL,
-			e.dni = NULL,
-			e.direccion = NULL,
-			e.cuil = NULL,
-			e.email_personal = NULL,
-			e.email_empresarial = NULL,
-			e.turno = NULL,
-			e.rol = NULL,
-			e.area = NULL 
-		FROM psn.Empleado e
-		INNER JOIN inserted i ON e.id_empleado = i.id_empleado;
+    -- Encriptar y actualizar las columnas encriptadas
+    UPDATE e
+    SET 
+        e.nombre_enc = ENCRYPTBYPASSPHRASE(@passphrase, i.nombre),
+        e.apellido_enc = ENCRYPTBYPASSPHRASE(@passphrase, i.apellido),
+        e.dni_enc = ENCRYPTBYPASSPHRASE(@passphrase, CAST(i.dni AS VARCHAR)),
+        e.direccion_enc = ENCRYPTBYPASSPHRASE(@passphrase, i.direccion),
+        e.cuil_enc = ENCRYPTBYPASSPHRASE(@passphrase, i.cuil),
+        e.email_personal_enc = ENCRYPTBYPASSPHRASE(@passphrase, i.email_personal),
+        e.email_empresarial_enc = ENCRYPTBYPASSPHRASE(@passphrase, i.email_empresarial),
+        e.turno_enc = ENCRYPTBYPASSPHRASE(@passphrase, i.turno),
+        e.rol_enc = ENCRYPTBYPASSPHRASE(@passphrase, i.rol),
+        e.area_enc = ENCRYPTBYPASSPHRASE(@passphrase, i.area)
+    FROM psn.Empleado e
+    INNER JOIN inserted i ON e.id_empleado = i.id_empleado;
+
+    -- Eliminar los datos visibles
+    UPDATE e
+    SET 
+        e.nombre = NULL,
+        e.apellido = NULL,
+        e.dni = NULL,
+        e.direccion = NULL,
+        e.cuil = NULL,
+        e.email_personal = NULL,
+        e.email_empresarial = NULL,
+        e.turno = NULL,
+        e.rol = NULL,
+        e.area = NULL 
+    FROM psn.Empleado e
+    INNER JOIN inserted i ON e.id_empleado = i.id_empleado;
 END;
-PRINT 'TRIGGER CREADO CORRECTAMENTE';
 GO
+
 
 
 -- PRUEBAS

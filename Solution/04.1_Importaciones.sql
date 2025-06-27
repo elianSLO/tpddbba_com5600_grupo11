@@ -1058,7 +1058,6 @@ SELECT * FROM psn.Pago
 
 --DELETE FROM psn.Actividad
 EXEC imp.Importar_Actividades 'D:\repos\tpddbba_com5600_grupo11\Solution\import\Datos socios.xlsx'
-SELECT * FROM psn.Actividad
 UPDATE psn.Actividad
 SET nombre = 'Ajedrez'
 WHERE nombre ='Ajederez'
@@ -1071,6 +1070,22 @@ WHERE nombre ='Baile artistico'
 UPDATE psn.Actividad
 SET nombre = 'Natación'
 WHERE nombre ='Natacion'
+
+select * from psn.Profesor
+EXEC stp.insertarClase
+    @categoria = 1,
+    @cod_actividad = 1, -- Futsal
+    @cod_prof =1,
+    @dia ='Lunes',
+    @horario ='12:00'
+
+EXEC stp.insertarInscripto
+    @fecha_inscripcion = '2024/01/01',
+    @estado            = 1,
+    @cod_socio         = 'SN-4148',
+    @cod_clase         = 1; -- Asumo que es clase Futsal
+
+SELECT * FROM psn.Actividad
 
 --DELETE FROM psn.Categoria
 EXEC imp.Importar_Categorias 'D:\repos\tpddbba_com5600_grupo11\Solution\import\Datos socios.xlsx'

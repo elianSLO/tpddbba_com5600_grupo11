@@ -389,7 +389,14 @@ BEGIN
 	WHILE @@FETCH_STATUS = 0
 	BEGIN
 		-- Limpieza y conversión
-		SET @nombre					= LEFT(LTRIM(RTRIM(@tnombre)), 50);
+		SET @nombre = LEFT(
+			REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(
+			REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(
+			LTRIM(RTRIM(@tnombre)),
+			'á','a'), 'é','e'), 'í','i'), 'ó','o'), 'ú','u'),
+			'Á','A'), 'É','E'), 'Í','I'), 'Ó','O'), 'Ú','U'),
+		50);
+
 		SET @valor_mensual			= TRY_CONVERT(DECIMAL(10,2),REPLACE(LTRIM(RTRIM(@tvalor_mensual)), CHAR(160), ''));
 		SET @vig_valor				= TRY_CONVERT(DATE, REPLACE(LTRIM(RTRIM(@tvig_valor)), CHAR(160), ''), 103); -- dd/MM/yyyy
 		
@@ -1052,6 +1059,18 @@ SELECT * FROM psn.Pago
 --DELETE FROM psn.Actividad
 EXEC imp.Importar_Actividades 'D:\repos\tpddbba_com5600_grupo11\Solution\import\Datos socios.xlsx'
 SELECT * FROM psn.Actividad
+UPDATE psn.Actividad
+SET nombre = 'Ajedrez'
+WHERE nombre ='Ajederez'
+UPDATE psn.Actividad
+SET nombre = 'Vóley'
+WHERE nombre ='Voley'
+UPDATE psn.Actividad
+SET nombre = 'Baile artístico'
+WHERE nombre ='Baile artistico'
+UPDATE psn.Actividad
+SET nombre = 'Natación'
+WHERE nombre ='Natacion'
 
 --DELETE FROM psn.Categoria
 EXEC imp.Importar_Categorias 'D:\repos\tpddbba_com5600_grupo11\Solution\import\Datos socios.xlsx'
@@ -1059,6 +1078,7 @@ SELECT * FROM psn.Categoria
 
 --DELETE FROM psn.Asiste
 EXEC imp.Importar_Asistencias 'D:\repos\tpddbba_com5600_grupo11\Solution\import\Datos socios.xlsx',1,1
+SELECT * FROM psn.Socio
 SELECT * FROM psn.Asiste
 
 --DELETE FROM psn.Socios

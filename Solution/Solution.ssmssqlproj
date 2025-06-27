@@ -3,7 +3,7 @@
   <Items>
     <LogicalFolder Name="Connections" Type="2" Sorted="true">
       <Items>
-        <ConnectionNode Name="localhost\SQLEXPRESS:DESKTOP-PC\Elian">
+        <ConnectionNode Name="localhost\SQLEXPRESS:LENOVO\elian">
           <Created>2025-06-20T21:43:51.2267992-03:00</Created>
           <Type>SQL</Type>
           <Server>localhost\SQLEXPRESS</Server>
@@ -89,8 +89,8 @@
           <FullPath>03_09_pago.test.sql</FullPath>
         </FileNode>
         <FileNode Name="03_10_profesor.test.sql">
-          <AssociatedConnectionMoniker />
-          <AssociatedConnSrvName />
+          <AssociatedConnectionMoniker>8c91a03d-f9b4-46c0-a305-b5dcc79ff907:localhost\SQLEXPRESS:True</AssociatedConnectionMoniker>
+          <AssociatedConnSrvName>localhost\SQLEXPRESS</AssociatedConnSrvName>
           <AssociatedConnUserName />
           <FullPath>03_10_profesor.test.sql</FullPath>
         </FileNode>

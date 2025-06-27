@@ -245,10 +245,10 @@ BEGIN
     /*-- Validar el nombre de la actividad 
     IF @nombre COLLATE Modern_Spanish_CI_AI NOT IN (
         'Futsal',
-        'Vóley',
+        'Voley',
         'Taekwondo',
-        'Baile artístico',
-        'Natación',
+        'Baile artistico',
+        'Natacion',
         'Ajedrez'
     )
     BEGIN

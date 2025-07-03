@@ -26,12 +26,34 @@ GO
 ----------------------------------------------
 --	Crear el esquema.	
 ----------------------------------------------
-IF NOT EXISTS (SELECT * FROM sys.schemas WHERE name = 'psn')
+IF NOT EXISTS (SELECT * FROM sys.schemas WHERE name = 'Persona')
 	BEGIN
-		EXEC('CREATE SCHEMA psn');
+		EXEC('CREATE SCHEMA Persona');
 		PRINT 'Esquema creado exitosamente';
 	END;
 GO
+
+IF NOT EXISTS (SELECT * FROM sys.schemas WHERE name = 'Finanzas')
+	BEGIN
+		EXEC('CREATE SCHEMA Finanzas');
+		PRINT 'Esquema creado exitosamente';
+	END;
+GO
+
+IF NOT EXISTS (SELECT * FROM sys.schemas WHERE name = 'Club')
+	BEGIN
+		EXEC('CREATE SCHEMA Club');
+		PRINT 'Esquema creado exitosamente';
+	END;
+GO
+
+IF NOT EXISTS (SELECT * FROM sys.schemas WHERE name = 'Actividad')
+	BEGIN
+		EXEC('CREATE SCHEMA Actividad');
+		PRINT 'Esquema creado exitosamente';
+	END;
+GO
+
 
 
 ----------------------------------------------
@@ -40,9 +62,9 @@ GO
 
 
 -- TABLA SOCIO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'Com5600G11.psn.Socio') AND type = N'U') -- 'U' tabla creada por el usuario 'N' es que sea unicode
+IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'Com5600G11.Persona.Socio') AND type = N'U') -- 'U' tabla creada por el usuario 'N' es que sea unicode
 	BEGIN
-		CREATE TABLE psn.Socio (
+		CREATE TABLE Persona.Socio (
 			cod_socio			VARCHAR(15) PRIMARY KEY CHECK (cod_socio LIKE 'SN-[0-9][0-9][0-9][0-9][0-9]' OR 
 															   cod_socio LIKE 'SN-[0-9][0-9][0-9][0-9]'),
 			nombre				VARCHAR(50),
@@ -68,12 +90,11 @@ ELSE
 GO
 
 ----------------------------------------------------------------------------------------------------------------
---drop table psn.Responsable
---alter table psn.Socio drop constraint fk_responsable
+
 -- TABLA RESPONSABLE
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'Com5600G11.psn.Responsable') AND type = N'U')
+IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'Com5600G11.Persona.Responsable') AND type = N'U')
 	BEGIN
-		CREATE TABLE psn.Responsable 
+		CREATE TABLE Persona.Responsable 
 		(
 			cod_responsable		VARCHAR(15) PRIMARY KEY	CHECK (	cod_responsable LIKE 'NS-[0-9][0-9][0-9][0-9][0-9]' OR 
 																cod_responsable LIKE 'NS-[0-9][0-9][0-9][0-9]'		OR
@@ -97,12 +118,10 @@ GO
 
 ----------------------------------------------------------------------------------------------------------------
 
-
-
 -- TABLA INVITADO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'Com5600G11.psn.Invitado') AND type = N'U') -- 'U' tabla creada por el usuario 'N' es que sea unicode
+IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'Com5600G11.Persona.Invitado') AND type = N'U') -- 'U' tabla creada por el usuario 'N' es que sea unicode
 	BEGIN
-		CREATE TABLE psn.Invitado (
+		CREATE TABLE Persona.Invitado (
 			cod_invitado		VARCHAR(15) PRIMARY KEY CHECK (cod_invitado LIKE 'NS-[0-9][0-9][0-9][0-9][0-9]' OR 
 																cod_invitado LIKE 'NS-[0-9][0-9][0-9][0-9]'),
 			dni					CHAR(8) UNIQUE,
@@ -131,9 +150,9 @@ GO
 ----------------------------------------------------------------------------------------------------------------
 
 -- TABLA PROFESOR
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'Com5600G11.psn.Profesor') AND type = N'U')
+IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'Com5600G11.Persona.Profesor') AND type = N'U')
 	BEGIN
-		CREATE TABLE psn.Profesor (
+		CREATE TABLE Persona.Profesor (
 			cod_prof			INT IDENTITY(1,1) PRIMARY KEY,
 			dni					CHAR(8) UNIQUE, 
 			nombre				VARCHAR(50),
@@ -151,74 +170,10 @@ GO
 
 ----------------------------------------------------------------------------------------------------------------
 
--- TABLA CATEGORIA
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'Com5600G11.psn.Categoria') AND type = N'U') 
-	BEGIN
-		CREATE TABLE psn.Categoria (
-			cod_categoria		INT IDENTITY(1,1) PRIMARY KEY,
-			descripcion			VARCHAR(50),
-			edad_max			INT,
-			edad_min			INT,
-			valor_mensual		DECIMAL(10,2),
-			vig_valor_mens		DATE,
-			valor_anual			DECIMAL(10,2),
-			vig_valor_anual		DATE
-		);
-		PRINT 'Tabla Categoria creada correctamente.';
-	END
-ELSE
-	BEGIN
-		PRINT 'La tabla Categoria ya existe.';
-	END;
-GO
-
-----------------------------------------------------------------------------------------------------------------
-
--- TABLA SUSCRIPCION
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'Com5600G11.psn.Suscripcion') AND type = N'U') 
-	BEGIN
-		CREATE TABLE psn.Suscripcion (
-		fecha_suscripcion	DATE,
-		fecha_vto			DATE,
-		cod_socio			VARCHAR(15),
-		cod_categoria		INT,
-		tiempoSuscr			CHAR(1),
-		constraint pk_suscripcion primary key (fecha_suscripcion,cod_socio,cod_categoria),
-		);
-		PRINT 'Tabla Suscripcion creada correctamente.';
-	END
-ELSE
-	BEGIN
-		PRINT 'La tabla Suscripcion ya existe.';
-	END;
-GO
-
-----------------------------------------------------------------------------------------------------------------
-
--- TABLA ACTIVIDAD
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'Com5600G11.psn.Actividad') AND type = N'U') 
-	BEGIN
-		CREATE TABLE psn.Actividad (
-			cod_actividad INT IDENTITY(1,1) PRIMARY KEY,
-			nombre VARCHAR(50),
-			valor_mensual DECIMAL(10,2),
-			vig_valor DATE
-		);
-		PRINT 'Tabla Actividad creada correctamente.';
-	END
-ELSE
-	BEGIN
-		PRINT 'La tabla Actividad ya existe.';
-	END;
-GO
-
-----------------------------------------------------------------------------------------------------------------
-
 -- TABLA PAGO
-
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'Com5600G11.psn.Pago') AND type = N'U') 
+IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'Com5600G11.Finanzas.Pago') AND type = N'U') 
 	BEGIN
-		CREATE TABLE psn.Pago 
+		CREATE TABLE Finanzas.Pago 
 		(
 			cod_pago			BIGINT PRIMARY KEY,
 			monto				DECIMAL(10,2),
@@ -239,9 +194,9 @@ GO
 ----------------------------------------------------------------------------------------------------------------
 
 -- TABLA FACTURA
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'Com5600G11.psn.Factura') AND type = N'U') 
+IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'Com5600G11.Finanzas.Factura') AND type = N'U') 
 	BEGIN
-		CREATE TABLE psn.Factura (
+		CREATE TABLE Finanzas.Factura (
 			cod_Factura		INT IDENTITY(1,1) PRIMARY KEY,
 			monto			DECIMAL(10,2),
 			fecha_emision	DATE,
@@ -261,10 +216,33 @@ GO
 
 ----------------------------------------------------------------------------------------------------------------
 
--- TABLA REEMBOLSO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'Com5600G11.psn.Reembolso') AND type = N'U') 
+-- TABLA ITEM_FACTURA
+IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'Com5600G11.Finanzas.Item_Factura') AND type = N'U') 
 	BEGIN
-		CREATE TABLE psn.Reembolso (
+		CREATE TABLE Finanzas.Item_Factura (
+			cod_item	INT NOT NULL, -- No puede ser auotincremental 
+			cod_Factura	INT NOT NULL,
+			monto		DECIMAL(10,2),
+			descripcion VARCHAR(50)
+		
+      CONSTRAINT FK_ItemFactura_Factura FOREIGN KEY (cod_Factura)
+      REFERENCES Finanzas.Factura (cod_Factura) -- Clave primaria compuesta, cada codigo de factura con sus respectivos items
+      ON DELETE CASCADE
+		);
+		PRINT 'Tabla Item_Factura creada correctamente.';
+	END
+ELSE
+	BEGIN
+		PRINT 'La tabla Item_Factura ya existe.';
+	END;
+GO
+
+----------------------------------------------------------------------------------------------------------------
+
+-- TABLA REEMBOLSO
+IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'Com5600G11.Finanzas.Reembolso') AND type = N'U') 
+	BEGIN
+		CREATE TABLE Finanzas.Reembolso (
 			codReembolso		INT IDENTITY(1,1) PRIMARY KEY,
 			monto				DECIMAL(10,2),
 			medio_Pago			VARCHAR(50),
@@ -282,9 +260,9 @@ GO
 ----------------------------------------------------------------------------------------------------------------
 
 -- TABLA RESERVA
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'Com5600G11.psn.Reserva') AND type = N'U') 
+IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'Com5600G11.Actividad.Reserva') AND type = N'U') 
 	BEGIN
-		CREATE TABLE psn.Reserva (
+		CREATE TABLE Actividad.Reserva (
 			cod_reserva			INT IDENTITY(1,1) PRIMARY KEY,
 			monto				DECIMAL(10,2),
 			fechahoraInicio		DATETIME,	
@@ -304,9 +282,9 @@ GO
 ----------------------------------------------------------------------------------------------------------------
 
 -- TABLA CLASE
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'Com5600G11.psn.Clase') AND type = N'U') 
+IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'Com5600G11.Club.Clase') AND type = N'U') 
 	BEGIN
-		CREATE TABLE psn.Clase (
+		CREATE TABLE Club.Clase (
 			cod_clase			INT IDENTITY (1,1) PRIMARY KEY,
 			categoria			INT NOT NULL,
 			cod_actividad		INT NOT NULL,
@@ -323,11 +301,72 @@ ELSE
 GO
 
 ----------------------------------------------------------------------------------------------------------------
+-- TABLA CATEGORIA
+IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'Com5600G11.Club.Categoria') AND type = N'U') 
+	BEGIN
+		CREATE TABLE Club.Categoria (
+			cod_categoria		INT IDENTITY(1,1) PRIMARY KEY,
+			descripcion			VARCHAR(50),
+			edad_max			INT,
+			edad_min			INT,
+			valor_mensual		DECIMAL(10,2),
+			vig_valor_mens		DATE,
+			valor_anual			DECIMAL(10,2),
+			vig_valor_anual		DATE
+		);
+		PRINT 'Tabla Categoria creada correctamente.';
+	END
+ELSE
+	BEGIN
+		PRINT 'La tabla Categoria ya existe.';
+	END;
+GO
+
+----------------------------------------------------------------------------------------------------------------
+-- TABLA SUSCRIPCION
+IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'Com5600G11.Club.Suscripcion') AND type = N'U') 
+	BEGIN
+		CREATE TABLE Club.Suscripcion (
+		fecha_suscripcion	DATE,
+		fecha_vto			DATE,
+		cod_socio			VARCHAR(15),
+		cod_categoria		INT,
+		tiempoSuscr			CHAR(1),
+		constraint pk_suscripcion primary key (fecha_suscripcion,cod_socio,cod_categoria),
+		);
+		PRINT 'Tabla Suscripcion creada correctamente.';
+	END
+ELSE
+	BEGIN
+		PRINT 'La tabla Suscripcion ya existe.';
+	END;
+GO
+
+----------------------------------------------------------------------------------------------------------------
+
+-- TABLA ACTIVIDAD
+IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'Com5600G11.Club.Actividad') AND type = N'U') 
+	BEGIN
+		CREATE TABLE Club.Actividad (
+			cod_actividad INT IDENTITY(1,1) PRIMARY KEY,
+			nombre VARCHAR(50),
+			valor_mensual DECIMAL(10,2),
+			vig_valor DATE
+		);
+		PRINT 'Tabla Actividad creada correctamente.';
+	END
+ELSE
+	BEGIN
+		PRINT 'La tabla Actividad ya existe.';
+	END;
+GO
+
+----------------------------------------------------------------------------------------------------------------
 
 -- TABLA INSCRIPTO
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'Com5600G11.psn.Inscripto') AND type = N'U') 
+IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'Com5600G11.Actividad.Inscripto') AND type = N'U') 
 	BEGIN
-		CREATE TABLE psn.Inscripto (
+		CREATE TABLE Actividad.Inscripto (
 		fecha_inscripcion		DATE NOT NULL,
 		estado					VARCHAR(50),
 		cod_socio				VARCHAR(15) NOT NULL,
@@ -344,15 +383,15 @@ GO
 ----------------------------------------------------------------------------------------------------------------
 
 -- TABLA ASISTE
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'Com5600G11.psn.Asiste') AND type = N'U') 
+IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'Com5600G11.Actividad.Asiste') AND type = N'U') 
 	BEGIN
-		CREATE TABLE psn.Asiste (
+		CREATE TABLE Actividad.Asiste (
 			fecha			DATE NOT NULL,
 			cod_socio		VARCHAR(15) NOT NULL CHECK (cod_socio LIKE 'SN-[0-9][0-9][0-9][0-9][0-9]' OR cod_socio LIKE 'SN-[0-9][0-9][0-9][0-9]'),
 			cod_clase		INT NOT NULL,
 			estado			CHAR(1) CHECK (estado IN ('P','A','J')),
-			CONSTRAINT fk_socio FOREIGN KEY (cod_socio) REFERENCES psn.Socio (cod_socio),
-			CONSTRAINT fk_clase FOREIGN KEY (cod_clase) REFERENCES psn.Clase(cod_clase)
+			CONSTRAINT fk_socio FOREIGN KEY (cod_socio) REFERENCES Persona.Socio (cod_socio),
+			CONSTRAINT fk_clase FOREIGN KEY (cod_clase) REFERENCES Club.Clase(cod_clase)
 		);	
 		PRINT 'Tabla Asiste creada correctamente.';
 	END
@@ -364,56 +403,187 @@ GO
 
 ----------------------------------------------------------------------------------------------------------------
 
--- TABLA ITEM_FACTURA
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'Com5600G11.psn.Item_Factura') AND type = N'U') 
-	BEGIN
-		CREATE TABLE psn.Item_Factura (
-			cod_item	INT NOT NULL, -- No puede ser auotincremental 
-			cod_Factura	INT NOT NULL,
-			monto		DECIMAL(10,2),
-			descripcion VARCHAR(50)
-		
-      CONSTRAINT FK_ItemFactura_Factura FOREIGN KEY (cod_Factura)
-      REFERENCES psn.Factura (cod_Factura) -- Clave primaria compuesta, cada codigo de factura con sus respectivos items
-      ON DELETE CASCADE
-		);
-		PRINT 'Tabla Item_Factura creada correctamente.';
-	END
-ELSE
-	BEGIN
-		PRINT 'La tabla Item_Factura ya existe.';
-	END;
-GO
-
 ----------------------------------------------
 --	Claves y restricciones.
 ----------------------------------------------
 
-alter table psn.Socio add constraint fk_responsable FOREIGN KEY (cod_responsable) references psn.Responsable(cod_responsable);
+-- FK Persona.Socio -> Persona.Responsable
+IF NOT EXISTS (
+    SELECT 1 FROM sys.foreign_keys 
+    WHERE name = 'fk_responsable' AND parent_object_id = OBJECT_ID('Persona.Socio')
+)
+BEGIN
+    ALTER TABLE Persona.Socio 
+    ADD CONSTRAINT fk_responsable 
+    FOREIGN KEY (cod_responsable) REFERENCES Persona.Responsable(cod_responsable);
+END;
 
-alter table psn.Suscripcion add 		
-	constraint fk_socio_sus foreign key	(cod_socio) references psn.Socio(cod_socio),
-	constraint fk_cat_sus foreign key (cod_categoria) references psn.Categoria(cod_categoria);
+----------------------------------------------------------------------------------------------------------------
 
-alter table psn.Factura add 		
-	constraint fk_socio_fact foreign key (cod_socio) references psn.Socio(cod_socio);
+-- FK Club.Suscripcion -> Persona.Socio
+IF NOT EXISTS (
+    SELECT 1 FROM sys.foreign_keys 
+    WHERE name = 'fk_socio_sus' AND parent_object_id = OBJECT_ID('Club.Suscripcion')
+)
+BEGIN
+    ALTER TABLE Club.Suscripcion 
+    ADD CONSTRAINT fk_socio_sus 
+    FOREIGN KEY (cod_socio) REFERENCES Persona.Socio(cod_socio);
+END;
 
-alter table psn.Reserva add 		
-	constraint fk_socio_res foreign key (cod_socio) references psn.Socio(cod_socio),
-	constraint fk_invit_res foreign key (cod_invitado) references psn.Invitado(cod_invitado);
+----------------------------------------------------------------------------------------------------------------
 
-alter table psn.Clase add 		
-	constraint fk_act_clase foreign key (cod_actividad) references psn.Actividad(cod_actividad),
-	constraint fk_prof_clase foreign key (cod_prof) references psn.Profesor(cod_prof);
+-- FK Club.Suscripcion -> Club.Categoria
+IF NOT EXISTS (
+    SELECT 1 FROM sys.foreign_keys 
+    WHERE name = 'fk_cat_sus' AND parent_object_id = OBJECT_ID('Club.Suscripcion')
+)
+BEGIN
+    ALTER TABLE Club.Suscripcion 
+    ADD CONSTRAINT fk_cat_sus 
+    FOREIGN KEY (cod_categoria) REFERENCES Club.Categoria(cod_categoria);
+END;
 
-alter table psn.Inscripto add 	
-	constraint pk_inscripto primary key (fecha_inscripcion,cod_socio,cod_clase),
-	constraint fk_socio_inscripto foreign key (cod_socio) references psn.Socio(cod_socio),
-	constraint fk_clase_inscripto foreign key (cod_clase) references psn.Clase(cod_clase);
+----------------------------------------------------------------------------------------------------------------
 
-alter table psn.Asiste add 	
-constraint pk_asiste primary key (fecha,cod_socio,cod_clase),
-constraint fk_socio_asiste foreign key (cod_socio) references psn.Socio(cod_socio),
-constraint fk_clase_asiste foreign key (cod_clase) references psn.Clase(cod_clase);
+-- FK Finanzas.Factura -> Persona.Socio
+IF NOT EXISTS (
+    SELECT 1 FROM sys.foreign_keys 
+    WHERE name = 'fk_socio_fact' AND parent_object_id = OBJECT_ID('Finanzas.Factura')
+)
+BEGIN
+    ALTER TABLE Finanzas.Factura 
+    ADD CONSTRAINT fk_socio_fact 
+    FOREIGN KEY (cod_socio) REFERENCES Persona.Socio(cod_socio);
+END;
 
+----------------------------------------------------------------------------------------------------------------
+
+-- FK Actividad.Reserva -> Persona.Socio
+IF NOT EXISTS (
+    SELECT 1 FROM sys.foreign_keys 
+    WHERE name = 'fk_socio_res' AND parent_object_id = OBJECT_ID('Actividad.Reserva')
+)
+BEGIN
+    ALTER TABLE Actividad.Reserva 
+    ADD CONSTRAINT fk_socio_res 
+    FOREIGN KEY (cod_socio) REFERENCES Persona.Socio(cod_socio);
+END;
+
+----------------------------------------------------------------------------------------------------------------
+
+-- FK Actividad.Reserva -> Persona.Invitado
+IF NOT EXISTS (
+    SELECT 1 FROM sys.foreign_keys 
+    WHERE name = 'fk_invit_res' AND parent_object_id = OBJECT_ID('Actividad.Reserva')
+)
+BEGIN
+    ALTER TABLE Actividad.Reserva 
+    ADD CONSTRAINT fk_invit_res 
+    FOREIGN KEY (cod_invitado) REFERENCES Persona.Invitado(cod_invitado);
+END;
+
+----------------------------------------------------------------------------------------------------------------
+
+-- FK Club.Clase -> Club.Actividad
+IF NOT EXISTS (
+    SELECT 1 FROM sys.foreign_keys 
+    WHERE name = 'fk_act_clase' AND parent_object_id = OBJECT_ID('Club.Clase')
+)
+BEGIN
+    ALTER TABLE Club.Clase 
+    ADD CONSTRAINT fk_act_clase 
+    FOREIGN KEY (cod_actividad) REFERENCES Club.Actividad(cod_actividad);
+END;
+
+----------------------------------------------------------------------------------------------------------------
+
+-- FK Club.Clase -> Persona.Profesor
+IF NOT EXISTS (
+    SELECT 1 FROM sys.foreign_keys 
+    WHERE name = 'fk_prof_clase' AND parent_object_id = OBJECT_ID('Club.Clase')
+)
+BEGIN
+    ALTER TABLE Club.Clase 
+    ADD CONSTRAINT fk_prof_clase 
+    FOREIGN KEY (cod_prof) REFERENCES Persona.Profesor(cod_prof);
+END;
+
+----------------------------------------------------------------------------------------------------------------
+
+-- PK Actividad.Inscripto
+IF NOT EXISTS (
+    SELECT 1 FROM sys.indexes 
+    WHERE name = 'pk_inscripto' AND object_id = OBJECT_ID('Actividad.Inscripto')
+)
+BEGIN
+    ALTER TABLE Actividad.Inscripto 
+    ADD CONSTRAINT pk_inscripto 
+    PRIMARY KEY (fecha_inscripcion, cod_socio, cod_clase);
+END;
+
+----------------------------------------------------------------------------------------------------------------
+
+-- FK Actividad.Inscripto -> Persona.Socio
+IF NOT EXISTS (
+    SELECT 1 FROM sys.foreign_keys 
+    WHERE name = 'fk_socio_inscripto' AND parent_object_id = OBJECT_ID('Actividad.Inscripto')
+)
+BEGIN
+    ALTER TABLE Actividad.Inscripto 
+    ADD CONSTRAINT fk_socio_inscripto 
+    FOREIGN KEY (cod_socio) REFERENCES Persona.Socio(cod_socio);
+END;
+
+----------------------------------------------------------------------------------------------------------------
+
+-- FK Actividad.Inscripto -> Club.Clase
+IF NOT EXISTS (
+    SELECT 1 FROM sys.foreign_keys 
+    WHERE name = 'fk_clase_inscripto' AND parent_object_id = OBJECT_ID('Actividad.Inscripto')
+)
+BEGIN
+    ALTER TABLE Actividad.Inscripto 
+    ADD CONSTRAINT fk_clase_inscripto 
+    FOREIGN KEY (cod_clase) REFERENCES Club.Clase(cod_clase);
+END;
+
+----------------------------------------------------------------------------------------------------------------
+
+-- PK Actividad.Asiste
+IF NOT EXISTS (
+    SELECT 1 FROM sys.indexes 
+    WHERE name = 'pk_asiste' AND object_id = OBJECT_ID('Actividad.Asiste')
+)
+BEGIN
+    ALTER TABLE Actividad.Asiste 
+    ADD CONSTRAINT pk_asiste 
+    PRIMARY KEY (fecha, cod_socio, cod_clase);
+END;
+
+----------------------------------------------------------------------------------------------------------------
+
+-- FK Actividad.Asiste -> Persona.Socio
+IF NOT EXISTS (
+    SELECT 1 FROM sys.foreign_keys 
+    WHERE name = 'fk_socio_asiste' AND parent_object_id = OBJECT_ID('Actividad.Asiste')
+)
+BEGIN
+    ALTER TABLE Actividad.Asiste 
+    ADD CONSTRAINT fk_socio_asiste 
+    FOREIGN KEY (cod_socio) REFERENCES Persona.Socio(cod_socio);
+END;
+
+----------------------------------------------------------------------------------------------------------------
+
+-- FK Actividad.Asiste -> Club.Clase
+IF NOT EXISTS (
+    SELECT 1 FROM sys.foreign_keys 
+    WHERE name = 'fk_clase_asiste' AND parent_object_id = OBJECT_ID('Actividad.Asiste')
+)
+BEGIN
+    ALTER TABLE Actividad.Asiste 
+    ADD CONSTRAINT fk_clase_asiste 
+    FOREIGN KEY (cod_clase) REFERENCES Club.Clase(cod_clase);
+END;
 GO

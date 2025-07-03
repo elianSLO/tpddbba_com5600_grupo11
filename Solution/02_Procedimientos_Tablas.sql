@@ -13,15 +13,6 @@
 USE Com5600G11
 go
 
-----------------------------------------------
---	Crear el esquema.	
-----------------------------------------------
-IF NOT EXISTS (SELECT * FROM sys.schemas WHERE name = 'stp')
-	BEGIN
-		EXEC('CREATE SCHEMA stp');
-		PRINT 'Esquema creado exitosamente';
-	END;
-go
 
 ----------------------------------------------
 --	Creacion SPs.	
@@ -34,11 +25,11 @@ go
 -- SP PARA INSERTAR CATEGORIA
 IF  EXISTS (SELECT * FROM sys.procedures WHERE name = 'insertarCategoria')
 BEGIN
-    DROP PROCEDURE stp.insertarCategoria;
+    DROP PROCEDURE Club.insertarCategoria;
 END;
 GO
 
-CREATE OR ALTER PROCEDURE stp.insertarCategoria
+CREATE OR ALTER PROCEDURE Club.insertarCategoria
 	@descripcion		VARCHAR(50),
 	@edad_max			INT,
 	@edad_min			INT,
@@ -58,7 +49,7 @@ BEGIN
 	END
 
 	-- Validar que no exista ya una categoria con la misma descripcion
-	IF EXISTS (SELECT 1 FROM psn.Categoria WHERE descripcion = @descripcion)
+	IF EXISTS (SELECT 1 FROM Club.Categoria WHERE descripcion = @descripcion)
 	BEGIN
 		PRINT 'Ya existe una categoría con esa descripción.'
 		RETURN;
@@ -97,7 +88,7 @@ BEGIN
 		RETURN;
 	END*/
 
-	INSERT INTO psn.Categoria(descripcion,edad_max,valor_mensual,vig_valor_mens,valor_anual,vig_valor_anual, edad_min)
+	INSERT INTO Club.Categoria(descripcion,edad_max,valor_mensual,vig_valor_mens,valor_anual,vig_valor_anual, edad_min)
 	VALUES (@descripcion,@edad_max,@valor_mensual,@vig_valor_mens,@valor_anual,@vig_valor_anual, @edad_min);
 
 	PRINT 'Categoría insertada correctamente'
@@ -110,11 +101,11 @@ GO
 -- SP PARA MODIFICAR CATEGORIA
 IF  EXISTS (SELECT * FROM sys.procedures WHERE name = 'modificarCategoria')
 BEGIN
-    DROP PROCEDURE stp.modificarCategoria;
+    DROP PROCEDURE Club.modificarCategoria;
 END;
 GO
 
-CREATE OR ALTER PROCEDURE stp.modificarCategoria
+CREATE OR ALTER PROCEDURE Club.modificarCategoria
     @cod_categoria      INT,
     @descripcion        VARCHAR(50),
 	@edad_min			INT,
@@ -128,7 +119,7 @@ BEGIN
     SET NOCOUNT ON;
 
     -- Validar que la categoría exista por código
-    IF NOT EXISTS (SELECT 1 FROM psn.Categoria WHERE cod_categoria = @cod_categoria)
+    IF NOT EXISTS (SELECT 1 FROM Club.Categoria WHERE cod_categoria = @cod_categoria)
     BEGIN
         PRINT 'No existe una categoría con ese código para modificar.'
         RETURN;
@@ -143,7 +134,7 @@ BEGIN
 
     -- Validar que la nueva descripción no esté en uso por otra categoría diferente
     IF EXISTS (
-        SELECT 1 FROM psn.Categoria
+        SELECT 1 FROM Club.Categoria
         WHERE descripcion = @descripcion AND cod_categoria <> @cod_categoria
     )
     BEGIN
@@ -179,7 +170,7 @@ BEGIN
     END
 
     -- Actualizar la categoría
-    UPDATE psn.Categoria
+    UPDATE Club.Categoria
     SET descripcion = @descripcion,
 		edad_min = @edad_min,
         edad_max = @edad_max,
@@ -198,18 +189,18 @@ GO
 -- SP PARA BORRAR CATEGORIA
 IF EXISTS (SELECT * FROM sys.procedures WHERE name = 'borrarCategoria')
 BEGIN
-    DROP PROCEDURE stp.borrarCategoria;
+    DROP PROCEDURE Club.borrarCategoria;
 END;
 GO
 
-CREATE OR ALTER PROCEDURE stp.borrarCategoria
+CREATE OR ALTER PROCEDURE Club.borrarCategoria
         @cod_categoria INT
     AS
     BEGIN
         SET NOCOUNT ON;
-        IF EXISTS (SELECT 1 FROM psn.Categoria WHERE cod_categoria = @cod_categoria)
+        IF EXISTS (SELECT 1 FROM Club.Categoria WHERE cod_categoria = @cod_categoria)
         BEGIN
-            DELETE FROM psn.Categoria WHERE cod_categoria = @cod_categoria;
+            DELETE FROM Club.Categoria WHERE cod_categoria = @cod_categoria;
             PRINT 'Categoria eliminada.';
         END
         ELSE
@@ -230,11 +221,11 @@ GO
 --	SP PARA INSERTAR ACTIVIDAD
 IF EXISTS (SELECT * FROM sys.procedures WHERE name = 'insertarActividad')
 BEGIN
-    DROP PROCEDURE stp.insertarActividad;
+    DROP PROCEDURE Club.insertarActividad;
 END;
 GO
 
-CREATE OR ALTER PROCEDURE stp.insertarActividad
+CREATE OR ALTER PROCEDURE Club.insertarActividad
     @nombre         VARCHAR(50),
     @valor_mensual  DECIMAL(10,2),
     @vig_valor      DATE
@@ -258,7 +249,7 @@ BEGIN
 	*/
 
     -- Validar que no exista ya una actividad con el mismo nombre
-    IF EXISTS (SELECT 1 FROM psn.Actividad WHERE nombre = @nombre)
+    IF EXISTS (SELECT 1 FROM Club.Actividad WHERE nombre = @nombre)
     BEGIN
         PRINT 'La actividad ya existe y no se puede insertar nuevamente.'
         RETURN;
@@ -278,7 +269,7 @@ BEGIN
         RETURN
     END
 
-    INSERT INTO psn.Actividad (nombre, valor_mensual, vig_valor)
+    INSERT INTO Club.Actividad (nombre, valor_mensual, vig_valor)
     VALUES (@nombre, @valor_mensual, @vig_valor)
 
     PRINT 'Actividad agregada correctamente.'
@@ -291,11 +282,11 @@ GO
 --	SP PARA MODIFICAR ACTIVIDAD
 IF EXISTS (SELECT * FROM sys.procedures WHERE name = 'modificarActividad')
 BEGIN
-    DROP PROCEDURE stp.modificarActividad;
+    DROP PROCEDURE Club.modificarActividad;
 END;
 GO
 
-CREATE OR ALTER PROCEDURE stp.modificarActividad
+CREATE OR ALTER PROCEDURE Club.modificarActividad
 	@nombre				VARCHAR(50),
 	@valor_mensual		DECIMAL(10,2),
 	@vig_valor			DATE
@@ -330,7 +321,7 @@ BEGIN
 	END
 
 	-- Actualizar la actividad
-	UPDATE psn.Actividad
+	UPDATE Club.Actividad
 	SET
 		valor_mensual = @valor_mensual,
 		vig_valor = @vig_valor
@@ -345,21 +336,21 @@ GO
 --	SP PARA ELIMINAR ACTIVIDAD
 IF EXISTS (SELECT * FROM sys.procedures WHERE name = 'eliminarActividad')
 BEGIN
-    DROP PROCEDURE stp.eliminarActividad;
+    DROP PROCEDURE Club.eliminarActividad;
 END;
 GO
 
-CREATE OR ALTER PROCEDURE stp.eliminarActividad
+CREATE OR ALTER PROCEDURE Club.eliminarActividad
 	@nombre VARCHAR(50)
 AS
 BEGIN
 	-- Validar que exista la descripción de la actividad
-	IF NOT EXISTS (SELECT 1 FROM psn.Actividad WHERE nombre = @nombre)
+	IF NOT EXISTS (SELECT 1 FROM Club.Actividad WHERE nombre = @nombre)
 	BEGIN
 		PRINT 'No existe esa actividad.'
 		RETURN;
 	END
-	DELETE FROM psn.Actividad
+	DELETE FROM Club.Actividad
 	WHERE nombre = @nombre;
 
 	PRINT 'Actividad elimnada correctamente.';
@@ -375,11 +366,11 @@ GO
 ----------------------------------------------------------------------------------------------------------------
 
 --	Funcion para calcular edad a partir de una fecha.
-IF OBJECT_ID('stp.fn_CalcularEdad') IS NOT NULL
-    DROP FUNCTION stp.fn_CalcularEdad;
+IF OBJECT_ID('Persona.fn_CalcularEdad') IS NOT NULL
+    DROP FUNCTION Persona.fn_CalcularEdad;
 GO
 
-CREATE FUNCTION stp.fn_CalcularEdad
+CREATE FUNCTION Persona.fn_CalcularEdad
 (
     @fecha_nac DATE
 )
@@ -405,11 +396,11 @@ GO
 -- SP PARA INSERTAR SOCIO
 IF  EXISTS (SELECT * FROM sys.procedures WHERE name = 'insertarSocio')
 BEGIN
-    DROP PROCEDURE stp.insertarSocio;
+    DROP PROCEDURE Persona.insertarSocio;
 END;
 GO
 
-CREATE OR ALTER PROCEDURE stp.insertarSocio
+CREATE OR ALTER PROCEDURE Persona.insertarSocio
 	@cod_socio			VARCHAR(15),
 	@dni				CHAR(8),
 	@nombre				VARCHAR(50),
@@ -447,7 +438,7 @@ BEGIN
 	END;
 
 	DECLARE @edad INT;
-	SET @edad = stp.fn_CalcularEdad(@fecha_nac);
+	SET @edad = Persona.fn_CalcularEdad(@fecha_nac);
 
 	IF @edad < 18 AND @cod_responsable IS NULL
 	BEGIN
@@ -471,7 +462,7 @@ BEGIN
 		RETURN;
 	END;
 
-	IF EXISTS (SELECT 1 FROM psn.Socio WHERE dni = @dni)
+	IF EXISTS (SELECT 1 FROM Persona.Socio WHERE dni = @dni)
 	BEGIN
 		PRINT CONCAT ('Error: Ya existe un socio con ese DNI (', @dni, ')');
 		RETURN;
@@ -515,7 +506,7 @@ BEGIN
 	END;*/
 
 	-- Insertar socio
-	INSERT INTO psn.Socio 
+	INSERT INTO Persona.Socio 
 	(
 		cod_socio, dni, nombre, apellido, fecha_nac, email,
 		tel, tel_emerg, estado, saldo,
@@ -539,11 +530,11 @@ GO
 -- SP PARA MODIFICAR SOCIO
 IF EXISTS (SELECT * FROM sys.procedures WHERE name = 'modificarSocio')
 BEGIN
-    DROP PROCEDURE stp.modificarSocio;
+    DROP PROCEDURE Persona.modificarSocio;
 END;
 GO
 
-CREATE OR ALTER PROCEDURE stp.modificarSocio
+CREATE OR ALTER PROCEDURE Persona.modificarSocio
 	@cod_socio			VARCHAR(15),
 	@dni				CHAR(8),
 	@nombre				VARCHAR(50),
@@ -587,7 +578,7 @@ BEGIN
 		RETURN;
     END;
 
-	IF NOT EXISTS (SELECT 1 FROM psn.Socio WHERE cod_socio = @cod_socio)
+	IF NOT EXISTS (SELECT 1 FROM Persona.Socio WHERE cod_socio = @cod_socio)
 	BEGIN
 		PRINT 'Error: Socio no encontrado.';
 		RETURN;
@@ -631,7 +622,7 @@ BEGIN
 	END;
 
 	-- Update
-	UPDATE psn.Socio
+	UPDATE Persona.Socio
 	SET
 		dni = @dni,
 		nombre = @nombre,
@@ -657,11 +648,11 @@ GO
 -- SP PARA BORRAR SOCIO
 IF EXISTS (SELECT * FROM sys.procedures WHERE name = 'borrarSocio')
 BEGIN
-    DROP PROCEDURE stp.borrarSocio;
+    DROP PROCEDURE Persona.borrarSocio;
 END;
 GO
 
-CREATE OR ALTER PROCEDURE stp.borrarSocio
+CREATE OR ALTER PROCEDURE Persona.borrarSocio
         @cod_socio VARCHAR(15)
     AS
     BEGIN
@@ -672,9 +663,9 @@ CREATE OR ALTER PROCEDURE stp.borrarSocio
 			PRINT 'El código de socio debe tener formato "SN-XXXX".'
 			RETURN;
 		END
-        IF EXISTS (SELECT 1 FROM psn.Socio WHERE cod_socio = @cod_socio)
+        IF EXISTS (SELECT 1 FROM Persona.Socio WHERE cod_socio = @cod_socio)
         BEGIN
-            DELETE FROM psn.Socio WHERE cod_socio = @cod_socio;
+            DELETE FROM Persona.Socio WHERE cod_socio = @cod_socio;
             PRINT 'Socio borrado correctamente.';
         END
         ELSE
@@ -693,11 +684,11 @@ GO
 -- SP PARA INSERTAR PROFESOR
 IF  EXISTS (SELECT * FROM sys.procedures WHERE name = 'insertarProfesor')
 BEGIN
-    DROP PROCEDURE stp.insertarProfesor;
+    DROP PROCEDURE Persona.insertarProfesor;
 END;
 GO
 
-CREATE OR ALTER PROCEDURE stp.insertarProfesor
+CREATE OR ALTER PROCEDURE Persona.insertarProfesor
 	@dni				CHAR(8),
 	@nombre				VARCHAR(50),
 	@apellido			VARCHAR(50),
@@ -722,7 +713,7 @@ BEGIN
 	END;
 
 	-- Validación de que el DNI no esté insertado
-	IF EXISTS (SELECT 1 FROM psn.Profesor WHERE dni = @dni)
+	IF EXISTS (SELECT 1 FROM Persona.Profesor WHERE dni = @dni)
     BEGIN
         PRINT 'Error: Ya existe un profesor con ese DNI';
         RETURN;
@@ -757,7 +748,7 @@ BEGIN
 	END
 
     -- Insertar el profesor
-	INSERT INTO psn.Profesor(
+	INSERT INTO Persona.Profesor(
 	dni, nombre, apellido, email, tel)
 	VALUES (@dni, @nombre, @apellido, @email, @tel);
     
@@ -771,11 +762,11 @@ GO
 --SP PARA MODIFICAR PROFESOR
 IF EXISTS (SELECT * FROM sys.procedures WHERE name = 'modificarProfesor')
 BEGIN
-    DROP PROCEDURE stp.modificarProfesor;
+    DROP PROCEDURE Persona.modificarProfesor;
 END;
 GO
 
-CREATE OR ALTER PROCEDURE stp.modificarProfesor
+CREATE OR ALTER PROCEDURE Persona.modificarProfesor
     @cod_prof   INT,
     @dni        CHAR(8),
     @nombre     VARCHAR(50),
@@ -794,7 +785,7 @@ BEGIN
     END;
 
     -- Validación de existencia del profesor
-    IF NOT EXISTS (SELECT 1 FROM psn.Profesor WHERE cod_prof = @cod_prof)
+    IF NOT EXISTS (SELECT 1 FROM Persona.Profesor WHERE cod_prof = @cod_prof)
     BEGIN
         PRINT 'Error: Profesor no encontrado';
         RETURN;
@@ -836,7 +827,7 @@ BEGIN
     END;
 
     -- Actualizar profesor
-    UPDATE psn.Profesor
+    UPDATE Persona.Profesor
     SET
         dni = @dni,
         nombre = @nombre,
@@ -854,18 +845,18 @@ GO
 -- SP PARA BORRAR PROFESOR
 IF EXISTS (SELECT * FROM sys.procedures WHERE name = 'borrarProfesor')
 BEGIN
-    DROP PROCEDURE stp.borrarProfesor;
+    DROP PROCEDURE Persona.borrarProfesor;
 END;
 GO
 
-CREATE OR ALTER PROCEDURE stp.borrarProfesor
+CREATE OR ALTER PROCEDURE Persona.borrarProfesor
         @cod_prof INT
     AS
     BEGIN
         SET NOCOUNT ON;
-        IF EXISTS (SELECT 1 FROM psn.Profesor WHERE cod_prof = @cod_prof)
+        IF EXISTS (SELECT 1 FROM Persona.Profesor WHERE cod_prof = @cod_prof)
         BEGIN
-            DELETE FROM psn.Profesor WHERE cod_prof = @cod_prof;
+            DELETE FROM Persona.Profesor WHERE cod_prof = @cod_prof;
             PRINT 'Profesor borrado correctamente.';
         END
         ELSE
@@ -885,11 +876,11 @@ GO
 -- SP PARA INSERTAR INVITADO
 IF EXISTS (SELECT * FROM sys.procedures WHERE name = 'insertarInvitado')
 BEGIN
-    DROP PROCEDURE stp.insertarInvitado;
+    DROP PROCEDURE Persona.insertarInvitado;
 END;
 GO
 
-CREATE OR ALTER PROCEDURE stp.insertarInvitado
+CREATE OR ALTER PROCEDURE Persona.insertarInvitado
     @cod_invitado       VARCHAR(15),
     @dni                CHAR(8),
     @nombre             VARCHAR(50),
@@ -940,7 +931,7 @@ BEGIN
         RETURN;
     END;
 
-    IF EXISTS (SELECT 1 FROM psn.Invitado WHERE dni = @dni)
+    IF EXISTS (SELECT 1 FROM Persona.Invitado WHERE dni = @dni)
     BEGIN
         PRINT 'Error: Ya existe un invitado con ese DNI';
         RETURN;
@@ -996,7 +987,7 @@ BEGIN
         RETURN;
     END;
 
-    INSERT INTO psn.Invitado (
+    INSERT INTO Persona.Invitado (
         cod_invitado, dni, nombre, apellido, fecha_nac, email,
         tel, tel_emerg, estado, saldo,
         nombre_cobertura, nro_afiliado, tel_cobertura,
@@ -1018,11 +1009,11 @@ GO
 -- SP PARA MODIFICAR INVITADO
 IF EXISTS (SELECT * FROM sys.procedures WHERE name = 'modificarInvitado')
 BEGIN
-    DROP PROCEDURE stp.modificarInvitado;
+    DROP PROCEDURE Persona.modificarInvitado;
 END;
 GO
 
-CREATE OR ALTER PROCEDURE stp.modificarInvitado
+CREATE OR ALTER PROCEDURE Persona.modificarInvitado
     @cod_invitado       VARCHAR(15),
     @dni                CHAR(8),
     @nombre             VARCHAR(50),
@@ -1057,7 +1048,7 @@ BEGIN
         RETURN;
     END
 
-    IF NOT EXISTS (SELECT 1 FROM psn.Invitado WHERE cod_invitado = @cod_invitado)
+    IF NOT EXISTS (SELECT 1 FROM Persona.Invitado WHERE cod_invitado = @cod_invitado)
     BEGIN
         PRINT 'Error: Invitado no encontrado.';
         RETURN;
@@ -1119,7 +1110,7 @@ BEGIN
         RETURN;
     END;
 
-    UPDATE psn.Invitado
+    UPDATE Persona.Invitado
     SET
         dni = @dni,
         nombre = @nombre,
@@ -1145,11 +1136,11 @@ GO
 -- SP PARA BORRAR INVITADO
 IF EXISTS (SELECT * FROM sys.procedures WHERE name = 'borrarInvitado')
 BEGIN
-    DROP PROCEDURE stp.borrarInvitado;
+    DROP PROCEDURE Persona.borrarInvitado;
 END;
 GO
 
-CREATE OR ALTER PROCEDURE stp.borrarInvitado
+CREATE OR ALTER PROCEDURE Persona.borrarInvitado
     @cod_invitado VARCHAR(15)
 AS
 BEGIN
@@ -1162,9 +1153,9 @@ BEGIN
         RETURN;
     END
 
-    IF EXISTS (SELECT 1 FROM psn.Invitado WHERE cod_invitado = @cod_invitado)
+    IF EXISTS (SELECT 1 FROM Persona.Invitado WHERE cod_invitado = @cod_invitado)
     BEGIN
-        DELETE FROM psn.Invitado WHERE cod_invitado = @cod_invitado;
+        DELETE FROM Persona.Invitado WHERE cod_invitado = @cod_invitado;
         PRINT 'Invitado borrado correctamente.';
     END
     ELSE
@@ -1181,11 +1172,11 @@ GO
 -- SP PARA INSERCION DE PAGO
 IF EXISTS (SELECT * FROM sys.procedures WHERE name = 'insertarPago')
 BEGIN
-    DROP PROCEDURE stp.insertarPago;
+    DROP PROCEDURE Finanzas.insertarPago;
 END;
 GO
 
-CREATE OR ALTER PROCEDURE stp.insertarPago
+CREATE OR ALTER PROCEDURE Finanzas.insertarPago
 	@cod_pago			BIGINT,
 	@monto				DECIMAL(10,2),
 	@fecha_pago			DATE,
@@ -1210,7 +1201,7 @@ BEGIN
 		RETURN;
 	END
 
-	IF EXISTS (SELECT 1 FROM psn.Pago WHERE cod_pago = @cod_pago)
+	IF EXISTS (SELECT 1 FROM Finanzas.Pago WHERE cod_pago = @cod_pago)
 	BEGIN
 		PRINT CONCAT('ERROR: El codigo de pago ya existe. (', @cod_pago, ')');
 		RETURN;
@@ -1249,9 +1240,9 @@ BEGIN
 
 	IF @responsable IS NOT NULL AND 
 	(
-		NOT EXISTS (SELECT 1 FROM psn.Socio WHERE cod_socio = @responsable)
+		NOT EXISTS (SELECT 1 FROM Persona.Socio WHERE cod_socio = @responsable)
 		AND
-		NOT EXISTS (SELECT 1 FROM psn.Responsable WHERE cod_responsable = @responsable)
+		NOT EXISTS (SELECT 1 FROM Persona.Responsable WHERE cod_responsable = @responsable)
 	)
 	BEGIN
 		PRINT CONCAT('ERROR: El código de responsable especificado no existe (', @responsable, ')');
@@ -1260,7 +1251,7 @@ BEGIN
 
 
 	
-	INSERT INTO psn.Pago (cod_pago, monto, fecha_pago, estado, responsable, medio_pago)
+	INSERT INTO Finanzas.Pago (cod_pago, monto, fecha_pago, estado, responsable, medio_pago)
 	VALUES (@cod_pago,@monto, @fecha_pago, @estado, @responsable, @medio_pago);
 
 	PRINT 'Pago insertado correctamente.';
@@ -1273,11 +1264,11 @@ GO
 -- SP PARA MODIFICACION DE PAGO
 IF EXISTS (SELECT * FROM sys.procedures WHERE name = 'modificarPago')
 BEGIN
-    DROP PROCEDURE stp.modificarPago;
+    DROP PROCEDURE Finanzas.modificarPago;
 END;
 GO
 
-CREATE OR ALTER PROCEDURE stp.modificarPago
+CREATE OR ALTER PROCEDURE Finanzas.modificarPago
 	@cod_pago			BIGINT,
 	@monto				DECIMAL(10,2),
 	@fecha_pago			DATE,
@@ -1288,7 +1279,7 @@ AS
 BEGIN
 	SET NOCOUNT ON;
 
-	IF NOT EXISTS (SELECT 1 FROM psn.Pago WHERE cod_pago = @cod_pago)
+	IF NOT EXISTS (SELECT 1 FROM Finanzas.Pago WHERE cod_pago = @cod_pago)
 	BEGIN
 		PRINT 'ERROR: No existe un pago con el código especificado.';
 		RETURN;
@@ -1326,16 +1317,16 @@ BEGIN
 
 	IF @responsable IS NOT NULL AND 
 	(
-		NOT EXISTS (SELECT 1 FROM psn.Socio WHERE cod_socio = @responsable)
+		NOT EXISTS (SELECT 1 FROM Persona.Socio WHERE cod_socio = @responsable)
 		AND
-		NOT EXISTS (SELECT 1 FROM psn.Responsable WHERE cod_responsable = @responsable)
+		NOT EXISTS (SELECT 1 FROM Persona.Responsable WHERE cod_responsable = @responsable)
 	)
 	BEGIN
 		PRINT CONCAT('ERROR: El código de responsable especificado no existe (', @responsable, ')');
 		RETURN;
 	END
 
-	UPDATE psn.Pago
+	UPDATE Finanzas.Pago
 	SET monto = @monto,
 		fecha_pago = @fecha_pago,
 		estado = @estado,
@@ -1352,25 +1343,25 @@ GO
 --	SP PARA BORRAR PAGO
 IF EXISTS (SELECT * FROM sys.procedures WHERE name = 'borrarPago')
 BEGIN
-    DROP PROCEDURE stp.borrarPago;
+    DROP PROCEDURE Finanzas.borrarPago;
 END;
 GO
 
-CREATE PROCEDURE stp.borrarPago
+CREATE PROCEDURE Finanzas.borrarPago
 	@cod_pago INT
 AS
 BEGIN
 	SET NOCOUNT ON;
 
 	-- Validación: existencia del pago
-	IF NOT EXISTS (SELECT 1 FROM psn.Pago WHERE cod_pago = @cod_pago)
+	IF NOT EXISTS (SELECT 1 FROM Finanzas.Pago WHERE cod_pago = @cod_pago)
 	BEGIN
 		PRINT 'ERROR: No existe un pago con ese código.';
 		RETURN;
 	END
 
 	-- Eliminación
-	DELETE FROM psn.Pago
+	DELETE FROM Finanzas.Pago
 	WHERE cod_pago = @cod_pago;
 
 	PRINT 'Pago eliminado correctamente.';
@@ -1387,17 +1378,17 @@ GO
 --	SP PARA INSERTAR SUSCRIPCIÓN
 IF EXISTS (SELECT * FROM sys.procedures WHERE name = 'insertarSuscripcion')
 BEGIN
-    DROP PROCEDURE stp.insertarSuscripcion;
+    DROP PROCEDURE Club.insertarSuscripcion;
 END
 GO
 
-CREATE OR ALTER PROCEDURE stp.insertarSuscripcion
+CREATE OR ALTER PROCEDURE Club.insertarSuscripcion
 	@cod_socio VARCHAR(15),
 	@tipoSuscripcion CHAR(1), --Si es anual A, si es mensual M
 	@cod_categoria INT
 AS
 BEGIN
-	IF NOT EXISTS (SELECT 1 FROM psn.Socio WHERE cod_socio = @cod_socio)
+	IF NOT EXISTS (SELECT 1 FROM Persona.Socio WHERE cod_socio = @cod_socio)
 	BEGIN
 		PRINT 'No existe socio'
 		RETURN
@@ -1409,8 +1400,8 @@ BEGIN
 		RETURN
 	END
 	DECLARE @edadLimite INT, @edadSocio INT, @fnac DATE
-	SET @edadLimite = (SELECT edad_max from psn.Categoria WHERE cod_categoria = @cod_categoria)
-	SET @fnac = ( SELECT fecha_nac from psn.Socio WHERE cod_socio = @cod_socio)
+	SET @edadLimite = (SELECT edad_max from Finanzas.Categoria WHERE cod_categoria = @cod_categoria)
+	SET @fnac = ( SELECT fecha_nac from Persona.Socio WHERE cod_socio = @cod_socio)
 	SET @edadSocio = (SELECT DATEDIFF(YEAR,@fnac,GETDATE()))
 
 	IF (@edadSocio > @edadLimite)
@@ -1426,7 +1417,7 @@ BEGIN
 	ELSE
 		SET	@fecha_venc = DATEADD(MONTH, 1, @fecha_inscripcion)
 
-	INSERT INTO psn.Suscripcion (cod_socio, cod_categoria, fecha_suscripcion, fecha_vto, tiempoSuscr)
+	INSERT INTO Club.Suscripcion (cod_socio, cod_categoria, fecha_suscripcion, fecha_vto, tiempoSuscr)
 	VALUES(@cod_socio, @cod_categoria, @fecha_inscripcion, @fecha_venc, UPPER(@tipoSuscripcion))
 
 	PRINT 'Socio suscrito exitosamente.'
@@ -1434,7 +1425,7 @@ END
 
 IF EXISTS (SELECT * FROM sys.procedures WHERE name = 'modificarSuscripcion')
 BEGIN
-    DROP PROCEDURE stp.modificarSuscripcion;
+    DROP PROCEDURE Club.modificarSuscripcion;
 END
 GO
 
@@ -1443,17 +1434,17 @@ GO
 --	SP PARA MODIFICAR SUSCRIPCIÓN
 IF EXISTS (SELECT * FROM sys.procedures WHERE name = 'modificarSuscripcion')
 BEGIN
-    DROP PROCEDURE stp.modificarSuscripcion;
+    DROP PROCEDURE Club.modificarSuscripcion;
 END
 GO
 
-CREATE OR ALTER PROCEDURE stp.modificarSuscripcion
+CREATE OR ALTER PROCEDURE Club.modificarSuscripcion
 	@cod_socio VARCHAR(15),
 	@nueva_cat INT,
 	@tiempo CHAR(1)
 AS
 BEGIN
-	IF NOT EXISTS (SELECT 1 FROM psn.Suscripcion WHERE cod_socio = @cod_socio)
+	IF NOT EXISTS (SELECT 1 FROM Club.Suscripcion WHERE cod_socio = @cod_socio)
 		BEGIN
 			PRINT 'No existe suscripcion'
 			RETURN
@@ -1463,14 +1454,14 @@ BEGIN
 		PRINT 'Tipo de suscripcion erronea'
 		RETURN
 	END
-	IF NOT EXISTS (SELECT 1 FROM psn.Suscripcion WHERE cod_categoria = @nueva_cat)
+	IF NOT EXISTS (SELECT 1 FROM Club.Suscripcion WHERE cod_categoria = @nueva_cat)
 		BEGIN
 			PRINT 'No existe categoria'
 			RETURN
 		END
 	DECLARE @edadLimite INT, @edadSocio INT, @fnac DATE
-	SET @edadLimite = (SELECT edad_max from psn.Categoria WHERE cod_categoria = @nueva_cat)
-	SET @fnac = ( SELECT fecha_nac from psn.Socio WHERE cod_socio = @cod_socio)
+	SET @edadLimite = (SELECT edad_max from Club.Categoria WHERE cod_categoria = @nueva_cat)
+	SET @fnac = ( SELECT fecha_nac from Persona.Socio WHERE cod_socio = @cod_socio)
 	SET @edadSocio = (SELECT DATEDIFF(YEAR,@fnac,GETDATE()))
 
 	IF (@edadSocio > @edadLimite)
@@ -1480,7 +1471,7 @@ BEGIN
 	END
 	IF EXISTS (
 		SELECT 1
-		FROM psn.Suscripcion
+		FROM Club.Suscripcion
 		WHERE cod_socio = @cod_socio
 		  AND cod_categoria = @nueva_cat
 		  AND tiempoSuscr = @tiempo
@@ -1490,7 +1481,7 @@ BEGIN
 		RETURN
 	END
 
-	UPDATE psn.Suscripcion
+	UPDATE Club.Suscripcion
 	SET 
 		cod_categoria = ISNULL(cod_categoria,@nueva_cat),
 		tiempoSuscr = ISNULL(tiempoSuscr, @tiempo)
@@ -1501,7 +1492,7 @@ END
 
 IF EXISTS (SELECT * FROM sys.procedures WHERE name = 'borrarSuscripcion')
 BEGIN
-    DROP PROCEDURE stp.borrarSuscripcion;
+    DROP PROCEDURE Club.borrarSuscripcion;
 END;
 GO
 
@@ -1510,24 +1501,24 @@ GO
 --	SP PARA BORRAR SUSCRIPCIÓN
 IF EXISTS (SELECT * FROM sys.procedures WHERE name = 'borrarSuscripcion')
 BEGIN
-    DROP PROCEDURE stp.borrarSuscripcion;
+    DROP PROCEDURE Club.borrarSuscripcion;
 END
 GO
 
-CREATE OR ALTER PROCEDURE stp.borrarSuscripcion
+CREATE OR ALTER PROCEDURE Club.borrarSuscripcion
     @cod_socio VARCHAR(15)
 AS
 BEGIN
     SET NOCOUNT ON;
     -- Validación: verificar que exista el código
-    IF NOT EXISTS (SELECT 1 FROM psn.Suscripcion WHERE cod_socio = @cod_socio)
+    IF NOT EXISTS (SELECT 1 FROM Club.Suscripcion WHERE cod_socio = @cod_socio)
     BEGIN
         PRINT 'Error: No existe suscripcion.';
         RETURN;
     END
 
     -- Eliminación del registro
-    DELETE FROM psn.Suscripcion
+    DELETE FROM Club.Suscripcion
     WHERE cod_socio = @cod_socio
 
     PRINT 'Suscripcion eliminada';
@@ -1543,15 +1534,15 @@ GO
 --	SP PARA INSERTAR FACTURA
 IF EXISTS (SELECT * FROM sys.procedures WHERE name = 'emitirFactura')
 BEGIN
-    DROP PROCEDURE stp.emitirFactura;
+    DROP PROCEDURE Finanzas.emitirFactura;
 END;
 GO
 
-CREATE OR ALTER PROCEDURE stp.emitirFactura
+CREATE OR ALTER PROCEDURE Finanzas.emitirFactura
 	@cod_socio		VARCHAR(15)
 AS
 BEGIN
-	IF NOT EXISTS (SELECT 1 FROM psn.Socio WHERE cod_socio = @cod_socio)
+	IF NOT EXISTS (SELECT 1 FROM Persona.Socio WHERE cod_socio = @cod_socio)
 	BEGIN
 		PRINT 'No existe el socio'
 		RETURN
@@ -1564,16 +1555,16 @@ BEGIN
 			@estado			VARCHAR(10),
 			@tipoSuscripc	CHAR(1),
 			@recargo		INT
-	SET @categoria		= (SELECT cod_categoria FROM psn.Suscripcion WHERE @cod_socio = cod_socio)
-	SET @tipoSuscripc	= (SELECT tiempoSuscr FROM psn.Suscripcion WHERE @cod_socio = cod_socio)
-	SET @monto			= (SELECT valor_mensual from psn.Categoria WHERE cod_categoria = @categoria)
+	SET @categoria		= (SELECT cod_categoria FROM Club.Suscripcion WHERE @cod_socio = cod_socio)
+	SET @tipoSuscripc	= (SELECT tiempoSuscr FROM Club.Suscripcion WHERE @cod_socio = cod_socio)
+	SET @monto			= (SELECT valor_mensual from Club.Categoria WHERE cod_categoria = @categoria)
 	SET @fecha_emision	= GETDATE();
 	SET @fecha_vto		= DATEADD(DAY,5,@fecha_emision)
 	SET @fecha_seg_vto	= DATEADD(DAY,5,@fecha_vto)
 	SET @estado			= 'Pendiente'
 	SET @recargo		= 0
 
-	INSERT INTO psn.Factura (monto,fecha_emision,fecha_vto,fecha_seg_vto,recargo,estado,cod_socio)
+	INSERT INTO Finanzas.Factura (monto,fecha_emision,fecha_vto,fecha_seg_vto,recargo,estado,cod_socio)
 	VALUES (@monto,@fecha_emision,@fecha_vto,@fecha_seg_vto, @recargo,@estado,@cod_socio)
 
 	PRINT 'Factura emitida exitosamente.'
@@ -1586,11 +1577,11 @@ GO
 --	SP PARA MODIFICAR FACTURA
 IF EXISTS (SELECT * FROM sys.procedures WHERE name = 'modificarFactura')
 BEGIN
-    DROP PROCEDURE stp.modificarFactura;
+    DROP PROCEDURE Finanzas.modificarFactura;
 END;
 GO
 
-CREATE OR ALTER PROCEDURE stp.modificarFactura
+CREATE OR ALTER PROCEDURE Finanzas.modificarFactura
     @cod_socio     VARCHAR(15),
     @cod_Factura   INT,
     @nuevo_estado  VARCHAR(10) -- 'VENCIDA', 'ANULADA' o 'PAGADA'
@@ -1599,7 +1590,7 @@ BEGIN
     SET NOCOUNT ON;
 
     -- Verificar existencia de la factura con ese socio
-    IF NOT EXISTS (SELECT 1 FROM psn.Factura WHERE cod_socio = @cod_socio AND cod_Factura = @cod_Factura)
+    IF NOT EXISTS (SELECT 1 FROM Finanzas.Factura WHERE cod_socio = @cod_socio AND cod_Factura = @cod_Factura)
     BEGIN
         PRINT 'No existe la factura para ese socio';
         RETURN;
@@ -1620,7 +1611,7 @@ BEGIN
     SELECT 
         @monto = monto,
         @fecha_seg_vto = fecha_seg_vto
-    FROM psn.Factura
+    FROM Finanzas.Factura
     WHERE cod_Factura = @cod_Factura;
 
     -- Lógica según estado
@@ -1636,7 +1627,7 @@ BEGIN
     -- Si el nuevo estado es ABONADA: se mantiene el monto
 
     -- Actualización
-    UPDATE psn.Factura
+    UPDATE Finanzas.Factura
     SET 
         estado = @nuevo_estado,
         monto = @monto
@@ -1651,24 +1642,24 @@ GO
 --	SP PARA BORRAR FACTURA
 IF EXISTS (SELECT * FROM sys.procedures WHERE name = 'borrarFactura')
 BEGIN
-    DROP PROCEDURE stp.borrarFactura;
+    DROP PROCEDURE Finanzas.borrarFactura;
 END;
 GO
 
-CREATE OR ALTER PROCEDURE stp.borrarFactura
+CREATE OR ALTER PROCEDURE Finanzas.borrarFactura
     @cod_Factura INT
 AS
 BEGIN
     SET NOCOUNT ON;
     -- Validación: verificar que exista el código
-    IF NOT EXISTS (SELECT 1 FROM psn.Factura WHERE cod_Factura = @cod_Factura)
+    IF NOT EXISTS (SELECT 1 FROM Finanzas.Factura WHERE cod_Factura = @cod_Factura)
     BEGIN
         PRINT 'Error: No existe factura.';
         RETURN;
     END
 
     -- Eliminación del registro
-    DELETE FROM psn.Factura
+    DELETE FROM Finanzas.Factura
     WHERE cod_Factura = @cod_Factura;
 
     PRINT 'Factura eliminada correctamente.';
@@ -1682,11 +1673,11 @@ GO
 --- SP PARA INSERTAR REEMBOLSO
 IF EXISTS (SELECT * FROM sys.procedures WHERE name = 'insertarReembolso')
 BEGIN
-    DROP PROCEDURE stp.insertarReembolso;
+    DROP PROCEDURE Finanzas.insertarReembolso;
 END;
 GO
 
-CREATE OR ALTER PROCEDURE stp.insertarReembolso
+CREATE OR ALTER PROCEDURE Finanzas.insertarReembolso
     @monto       DECIMAL(10,2),
     @medio_Pago  VARCHAR(50),
     @fecha       DATE,
@@ -1724,7 +1715,7 @@ BEGIN
     END
 
     -- Inserción de datos
-    INSERT INTO psn.Reembolso (monto, medio_Pago, fecha, motivo)
+    INSERT INTO Finanzas.Reembolso (monto, medio_Pago, fecha, motivo)
     VALUES (@monto, @medio_Pago, @fecha, @motivo);
 
     PRINT 'Reembolso insertado correctamente.';
@@ -1736,11 +1727,11 @@ GO
 --	SP PARA MODIFICAR REEMBOLSO
 IF EXISTS (SELECT * FROM sys.procedures WHERE name = 'modificarReembolso')
 BEGIN
-    DROP PROCEDURE stp.modificarReembolso;
+    DROP PROCEDURE Finanzas.modificarReembolso;
 END;
 GO
 
-CREATE OR ALTER PROCEDURE stp.modificarReembolso
+CREATE OR ALTER PROCEDURE Finanzas.modificarReembolso
     @codReembolso INT,
     @monto        DECIMAL(10,2),
     @medio_Pago   VARCHAR(50),
@@ -1751,7 +1742,7 @@ BEGIN
     SET NOCOUNT ON;
 
     -- Validación: código debe existir
-    IF NOT EXISTS (SELECT 1 FROM psn.Reembolso WHERE codReembolso = @codReembolso)
+    IF NOT EXISTS (SELECT 1 FROM Finanzas.Reembolso WHERE codReembolso = @codReembolso)
     BEGIN
         PRINT 'Error: No existe un reembolso con el código especificado.';
         RETURN;
@@ -1786,7 +1777,7 @@ BEGIN
     END
 
     -- Actualización de datos
-    UPDATE psn.Reembolso
+    UPDATE Finanzas.Reembolso
     SET
         monto = @monto,
         medio_Pago = @medio_Pago,
@@ -1803,25 +1794,25 @@ GO
 --	SP PARA BORRAR REEMBOLSO
 IF EXISTS (SELECT * FROM sys.procedures WHERE name = 'borrarReembolso')
 BEGIN
-    DROP PROCEDURE stp.borrarReembolso;
+    DROP PROCEDURE Finanzas.borrarReembolso;
 END;
 GO
 
-CREATE OR ALTER PROCEDURE stp.borrarReembolso
+CREATE OR ALTER PROCEDURE Finanzas.borrarReembolso
     @codReembolso INT
 AS
 BEGIN
     SET NOCOUNT ON;
 
     -- Validación: verificar que exista el código
-    IF NOT EXISTS (SELECT 1 FROM psn.Reembolso WHERE codReembolso = @codReembolso)
+    IF NOT EXISTS (SELECT 1 FROM Finanzas.Reembolso WHERE codReembolso = @codReembolso)
     BEGIN
         PRINT 'Error: No existe un reembolso con el código especificado.';
         RETURN;
     END
 
     -- Eliminación del registro
-    DELETE FROM psn.Reembolso
+    DELETE FROM Finanzas.Reembolso
     WHERE codReembolso = @codReembolso;
 
     PRINT 'Reembolso eliminado correctamente.';
@@ -1837,11 +1828,11 @@ GO
 
 IF EXISTS (SELECT * FROM sys.procedures WHERE name = 'insertarResponsable')
 BEGIN
-    DROP PROCEDURE stp.insertarResponsable;
+    DROP PROCEDURE Persona.insertarResponsable;
 END;
 GO
 
-CREATE OR ALTER PROCEDURE stp.insertarResponsable
+CREATE OR ALTER PROCEDURE Persona.insertarResponsable
     @cod_responsable	VARCHAR(15),
     @nombre				VARCHAR(50) = NULL,		--	Se asignan con valores por defecto para chequear si ya es socio.
     @apellido			VARCHAR(50)	= NULL,
@@ -1901,7 +1892,7 @@ BEGIN
         RETURN;
     END
 
-    IF EXISTS (SELECT 1 FROM psn.Responsable WHERE dni = @dni)
+    IF EXISTS (SELECT 1 FROM Persona.Responsable WHERE dni = @dni)
     BEGIN
         PRINT 'Error: Ya existe un responsable con ese DNI.';
         RETURN;
@@ -1947,7 +1938,7 @@ BEGIN
     END
 
     -- Inserción
-    INSERT INTO psn.Responsable (cod_responsable, nombre, apellido, dni, email, fecha_nac, tel, parentezco)
+    INSERT INTO Persona.Responsable (cod_responsable, nombre, apellido, dni, email, fecha_nac, tel, parentezco)
     VALUES (@cod_responsable, @nombre, @apellido, @dni, @email, @fecha_nac, @tel, @parentezco);
 
     PRINT 'Responsable insertado correctamente.';
@@ -1958,11 +1949,11 @@ GO
 
 IF EXISTS (SELECT * FROM sys.procedures WHERE name = 'modificarResponsable')
 BEGIN
-    DROP PROCEDURE stp.modificarResponsable;
+    DROP PROCEDURE Persona.modificarResponsable;
 END;
 GO
 
-CREATE OR ALTER PROCEDURE stp.modificarResponsable
+CREATE OR ALTER PROCEDURE Persona.modificarResponsable
     @cod_responsable VARCHAR(15),
     @dni             CHAR(8),
     @nombre          VARCHAR(50),
@@ -1986,7 +1977,7 @@ BEGIN
     END
 
     -- Validar existencia
-    IF NOT EXISTS (SELECT 1 FROM psn.Responsable WHERE cod_responsable = @cod_responsable)
+    IF NOT EXISTS (SELECT 1 FROM Persona.Responsable WHERE cod_responsable = @cod_responsable)
     BEGIN
         PRINT 'Error: No existe un responsable con ese código.';
         RETURN;
@@ -2000,7 +1991,7 @@ BEGIN
     END
 
     IF EXISTS (
-        SELECT 1 FROM psn.Responsable 
+        SELECT 1 FROM Persona.Responsable 
         WHERE dni = @dni AND cod_responsable != @cod_responsable
     )
     BEGIN
@@ -2052,7 +2043,7 @@ BEGIN
     END
 
     -- Actualización
-    UPDATE psn.Responsable
+    UPDATE Persona.Responsable
     SET dni = @dni,
         cod_responsable = @cod_responsable,
         nombre = @nombre,
@@ -2070,11 +2061,11 @@ GO
 ---- BORRADO RESPONSABLE
 IF EXISTS (SELECT * FROM sys.procedures WHERE name = 'borrarResponsable')
 BEGIN
-    DROP PROCEDURE stp.borrarResponsable;
+    DROP PROCEDURE Persona.borrarResponsable;
 END;
 GO
 
-CREATE OR ALTER PROCEDURE stp.borrarResponsable
+CREATE OR ALTER PROCEDURE Persona.borrarResponsable
     @cod_responsable VARCHAR(15)
 AS
 BEGIN
@@ -2090,14 +2081,14 @@ BEGIN
     END
 
     -- Validar existencia
-    IF NOT EXISTS (SELECT 1 FROM psn.Responsable WHERE cod_responsable = @cod_responsable)
+    IF NOT EXISTS (SELECT 1 FROM Persona.Responsable WHERE cod_responsable = @cod_responsable)
     BEGIN
         PRINT 'Error: No existe un responsable con ese código.';
         RETURN;
     END
 
     -- Eliminación
-    DELETE FROM psn.Responsable
+    DELETE FROM Persona.Responsable
     WHERE cod_responsable = @cod_responsable;
 
     PRINT 'Responsable eliminado correctamente.';
@@ -2111,11 +2102,11 @@ GO
 
 IF EXISTS (SELECT * FROM sys.procedures WHERE name = 'insertarReserva')
 BEGIN
-    DROP PROCEDURE stp.insertarReserva;
+    DROP PROCEDURE Actividad.insertarReserva;
 END;
 GO
 
-CREATE OR ALTER PROCEDURE stp.insertarReserva
+CREATE OR ALTER PROCEDURE Actividad.insertarReserva
     @cod_socio          VARCHAR(15) = NULL,
     @cod_invitado       VARCHAR(15) = NULL,
     @monto              DECIMAL(10,2),
@@ -2155,13 +2146,13 @@ BEGIN
         RETURN;
     END
 
-    IF @cod_socio IS NOT NULL AND NOT EXISTS (SELECT 1 FROM psn.Socio WHERE cod_socio = @cod_socio)
+    IF @cod_socio IS NOT NULL AND NOT EXISTS (SELECT 1 FROM Persona.Socio WHERE cod_socio = @cod_socio)
     BEGIN
         PRINT 'Error: El codigo de socio especificado no existe.';
         RETURN;
     END;
 
-    IF @cod_invitado IS NOT NULL AND NOT EXISTS (SELECT 1 FROM psn.Invitado WHERE cod_invitado = @cod_invitado)
+    IF @cod_invitado IS NOT NULL AND NOT EXISTS (SELECT 1 FROM Persona.Invitado WHERE cod_invitado = @cod_invitado)
     BEGIN
         PRINT 'Error: El codigo de invitado especificado no existe.';
         RETURN;
@@ -2197,7 +2188,7 @@ BEGIN
         RETURN;
     END;
 
-    IF EXISTS (SELECT 1 FROM psn.Reserva
+    IF EXISTS (SELECT 1 FROM Actividad.Reserva
                WHERE piletaSUMColonia = @piletaSUMColonia
                  AND (
                         (@fechahoraInicio < fechahoraFin AND @fechahoraFin > fechahoraInicio) -- Solapamiento
@@ -2208,7 +2199,7 @@ BEGIN
        RETURN;
     END;
 
-    INSERT INTO psn.Reserva (
+    INSERT INTO Actividad.Reserva (
         cod_socio,
         cod_invitado,
         monto,
@@ -2234,11 +2225,11 @@ GO
 
 IF EXISTS (SELECT * FROM sys.procedures WHERE name = 'modificarReserva')
 BEGIN
-    DROP PROCEDURE stp.modificarReserva;
+    DROP PROCEDURE Actividad.modificarReserva;
 END;
 GO
 
-CREATE OR ALTER PROCEDURE stp.modificarReserva
+CREATE OR ALTER PROCEDURE Actividad.modificarReserva
     @cod_reserva        INT,
     @cod_socio          VARCHAR(15) = NULL,
     @cod_invitado       VARCHAR(15) = NULL,
@@ -2250,7 +2241,7 @@ AS
 BEGIN
     SET NOCOUNT ON;
 
-    IF NOT EXISTS (SELECT 1 FROM psn.Reserva WHERE cod_reserva = @cod_reserva)
+    IF NOT EXISTS (SELECT 1 FROM Actividad.Reserva WHERE cod_reserva = @cod_reserva)
     BEGIN
         PRINT 'Error: El codigo de reserva especificado no existe.';
         RETURN;
@@ -2284,13 +2275,13 @@ BEGIN
         RETURN;
     END
 
-    IF @cod_socio IS NOT NULL AND NOT EXISTS (SELECT 1 FROM psn.Socio WHERE cod_socio = @cod_socio)
+    IF @cod_socio IS NOT NULL AND NOT EXISTS (SELECT 1 FROM Persona.Socio WHERE cod_socio = @cod_socio)
     BEGIN
         PRINT 'Error: El codigo de socio especificado no existe.';
         RETURN;
     END;
 
-    IF @cod_invitado IS NOT NULL AND NOT EXISTS (SELECT 1 FROM psn.Invitado WHERE cod_invitado = @cod_invitado)
+    IF @cod_invitado IS NOT NULL AND NOT EXISTS (SELECT 1 FROM Persona.Invitado WHERE cod_invitado = @cod_invitado)
     BEGIN
         PRINT 'Error: El codigo de invitado especificado no existe.';
         RETURN;
@@ -2326,7 +2317,7 @@ BEGIN
         RETURN;
     END;
 
-    IF EXISTS (SELECT 1 FROM psn.Reserva
+    IF EXISTS (SELECT 1 FROM Actividad.Reserva
                WHERE cod_reserva <> @cod_reserva -- Excluir la reserva que se esta modificando
                  AND piletaSUMColonia = @piletaSUMColonia
                  AND (
@@ -2338,7 +2329,7 @@ BEGIN
        RETURN;
     END;
 
-    UPDATE psn.Reserva
+    UPDATE Actividad.Reserva
     SET
         cod_socio = @cod_socio,
         cod_invitado = @cod_invitado,
@@ -2356,23 +2347,23 @@ GO
 
 IF EXISTS (SELECT * FROM sys.procedures WHERE name = 'borrarReserva')
 BEGIN
-    DROP PROCEDURE stp.borrarReserva;
+    DROP PROCEDURE Actividad.borrarReserva;
 END;
 GO
 
-CREATE OR ALTER PROCEDURE stp.borrarReserva
+CREATE OR ALTER PROCEDURE Actividad.borrarReserva
     @cod_reserva INT
 AS
 BEGIN
     SET NOCOUNT ON;
 
-    IF NOT EXISTS (SELECT 1 FROM psn.Reserva WHERE cod_reserva = @cod_reserva)
+    IF NOT EXISTS (SELECT 1 FROM Actividad.Reserva WHERE cod_reserva = @cod_reserva)
     BEGIN
         PRINT 'Error: El codigo de reserva especificado no existe.';
         RETURN;
     END;
 
-    DELETE FROM psn.Reserva
+    DELETE FROM Actividad.Reserva
     WHERE cod_reserva = @cod_reserva;
 
     PRINT 'Reserva borrada correctamente.';
@@ -2386,11 +2377,11 @@ GO
 
 IF EXISTS (SELECT * FROM sys.procedures WHERE name = 'insertarClase')
 BEGIN
-    DROP PROCEDURE stp.insertarClase;
+    DROP PROCEDURE Actividad.insertarClase;
 END;
 GO
 
-CREATE OR ALTER PROCEDURE stp.insertarClase
+CREATE OR ALTER PROCEDURE Actividad.insertarClase
     @categoria     INT,
     @cod_actividad INT,
     @cod_prof      INT,
@@ -2412,26 +2403,26 @@ BEGIN
         RETURN;
     END;
 
-    IF NOT EXISTS (SELECT 1 FROM psn.Categoria WHERE cod_categoria = @categoria)
+    IF NOT EXISTS (SELECT 1 FROM Club.Categoria WHERE cod_categoria = @categoria)
     BEGIN
         PRINT 'Error: La categoría especificada no existe.';
         RETURN;
     END;
 
-    IF NOT EXISTS (SELECT 1 FROM psn.Actividad WHERE cod_actividad = @cod_actividad)
+    IF NOT EXISTS (SELECT 1 FROM Club.Actividad WHERE cod_actividad = @cod_actividad)
     BEGIN
         PRINT 'Error: La actividad especificada no existe.';
         RETURN;
     END;
 
-    IF NOT EXISTS (SELECT 1 FROM psn.Profesor WHERE @cod_prof = @cod_prof)
+    IF NOT EXISTS (SELECT 1 FROM Persona.Profesor WHERE @cod_prof = @cod_prof)
     BEGIN
         PRINT 'Error: No se encontró profesor.';
         RETURN;
     END;
 
     IF EXISTS (
-        SELECT 1 FROM psn.Clase
+        SELECT 1 FROM Club.Clase
         WHERE categoria = @categoria AND cod_actividad = @cod_actividad
               AND dia = @dia AND horario = @horario
     )
@@ -2440,7 +2431,7 @@ BEGIN
         RETURN;
     END;
 
-    INSERT INTO psn.Clase (categoria, cod_actividad, dia, horario, cod_prof)
+    INSERT INTO Club.Clase (categoria, cod_actividad, dia, horario, cod_prof)
     VALUES (@categoria, @cod_actividad, @dia, @horario, @cod_prof);
 
     PRINT 'Clase insertada correctamente.';
@@ -2452,11 +2443,11 @@ GO
 
 IF EXISTS (SELECT * FROM sys.procedures WHERE name = 'modificarClase')
 BEGIN
-    DROP PROCEDURE stp.modificarClase;
+    DROP PROCEDURE Actividad.modificarClase;
 END;
 GO
 
-CREATE OR ALTER PROCEDURE stp.modificarClase
+CREATE OR ALTER PROCEDURE Actividad.modificarClase
     @cod_clase     INT,
     @categoria     INT,
     @cod_actividad INT,
@@ -2478,26 +2469,26 @@ BEGIN
         RETURN;
     END;
 
-    IF NOT EXISTS (SELECT 1 FROM psn.Clase WHERE cod_clase = @cod_clase)
+    IF NOT EXISTS (SELECT 1 FROM Club.Clase WHERE cod_clase = @cod_clase)
     BEGIN
         PRINT 'Error: La clase especificada no existe.';
         RETURN;
     END;
 
-    IF NOT EXISTS (SELECT 1 FROM psn.Categoria WHERE cod_categoria = @categoria)
+    IF NOT EXISTS (SELECT 1 FROM Club.Categoria WHERE cod_categoria = @categoria)
     BEGIN
         PRINT 'Error: La nueva categoría especificada no existe.';
         RETURN;
     END;
 
-    IF NOT EXISTS (SELECT 1 FROM psn.Actividad WHERE cod_actividad = @cod_actividad)
+    IF NOT EXISTS (SELECT 1 FROM Club.Actividad WHERE cod_actividad = @cod_actividad)
     BEGIN
         PRINT 'Error: La nueva actividad especificada no existe.';
         RETURN;
     END;
 
     IF EXISTS (
-        SELECT 1 FROM psn.Clase
+        SELECT 1 FROM Club.Clase
         WHERE categoria = @categoria AND cod_actividad = @cod_actividad
               AND dia = @dia AND horario = @horario
               AND cod_clase <> @cod_clase
@@ -2507,7 +2498,7 @@ BEGIN
         RETURN;
     END;
 
-    UPDATE psn.Clase
+    UPDATE Club.Clase
     SET
         categoria     = @categoria,
         cod_actividad = @cod_actividad,
@@ -2524,11 +2515,11 @@ GO
 
 IF EXISTS (SELECT * FROM sys.procedures WHERE name = 'borrarClase')
 BEGIN
-    DROP PROCEDURE stp.borrarClase;
+    DROP PROCEDURE Actividad.borrarClase;
 END;
 GO
 
-CREATE OR ALTER PROCEDURE stp.borrarClase
+CREATE OR ALTER PROCEDURE Actividad.borrarClase
     @cod_clase INT
 AS
 BEGIN
@@ -2540,13 +2531,13 @@ BEGIN
         RETURN;
     END;
 
-    IF NOT EXISTS (SELECT 1 FROM psn.Clase WHERE cod_clase = @cod_clase)
+    IF NOT EXISTS (SELECT 1 FROM Club.Clase WHERE cod_clase = @cod_clase)
     BEGIN
         PRINT 'Error: La clase con el código especificado no existe.';
         RETURN;
     END;
 
-    DELETE FROM psn.Clase
+    DELETE FROM Club.Clase
     WHERE cod_clase = @cod_clase;
 
     PRINT 'Clase eliminada correctamente.';
@@ -2564,11 +2555,11 @@ GO
 
 IF EXISTS (SELECT * FROM sys.procedures WHERE name = 'insertarItem_factura')
 BEGIN
-    DROP PROCEDURE stp.insertarItem_factura;
+    DROP PROCEDURE Finanzas.insertarItem_factura;
 END;
 GO
 
-CREATE OR ALTER PROCEDURE stp.insertarItem_factura
+CREATE OR ALTER PROCEDURE Finanzas.insertarItem_factura
     @cod_item INT,
     @cod_Factura INT,
     @monto DECIMAL(10,2),
@@ -2579,7 +2570,7 @@ BEGIN
 
     -- Validar existencia de la factura
     IF NOT EXISTS (
-        SELECT 1 FROM psn.Factura WHERE cod_Factura = @cod_Factura
+        SELECT 1 FROM Finanzas.Factura WHERE cod_Factura = @cod_Factura
     )
     BEGIN
         PRINT 'Error: La factura con el código ' + CAST(@cod_Factura AS VARCHAR) + ' no existe.';
@@ -2588,7 +2579,7 @@ BEGIN
 
     -- Validar que no exista el mismo cod_item en esa factura
     IF EXISTS (
-        SELECT 1 FROM psn.Item_Factura WHERE cod_item = @cod_item AND cod_Factura = @cod_Factura
+        SELECT 1 FROM Finanzas.Item_Factura WHERE cod_item = @cod_item AND cod_Factura = @cod_Factura
     )
     BEGIN
         PRINT 'Error: Ya existe un item con el mismo cod_item para esta factura.';
@@ -2612,10 +2603,10 @@ BEGIN
     -- Inserción
     BEGIN TRANSACTION;
     BEGIN TRY
-        INSERT INTO psn.Item_Factura (cod_item, cod_Factura, monto, descripcion)
+        INSERT INTO Finanzas.Item_Factura (cod_item, cod_Factura, monto, descripcion)
         VALUES (@cod_item, @cod_Factura, @monto, @descripcion);
 
-        UPDATE psn.Factura
+        UPDATE Finanzas.Factura
         SET monto = monto + @monto
         WHERE cod_Factura = @cod_Factura;
 
@@ -2635,11 +2626,11 @@ GO
 
 IF EXISTS (SELECT * FROM sys.procedures WHERE name = 'modificarItem_factura')
 BEGIN
-    DROP PROCEDURE stp.modificarItem_factura;
+    DROP PROCEDURE Finanzas.modificarItem_factura;
 END;
 GO
 
-CREATE OR ALTER PROCEDURE stp.modificarItem_Factura
+CREATE OR ALTER PROCEDURE Finanzas.modificarItem_Factura
     @cod_item INT,
     @cod_Factura INT,
     @monto DECIMAL(10,2),
@@ -2650,7 +2641,7 @@ BEGIN
 
 	-- Validar existencia de la factura
     IF NOT EXISTS (
-        SELECT 1 FROM psn.Factura WHERE cod_Factura = @cod_Factura
+        SELECT 1 FROM Finanzas.Factura WHERE cod_Factura = @cod_Factura
     )
     BEGIN
         PRINT 'Error: La factura con el código ' + CAST(@cod_Factura AS VARCHAR) + ' no existe.';
@@ -2660,7 +2651,7 @@ BEGIN
     -- Validar que el item exista
     IF NOT EXISTS (
         SELECT 1
-        FROM psn.Item_Factura
+        FROM Finanzas.Item_Factura
         WHERE cod_Factura = @cod_Factura
           AND cod_item = @cod_item
     )
@@ -2686,15 +2677,15 @@ BEGIN
     -- Actualizar los datos del item y factura
     BEGIN TRANSACTION;
     BEGIN TRY
-        DECLARE @monto_anterior DECIMAL(10,2) = (SELECT monto FROM psn.Item_Factura WHERE cod_Factura = @cod_Factura AND cod_item = @cod_item);
+        DECLARE @monto_anterior DECIMAL(10,2) = (SELECT monto FROM Finanzas.Item_Factura WHERE cod_Factura = @cod_Factura AND cod_item = @cod_item);
 
-        UPDATE psn.Item_Factura
+        UPDATE Finanzas.Item_Factura
         SET monto = @monto,
             descripcion = @descripcion
         WHERE cod_Factura = @cod_Factura
           AND cod_item = @cod_item;
 
-        UPDATE psn.Factura
+        UPDATE Finanzas.Factura
         SET monto = monto - @monto_anterior + @monto
         WHERE cod_Factura = @cod_Factura;
 
@@ -2714,18 +2705,18 @@ GO
 -- BORRADO ITEM_FACTURA
 IF EXISTS (SELECT * FROM sys.procedures WHERE name = 'borrarItem_factura')
 BEGIN
-    DROP PROCEDURE stp.borrarItem_factura;
+    DROP PROCEDURE Finanzas.borrarItem_factura;
 END;
 GO
 
-CREATE OR ALTER PROCEDURE stp.borrarItem_factura
+CREATE OR ALTER PROCEDURE Finanzas.borrarItem_factura
     @cod_item INT,
     @cod_factura INT
 AS
 BEGIN
     SET NOCOUNT ON;
 
-    IF NOT EXISTS (SELECT 1 FROM psn.Factura WHERE cod_Factura = @cod_Factura)
+    IF NOT EXISTS (SELECT 1 FROM Finanzas.Factura WHERE cod_Factura = @cod_Factura)
     BEGIN
         PRINT 'Error: La factura con el código ' + CAST(@cod_Factura AS VARCHAR) + ' no existe.';
         RETURN;
@@ -2734,7 +2725,7 @@ BEGIN
     DECLARE @monto_item_a_borrar DECIMAL(10,2);
 
     SELECT @monto_item_a_borrar = monto
-    FROM psn.Item_Factura
+    FROM Finanzas.Item_Factura
     WHERE cod_Factura = @cod_Factura AND cod_item = @cod_item;
 
     IF @monto_item_a_borrar IS NULL
@@ -2745,10 +2736,10 @@ BEGIN
 
     BEGIN TRANSACTION;
     BEGIN TRY
-        DELETE FROM psn.Item_Factura
+        DELETE FROM Finanzas.Item_Factura
         WHERE cod_Factura = @cod_Factura AND cod_item = @cod_item;
 
-        UPDATE psn.Factura
+        UPDATE Finanzas.Factura
         SET monto = monto - @monto_item_a_borrar
         WHERE cod_Factura = @cod_Factura;
 
@@ -2770,11 +2761,11 @@ GO
 
 IF EXISTS (SELECT * FROM sys.procedures WHERE name = 'insertarAsiste')
 BEGIN
-    DROP PROCEDURE stp.insertarAsiste;
+    DROP PROCEDURE Actividad.insertarAsiste;
 END;
 GO
 
-CREATE PROCEDURE stp.insertarAsiste
+CREATE PROCEDURE Actividad.insertarAsiste
     @fecha      DATE,
     @cod_socio  VARCHAR(15),
     @cod_clase  INT,
@@ -2804,7 +2795,7 @@ BEGIN
     END
 
     IF NOT EXISTS (
-    SELECT 1 FROM psn.Socio
+    SELECT 1 FROM Persona.Socio
         WHERE cod_socio = @cod_socio
     )
     BEGIN
@@ -2819,7 +2810,7 @@ BEGIN
     END
 
     IF NOT EXISTS (
-        SELECT 1 FROM psn.Clase
+        SELECT 1 FROM Club.Clase
         WHERE cod_clase = @cod_clase
     )
     BEGIN
@@ -2828,7 +2819,7 @@ BEGIN
     END
 
     IF NOT EXISTS (
-        SELECT 1 FROM psn.Inscripto
+        SELECT 1 FROM Actividad.Inscripto
         WHERE @cod_socio = cod_socio AND cod_clase = @cod_clase
     )
     BEGIN
@@ -2838,7 +2829,7 @@ BEGIN
 
     -- Validar si ya existe ese registro
     IF EXISTS (
-        SELECT 1 FROM psn.Asiste
+        SELECT 1 FROM Actividad.Asiste
         WHERE fecha = @fecha AND cod_socio = @cod_socio AND cod_clase = @cod_clase
     )
     BEGIN
@@ -2847,7 +2838,7 @@ BEGIN
     END
 
     -- Inserción
-    INSERT INTO psn.Asiste (fecha, cod_socio, cod_clase, estado)
+    INSERT INTO Actividad.Asiste (fecha, cod_socio, cod_clase, estado)
     VALUES (@fecha, @cod_socio, @cod_clase, @estado);
 
     PRINT 'Asistencia registrada correctamente.';
@@ -2858,11 +2849,11 @@ GO
 
 IF EXISTS (SELECT * FROM sys.procedures WHERE name = 'modificarAsiste')
 BEGIN
-    DROP PROCEDURE stp.modificarAsiste;
+    DROP PROCEDURE Actividad.modificarAsiste;
 END;
 GO
 
-CREATE PROCEDURE stp.modificarAsiste
+CREATE PROCEDURE Actividad.modificarAsiste
     @fecha_original     DATE,
     @cod_socio_original VARCHAR(15),
     @cod_clase_original INT,
@@ -2888,7 +2879,7 @@ BEGIN
     END
 
     IF NOT EXISTS (
-    SELECT 1 FROM psn.Socio
+    SELECT 1 FROM Persona.Socio
         WHERE cod_socio = @nuevo_cod_socio
     )
     BEGIN
@@ -2903,7 +2894,7 @@ BEGIN
     END
 
     IF NOT EXISTS (
-        SELECT 1 FROM psn.Clase
+        SELECT 1 FROM Club.Clase
         WHERE cod_clase = @nuevo_cod_clase
     )
     BEGIN
@@ -2912,7 +2903,7 @@ BEGIN
     END
 
     IF NOT EXISTS (
-        SELECT 1 FROM psn.Inscripto
+        SELECT 1 FROM Actividad.Inscripto
         WHERE @nuevo_cod_socio = cod_socio AND cod_clase = @nuevo_cod_clase
     )
     BEGIN
@@ -2928,7 +2919,7 @@ BEGIN
 
     -- Validar existencia del registro original
     IF NOT EXISTS (
-        SELECT 1 FROM psn.Asiste
+        SELECT 1 FROM Actividad.Asiste
         WHERE fecha = @fecha_original AND cod_socio = @cod_socio_original AND cod_clase = @cod_clase_original
     )
     BEGIN
@@ -2938,7 +2929,7 @@ BEGIN
 
     -- Validar duplicado en nuevos valores
     IF EXISTS (
-        SELECT 1 FROM psn.Asiste
+        SELECT 1 FROM Actividad.Asiste
         WHERE fecha = @nueva_fecha AND cod_socio = @nuevo_cod_socio AND cod_clase = @nuevo_cod_clase
           AND NOT (
               fecha = @fecha_original AND
@@ -2952,7 +2943,7 @@ BEGIN
     END
 
     -- Actualización
-    UPDATE psn.Asiste
+    UPDATE Actividad.Asiste
     SET fecha = @nueva_fecha,
         cod_socio = @nuevo_cod_socio,
         cod_clase = @nuevo_cod_clase,
@@ -2967,11 +2958,11 @@ GO
 
 IF EXISTS (SELECT * FROM sys.procedures WHERE name = 'borrarAsiste')
 BEGIN
-    DROP PROCEDURE stp.borrarAsiste;
+    DROP PROCEDURE Actividad.borrarAsiste;
 END;
 GO
 
-CREATE PROCEDURE stp.borrarAsiste
+CREATE PROCEDURE Actividad.borrarAsiste
     @fecha      DATE,
     @cod_socio  VARCHAR(15),
     @cod_clase  INT
@@ -2981,7 +2972,7 @@ BEGIN
 
     -- Validar existencia del registro
     IF NOT EXISTS (
-        SELECT 1 FROM psn.Asiste
+        SELECT 1 FROM Actividad.Asiste
         WHERE fecha = @fecha AND cod_socio = @cod_socio AND cod_clase = @cod_clase
     )
     BEGIN
@@ -2990,7 +2981,7 @@ BEGIN
     END
 
     -- Eliminación
-    DELETE FROM psn.Asiste
+    DELETE FROM Actividad.Asiste
     WHERE fecha = @fecha AND cod_socio = @cod_socio AND cod_clase = @cod_clase;
 
     PRINT 'Asistencia eliminada correctamente.';
@@ -3003,10 +2994,10 @@ GO
 -- INSERCION INSCRIPTO
 
 IF EXISTS (SELECT * FROM sys.procedures WHERE name = 'insertarInscripto')
-    DROP PROCEDURE stp.insertarInscripto;
+    DROP PROCEDURE Actividad.insertarInscripto;
 GO
 
-CREATE PROCEDURE stp.insertarInscripto
+CREATE PROCEDURE Actividad.insertarInscripto
     @fecha_inscripcion DATE,
     @estado            VARCHAR(50),
     @cod_socio         VARCHAR(15),
@@ -3042,7 +3033,7 @@ BEGIN
 
     -- Validar duplicado
     IF EXISTS (
-        SELECT 1 FROM psn.Inscripto
+        SELECT 1 FROM Actividad.Inscripto
         WHERE fecha_inscripcion = @fecha_inscripcion AND cod_socio = @cod_socio AND cod_clase = @cod_clase
     )
     BEGIN
@@ -3051,7 +3042,7 @@ BEGIN
     END
 
     -- Inserción
-    INSERT INTO psn.Inscripto (fecha_inscripcion, estado, cod_socio, cod_clase)
+    INSERT INTO Actividad.Inscripto (fecha_inscripcion, estado, cod_socio, cod_clase)
     VALUES (@fecha_inscripcion, @estado, @cod_socio, @cod_clase);
 
     PRINT 'Inscripción registrada correctamente.';
@@ -3061,10 +3052,10 @@ GO
 -- MODIFICACION INSCRIPTO
 
 IF EXISTS (SELECT * FROM sys.procedures WHERE name = 'modificarInscripto')
-    DROP PROCEDURE stp.modificarInscripto;
+    DROP PROCEDURE Actividad.modificarInscripto;
 GO
 
-CREATE PROCEDURE stp.modificarInscripto
+CREATE PROCEDURE Actividad.modificarInscripto
     @fecha_original     DATE,
     @cod_socio_original VARCHAR(15),
     @cod_clase_original INT,
@@ -3078,7 +3069,7 @@ BEGIN
 
     -- Validar existencia del registro original
     IF NOT EXISTS (
-        SELECT 1 FROM psn.Inscripto
+        SELECT 1 FROM Actividad.Inscripto
         WHERE fecha_inscripcion = @fecha_original AND cod_socio = @cod_socio_original AND cod_clase = @cod_clase_original
     )
     BEGIN
@@ -3113,7 +3104,7 @@ BEGIN
 
     -- Validar duplicado con nuevos datos
     IF EXISTS (
-        SELECT 1 FROM psn.Inscripto
+        SELECT 1 FROM Actividad.Inscripto
         WHERE fecha_inscripcion = @nueva_fecha AND cod_socio = @nuevo_cod_socio AND cod_clase = @nuevo_cod_clase
           AND NOT (
               fecha_inscripcion = @fecha_original AND
@@ -3127,7 +3118,7 @@ BEGIN
     END
 
     -- Actualización
-    UPDATE psn.Inscripto
+    UPDATE Actividad.Inscripto
     SET fecha_inscripcion = @nueva_fecha,
         estado = @nuevo_estado,
         cod_socio = @nuevo_cod_socio,
@@ -3144,10 +3135,10 @@ GO
 -- BORRADO INSCRIPTO
 
 IF EXISTS (SELECT * FROM sys.procedures WHERE name = 'borrarInscripto')
-    DROP PROCEDURE stp.borrarInscripto;
+    DROP PROCEDURE Actividad.borrarInscripto;
 GO
 
-CREATE PROCEDURE stp.borrarInscripto
+CREATE PROCEDURE Actividad.borrarInscripto
     @fecha_inscripcion DATE,
     @cod_socio         VARCHAR(15),
     @cod_clase         INT
@@ -3157,7 +3148,7 @@ BEGIN
 
     -- Validar existencia
     IF NOT EXISTS (
-        SELECT 1 FROM psn.Inscripto
+        SELECT 1 FROM Actividad.Inscripto
         WHERE fecha_inscripcion = @fecha_inscripcion AND cod_socio = @cod_socio AND cod_clase = @cod_clase
     )
     BEGIN
@@ -3166,7 +3157,7 @@ BEGIN
     END
 
     -- Eliminación
-    DELETE FROM psn.Inscripto
+    DELETE FROM Actividad.Inscripto
     WHERE fecha_inscripcion = @fecha_inscripcion
       AND cod_socio = @cod_socio
       AND cod_clase = @cod_clase;

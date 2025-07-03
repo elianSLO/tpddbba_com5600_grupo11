@@ -282,9 +282,9 @@ GO
 ----------------------------------------------------------------------------------------------------------------
 
 -- TABLA CLASE
-IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'Com5600G11.Club.Clase') AND type = N'U') 
+IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'Com5600G11.Actividad.Clase') AND type = N'U') 
 	BEGIN
-		CREATE TABLE Club.Clase (
+		CREATE TABLE Actividad.Clase (
 			cod_clase			INT IDENTITY (1,1) PRIMARY KEY,
 			categoria			INT NOT NULL,
 			cod_actividad		INT NOT NULL,

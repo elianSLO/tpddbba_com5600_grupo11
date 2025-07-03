@@ -1,11 +1,11 @@
 /*
 ====================================================================================
  Archivo		: 04.1_Importacion.sql
- Proyecto		: Institución Deportiva Sol Norte.
- Descripción	: Scripts para importar datos a las tablas desde xls y csv.
+ Proyecto		: Instituciï¿½n Deportiva Sol Norte.
+ Descripciï¿½n	: Scripts para importar datos a las tablas desde xls y csv.
  Autor			: COM5600_G11
  Fecha entrega	: 2025-06-20
- Versión		: 1.0
+ Versiï¿½n		: 1.0
 ====================================================================================
 */
 
@@ -27,11 +27,11 @@ RECONFIGURE;
 --	Permito que el proveedor OLEDB (Microsoft.ACE.OLEDB.12.0) se ejecute dentro del proceso de SQL Server.
 EXEC sp_MSset_oledb_prop N'Microsoft.ACE.OLEDB.12.0', N'AllowInProcess', 1;		
 
---	Habilito el pasaje de parámetros a las consultas dinámicas.
+--	Habilito el pasaje de parï¿½metros a las consultas dinï¿½micas.
 EXEC sp_MSset_oledb_prop N'Microsoft.ACE.OLEDB.12.0', N'DynamicParameters', 1;		
 GO
 
---Chequear nombre del servicio para  darle permiso de acceso a los directorios donde se guarda la información.
+--Chequear nombre del servicio para  darle permiso de acceso a los directorios donde se guarda la informaciï¿½n.
 /*
 SELECT servicename, service_account			
 FROM sys.dm_server_services;
@@ -263,7 +263,7 @@ BEGIN
 
 	WHILE @@FETCH_STATUS = 0
 	BEGIN
-		-- Limpieza y conversión
+		-- Limpieza y conversiï¿½n
 		SET @cod_socio				= LEFT(LTRIM(RTRIM(@tcod_socio)), 15);
 		SET @nombre					= LEFT(LTRIM(RTRIM(@tnombre)), 50);
 		SET @apellido				= LEFT(LTRIM(RTRIM(@tapellido)), 50);
@@ -276,7 +276,7 @@ BEGIN
 		SET @nro_afiliado			= LEFT(LTRIM(RTRIM(@tnro_afiliado)), 50);
 		SET @tel_cobertura			= LEFT(LTRIM(RTRIM(@ttel_cobertura)), 15);
 
-		-- Validación
+		-- Validaciï¿½n
 		DECLARE @resultado INT = 0;
 		BEGIN TRY
 			EXEC @resultado = stp.insertarSocio
@@ -388,13 +388,13 @@ BEGIN
 
 	WHILE @@FETCH_STATUS = 0
 	BEGIN
-		-- Limpieza y conversión
+		-- Limpieza y conversiï¿½n
 		SET @nombre = LEFT(
 			REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(
 			REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(
 			LTRIM(RTRIM(@tnombre)),
-			'á','a'), 'é','e'), 'í','i'), 'ó','o'), 'ú','u'),
-			'Á','A'), 'É','E'), 'Í','I'), 'Ó','O'), 'Ú','U'),
+			'ï¿½','a'), 'ï¿½','e'), 'ï¿½','i'), 'ï¿½','o'), 'ï¿½','u'),
+			'ï¿½','A'), 'ï¿½','E'), 'ï¿½','I'), 'ï¿½','O'), 'ï¿½','U'),
 		50);
 
 		SET @valor_mensual			= TRY_CONVERT(DECIMAL(10,2),REPLACE(LTRIM(RTRIM(@tvalor_mensual)), CHAR(160), ''));
@@ -529,7 +529,7 @@ BEGIN
 	
 	WHILE @@FETCH_STATUS = 0
 	BEGIN
-		-- Limpieza y conversión
+		-- Limpieza y conversiï¿½n
 		SET @descripcion			= LEFT(LTRIM(RTRIM(@tdescripcion)), 50);
 		SET @valor_mensual			= TRY_CONVERT(DECIMAL(10,2),REPLACE(LTRIM(RTRIM(@tvalor_mensual)), CHAR(160), ''));
 		SET @vig_valor_mens			= TRY_CONVERT(DATE, REPLACE(LTRIM(RTRIM(@tvig_valor_mens)), CHAR(160), ''), 103); -- dd/MM/yyyy
@@ -605,10 +605,10 @@ CREATE OR ALTER PROCEDURE imp.Importar_Asistencias
 AS
 BEGIN
     IF @mostrarErrores NOT BETWEEN 0 AND 1
-        THROW 50001, 'El parámetro @mostrarErrores debe ser 0 o 1.', 1;
+        THROW 50001, 'El parÃ¡metro @mostrarErrores debe ser 0 o 1.', 1;
 
     IF @mostrarImportadas NOT BETWEEN 0 AND 1
-        THROW 50002, 'El parámetro @mostrarImportadas debe ser 0 o 1.', 1;
+        THROW 50002, 'El parÃ¡metro @mostrarImportadas debe ser 0 o 1.', 1;
 
 	SET NOCOUNT ON;
 
@@ -616,14 +616,14 @@ BEGIN
 	IF OBJECT_ID('tempdb..#LogErroresImportacion') IS NOT NULL DROP TABLE #LogErroresImportacion;
 	CREATE TABLE #LogErroresImportacion 
 	(
-		Id             			INT IDENTITY(1,1) PRIMARY KEY,
-   		FechaHoraError 			DATETIME DEFAULT GETDATE(),
-   		Nro_Socio_Excel			VARCHAR(15) NULL,
-   		Actividad_Excel			VARCHAR(50) NULL,
-   		Fecha_Asistencia_Excel	NVARCHAR(50) NULL,
-   		Asistencia_Estado_Excel VARCHAR(5) NULL,
-   		Profesor_Excel 			VARCHAR(50) NULL,
-   		Motivo_Error   			VARCHAR(MAX)
+		Id                          INT IDENTITY(1,1) PRIMARY KEY,
+        FechaHoraError              DATETIME DEFAULT GETDATE(),
+        Nro_Socio_Excel             VARCHAR(15) NULL,
+        Actividad_Excel             VARCHAR(50) NULL,
+        Fecha_Asistencia_Excel      NVARCHAR(50) NULL,
+        Asistencia_Estado_Excel     VARCHAR(5) NULL,
+        Profesor_Excel              VARCHAR(50) NULL,
+        Motivo_Error                VARCHAR(MAX)
 	);
 
 	BEGIN TRANSACTION;
@@ -631,218 +631,210 @@ BEGIN
 
 		SET LANGUAGE 'Spanish';
 		
-   		IF OBJECT_ID('tempdb..#AsistenciaCruda') IS NOT NULL DROP TABLE #AsistenciaCruda;
-   		CREATE TABLE #AsistenciaCruda 
+        IF OBJECT_ID('tempdb..#AsistenciaCruda') IS NOT NULL DROP TABLE #AsistenciaCruda;
+        CREATE TABLE #AsistenciaCruda 
 		(
-       		Nro_Socio_Excel   			VARCHAR(15),
-       		Actividad_Excel     		VARCHAR(50),
-       		Fecha_Asistencia_Excel		NVARCHAR(50),
-       		Asistencia_Estado_Excel		VARCHAR(5),
-       		Profesor_Excel     			VARCHAR(50)
-   		);
+            Nro_Socio_Excel             VARCHAR(15),
+            Actividad_Excel             VARCHAR(50),
+            Fecha_Asistencia_Excel      NVARCHAR(50),
+            Asistencia_Estado_Excel     VARCHAR(5),
+            Profesor_Excel              VARCHAR(50)
+		);
 
 		DECLARE @Comando NVARCHAR(MAX);
 		SET @Comando = '
 			INSERT INTO #AsistenciaCruda (Nro_Socio_Excel, Actividad_Excel, Fecha_Asistencia_Excel, Asistencia_Estado_Excel, Profesor_Excel)
-   			SELECT
-       			[Nro de Socio],
-       			Actividad,
-       			[fecha de asistencia],
-       			Asistencia,
-       			Profesor
+            SELECT
+                [Nro de Socio],
+                Actividad,
+                [fecha de asistencia],
+                Asistencia,
+                Profesor
 			FROM OPENROWSET(
 				''Microsoft.ACE.OLEDB.12.0'',
 				''Excel 12.0;Database=' + @RutaArchivo + ';HDR=YES;'',
 				''SELECT * FROM [presentismo_actividades$]''
 			);';
-   		
+        
 		EXEC(@Comando);
-   		-- Validar existencias de Socio, Actividad y Profesor y transformar la fecha.
+        -- Validar existencias de Socio, Actividad y Profesor y transformar la fecha.
 
-   		IF OBJECT_ID('tempdb..#AsistenciaValidadaPaso1') IS NOT NULL DROP TABLE #AsistenciaValidadaPaso1;
-   		CREATE TABLE #AsistenciaValidadaPaso1 (
-       		id_cruda           				INT IDENTITY(1,1) PRIMARY KEY,
-       		Nro_Socio_Excel_Src				VARCHAR(15),
-       		Actividad_Excel_Src				VARCHAR(50),
-       		Fecha_Asistencia_Excel_Src		NVARCHAR(50),
-       		Asistencia_Estado_Excel_Src		VARCHAR(5),
-       		Profesor_Excel_Src 				VARCHAR(50),
+        IF OBJECT_ID('tempdb..#AsistenciaValidadaPaso1') IS NOT NULL DROP TABLE #AsistenciaValidadaPaso1;
+        CREATE TABLE #AsistenciaValidadaPaso1 (
+            id_cruda                    INT IDENTITY(1,1) PRIMARY KEY,
+            Nro_Socio_Excel_Src         VARCHAR(15),
+            Actividad_Excel_Src         VARCHAR(50),
+            Fecha_Asistencia_Excel_Src  NVARCHAR(50),
+            Asistencia_Estado_Excel_Src VARCHAR(5),
+            Profesor_Excel_Src          VARCHAR(50),
 
-       		cod_socio           			VARCHAR(15) NOT NULL,
-       		cod_actividad       			INT NOT NULL,
-       		cod_profesor       				INT NOT NULL,
-       		fecha_asistencia   				DATE NOT NULL,
-       		estado_asistencia   			CHAR(1) NOT NULL,
-       		dia_semana_asistencia			VARCHAR(9) NOT NULL -- dia de semana ('Lunes', 'Martes')
-   		);
+            cod_socio                   VARCHAR(15) NOT NULL,
+            cod_actividad               INT NOT NULL,
+            cod_profesor                INT NOT NULL,
+            fecha_asistencia            DATE NOT NULL,
+            estado_asistencia           CHAR(1) NOT NULL,
+            dia_semana_asistencia       VARCHAR(9) NOT NULL -- dia de semana ('Lunes', 'Martes')
+        );
 
-   		-- Insertar en la tabla validada y registrar errores de no existencia
-   		INSERT INTO #AsistenciaValidadaPaso1 (
-       		Nro_Socio_Excel_Src, Actividad_Excel_Src, Fecha_Asistencia_Excel_Src, Asistencia_Estado_Excel_Src, Profesor_Excel_Src,
-       		cod_socio, cod_actividad, cod_profesor, fecha_asistencia, estado_asistencia, dia_semana_asistencia
-   		)
-   		SELECT
-       		AC.Nro_Socio_Excel,
-       		AC.Actividad_Excel,
-       		AC.Fecha_Asistencia_Excel,
-       		AC.Asistencia_Estado_Excel,
-       		AC.Profesor_Excel,
-       		S.cod_socio,
-       		ACT.cod_actividad,
-       		P.cod_prof,
-       		TRY_CAST(AC.Fecha_Asistencia_Excel AS DATE),
-       		LEFT(AC.Asistencia_Estado_Excel, 1), -- se toma solo el primer caracter
-       		DATENAME(dw, TRY_CAST(AC.Fecha_Asistencia_Excel AS DATE))
-   		FROM
-       		#AsistenciaCruda AS AC
-   		LEFT JOIN
-       		psn.Socio AS S ON AC.Nro_Socio_Excel = S.cod_socio
-   		LEFT JOIN
-       		psn.Actividad AS ACT ON AC.Actividad_Excel = ACT.nombre
-   		LEFT JOIN
-       		psn.Profesor AS P ON TRIM(AC.Profesor_Excel) = P.nombre + ' ' + P.apellido COLLATE Modern_Spanish_CI_AS
-   		WHERE
-       		S.cod_socio IS NOT NULL
-       		AND ACT.cod_actividad IS NOT NULL
-       		AND P.cod_prof IS NOT NULL
-       		AND TRY_CAST(AC.Fecha_Asistencia_Excel AS DATE) IS NOT NULL
-			AND LEFT(AC.Asistencia_Estado_Excel, 1) IN ('P','A','J'); -- [MODIFICACION]: Reestablecido el filtro de estados válidos
-
-
-   		-- Registrar errores de filas que no se pudieron validar
-   		INSERT INTO #LogErroresImportacion (
-       		Nro_Socio_Excel, Actividad_Excel, Fecha_Asistencia_Excel, Asistencia_Estado_Excel, Profesor_Excel, Motivo_Error
-   		)
-   		SELECT
-       		AC.Nro_Socio_Excel,
-       		AC.Actividad_Excel,
-       		AC.Fecha_Asistencia_Excel,
-       		AC.Asistencia_Estado_Excel,
-       		AC.Profesor_Excel,
-       		CASE
-           		WHEN S.cod_socio IS NULL THEN 'Socio no existe en la base de datos.'
-           		WHEN ACT.cod_actividad IS NULL THEN 'Actividad no existe en la base de datos.'
-           		WHEN P.cod_prof IS NULL THEN 'Profesor no existe en la base de datos.'
-           		WHEN TRY_CAST(AC.Fecha_Asistencia_Excel AS DATE) IS NULL THEN 'Formato de fecha de asistencia inválido: ' + AC.Fecha_Asistencia_Excel
-           		WHEN LEFT(AC.Asistencia_Estado_Excel, 1) NOT IN ('P','A','J') THEN 'Estado de asistencia inválido: ' + AC.Asistencia_Estado_Excel
-           		ELSE 'Error de validación desconocido en Paso 2.'
-       		END
-   		FROM
-       		#AsistenciaCruda AS AC
-   		LEFT JOIN
-       		psn.Socio AS S ON AC.Nro_Socio_Excel = S.cod_socio
-   		LEFT JOIN
-       		psn.Actividad AS ACT ON AC.Actividad_Excel = ACT.nombre
-   		LEFT JOIN
-       		psn.Profesor AS P ON TRIM(AC.Profesor_Excel) = P.nombre + ' ' + P.apellido COLLATE Modern_Spanish_CI_AS 
-   		WHERE
-       		S.cod_socio IS NULL
-       		OR ACT.cod_actividad IS NULL
-       		OR P.cod_prof IS NULL
-       		OR TRY_CAST(AC.Fecha_Asistencia_Excel AS DATE) IS NULL
-       		OR LEFT(AC.Asistencia_Estado_Excel, 1) NOT IN ('P','A','J');
+        -- Insertar en la tabla validada y registrar errores de no existencia
+        INSERT INTO #AsistenciaValidadaPaso1 (
+            Nro_Socio_Excel_Src, Actividad_Excel_Src, Fecha_Asistencia_Excel_Src, Asistencia_Estado_Excel_Src, Profesor_Excel_Src,
+            cod_socio, cod_actividad, cod_profesor, fecha_asistencia, estado_asistencia, dia_semana_asistencia
+        )
+        SELECT
+            AC.Nro_Socio_Excel,
+            AC.Actividad_Excel,
+            AC.Fecha_Asistencia_Excel,
+            AC.Asistencia_Estado_Excel,
+            AC.Profesor_Excel,
+            S.cod_socio,
+            ACT.cod_actividad,
+            P.cod_prof,
+            TRY_CAST(AC.Fecha_Asistencia_Excel AS DATE),
+            LEFT(AC.Asistencia_Estado_Excel, 1), -- se toma solo el primer caracter
+            DATENAME(dw, TRY_CAST(AC.Fecha_Asistencia_Excel AS DATE))
+        FROM
+            #AsistenciaCruda AS AC
+        LEFT JOIN
+            psn.Socio AS S ON AC.Nro_Socio_Excel = S.cod_socio
+        LEFT JOIN
+            psn.Actividad AS ACT ON AC.Actividad_Excel = ACT.nombre
+        LEFT JOIN
+            psn.Profesor AS P ON TRIM(AC.Profesor_Excel) = P.nombre + ' ' + P.apellido COLLATE Modern_Spanish_CI_AS
+        WHERE
+            S.cod_socio IS NOT NULL
+            AND ACT.cod_actividad IS NOT NULL
+            AND P.cod_prof IS NOT NULL
+            AND TRY_CAST(AC.Fecha_Asistencia_Excel AS DATE) IS NOT NULL
+            AND LEFT(AC.Asistencia_Estado_Excel, 1) IN ('P','A','J'); -- [MODIFICACION]: Reestablecido el filtro de estados vÃ¡lidos
 
 
-   		-- Validar Inscripcion del Socio en la Actividad y Coincidencia del Dia de Clase. Preparar las asistencias finales para la insercion.
+        -- Registrar errores de filas que no se pudieron validar
+        INSERT INTO #LogErroresImportacion (
+            Nro_Socio_Excel, Actividad_Excel, Fecha_Asistencia_Excel, Asistencia_Estado_Excel, Profesor_Excel, Motivo_Error
+        )
+        SELECT
+            AC.Nro_Socio_Excel,
+            AC.Actividad_Excel,
+            AC.Fecha_Asistencia_Excel,
+            AC.Asistencia_Estado_Excel,
+            AC.Profesor_Excel,
+            CASE
+                WHEN S.cod_socio IS NULL THEN 'Socio no existe en la base de datos.'
+                WHEN ACT.cod_actividad IS NULL THEN 'Actividad no existe en la base de datos.'
+                WHEN P.cod_prof IS NULL THEN 'Profesor no existe en la base de datos.'
+                WHEN TRY_CAST(AC.Fecha_Asistencia_Excel AS DATE) IS NULL THEN 'Formato de fecha de asistencia invÃ¡lido: ' + AC.Fecha_Asistencia_Excel
+                WHEN LEFT(AC.Asistencia_Estado_Excel, 1) NOT IN ('P','A','J') THEN 'Estado de asistencia invÃ¡lido: ' + AC.Asistencia_Estado_Excel
+                ELSE 'Error de validaciÃ³n desconocido en Paso 2.'
+            END
+        FROM
+            #AsistenciaCruda AS AC
+        LEFT JOIN
+            psn.Socio AS S ON AC.Nro_Socio_Excel = S.cod_socio
+        LEFT JOIN
+            psn.Actividad AS ACT ON AC.Actividad_Excel = ACT.nombre
+        LEFT JOIN
+            psn.Profesor AS P ON TRIM(AC.Profesor_Excel) = P.nombre + ' ' + P.apellido COLLATE Modern_Spanish_CI_AS 
+        WHERE
+            S.cod_socio IS NULL
+            OR ACT.cod_actividad IS NULL
+            OR P.cod_prof IS NULL
+            OR TRY_CAST(AC.Fecha_Asistencia_Excel AS DATE) IS NULL
+            OR LEFT(AC.Asistencia_Estado_Excel, 1) NOT IN ('P','A','J');
 
 
-   		IF OBJECT_ID('tempdb..#AsistenciasFinales') IS NOT NULL DROP TABLE #AsistenciasFinales;
-
-   		CREATE TABLE #AsistenciasFinales (
-       		fecha           DATE NOT NULL,
-       		cod_socio       VARCHAR(15) NOT NULL,
-       		cod_clase       INT NOT NULL,
-       		estado          CHAR(1) NOT NULL,
-       		cod_profesor    INT NOT NULL,
-       		PRIMARY KEY (fecha, cod_socio, cod_clase)
-   		);
-
-   		-- Insertar en la tabla final solo las asistencias que cumplen todas las condiciones
-   		INSERT INTO #AsistenciasFinales (fecha, cod_socio, cod_clase, estado, cod_profesor)
-   		SELECT DISTINCT -- por si un socio esta inscripto en multiples clases con el mismo dia y actividad
-       		AV.fecha_asistencia,
-       		AV.cod_socio,
-       		C.cod_clase,
-       		AV.estado_asistencia,
-       		AV.cod_profesor
-   		FROM
-       		#AsistenciaValidadaPaso1 AS AV
-   		INNER JOIN
-       		psn.Inscripto AS I ON AV.cod_socio = I.cod_socio
-   		INNER JOIN
-       		psn.Clase AS C ON I.cod_clase = C.cod_clase
-                         	 AND AV.cod_actividad = C.cod_actividad
-                         	 AND AV.dia_semana_asistencia = C.dia
-                         	 AND AV.cod_profesor = C.cod_prof;
-
-   		-- Registrar errores de filas que no se pudieron validar
-   		INSERT INTO #LogErroresImportacion (
-       		Nro_Socio_Excel, Actividad_Excel, Fecha_Asistencia_Excel, Asistencia_Estado_Excel, Profesor_Excel, Motivo_Error
-   		)
-   		SELECT
-       		AV.Nro_Socio_Excel_Src,
-       		AV.Actividad_Excel_Src,
-       		AV.Fecha_Asistencia_Excel_Src,
-       		AV.Asistencia_Estado_Excel_Src,
-       		AV.Profesor_Excel_Src,
-       		CASE
-           		WHEN NOT EXISTS (SELECT 1 FROM psn.Inscripto I JOIN psn.Clase C ON I.cod_clase = C.cod_clase WHERE I.cod_socio = AV.cod_socio AND C.cod_actividad = AV.cod_actividad) THEN 'Socio no inscripto en la actividad especificada.'
-           		WHEN NOT EXISTS (SELECT 1 FROM psn.Inscripto I JOIN psn.Clase C ON I.cod_clase = C.cod_clase WHERE I.cod_socio = AV.cod_socio AND C.cod_actividad = AV.cod_actividad AND C.dia = AV.dia_semana_asistencia) THEN 'Día de asistencia no coincide con ningún día de clase del socio para esta actividad.'
-           		ELSE 'Validación de inscripción o clase fallida. (Motivo no especificado en CASE)' -- [MODIFICACION]: Mensaje más descriptivo
-       		END
-   		FROM
-       		#AsistenciaValidadaPaso1 AS AV
-   		LEFT JOIN
-       		#AsistenciasFinales AS AF ON AV.cod_socio = AF.cod_socio
-                                   	   AND AV.fecha_asistencia = AF.fecha
-                                   	   AND AV.cod_profesor = AF.cod_profesor
-   		WHERE
-       		AF.fecha IS NULL;
-
-   		-- Insertar las asistencias en la tabla final psn.Asiste
-
-   		DECLARE @Fecha DATE;
-   		DECLARE @CodSocio VARCHAR(15);
-   		DECLARE @CodClase INT;
-   		DECLARE @Estado CHAR(1);
-
-   		-- Crear un cursor para iterar sobre las filas de #AsistenciasFinales que NO existen en psn.Asiste
-   		DECLARE cur_asistencias CURSOR LOCAL FORWARD_ONLY FOR
-   		SELECT
-       		AF.fecha,
-       		AF.cod_socio,
-       		AF.cod_clase,
-       		AF.estado
-   		FROM
-       		#AsistenciasFinales AS AF
-   		LEFT JOIN
-       		psn.Asiste AS PA ON AF.fecha = PA.fecha AND AF.cod_socio = PA.cod_socio AND AF.cod_clase = PA.cod_clase
-   		WHERE
-       		PA.fecha IS NULL;
-
-   		OPEN cur_asistencias;
-
-   		FETCH NEXT FROM cur_asistencias INTO @Fecha, @CodSocio, @CodClase, @Estado;
-
-   		WHILE @@FETCH_STATUS = 0
-   		BEGIN
-
-       		EXEC stp.insertarAsiste
-           		@fecha      = @Fecha,
-           		@cod_socio  = @CodSocio,
-           		@cod_clase  = @CodClase,
-           		@estado     = @Estado
-
-       		FETCH NEXT FROM cur_asistencias INTO @Fecha, @CodSocio, @CodClase, @Estado;
-   		END;
-
-   		CLOSE cur_asistencias;
-   		DEALLOCATE cur_asistencias;
+        -- Validar Inscripcion del Socio en la Actividad y Coincidencia del Dia de Clase. Preparar las asistencias finales para la insercion.
 
 
-   		-- Si todo fue bien, confirmar la transaccion
-   		COMMIT TRANSACTION;
-   		PRINT 'Importacion completada exitosamente.';
+        IF OBJECT_ID('tempdb..#AsistenciasFinales') IS NOT NULL DROP TABLE #AsistenciasFinales;
+
+        CREATE TABLE #AsistenciasFinales (
+            fecha                   DATE NOT NULL,
+            cod_socio               VARCHAR(15) NOT NULL,
+            cod_clase               INT NOT NULL,
+            estado                  CHAR(1) NOT NULL,
+            cod_profesor            INT NOT NULL,
+            PRIMARY KEY (fecha, cod_socio, cod_clase)
+        );
+
+        -- Insertar en la tabla final solo las asistencias que cumplen todas las condiciones
+        INSERT INTO #AsistenciasFinales (fecha, cod_socio, cod_clase, estado, cod_profesor)
+        SELECT DISTINCT -- por si un socio esta inscripto en multiples clases con el mismo dia y actividad
+            AV.fecha_asistencia,
+            AV.cod_socio,
+            C.cod_clase,
+            AV.estado_asistencia,
+            AV.cod_profesor
+        FROM
+            #AsistenciaValidadaPaso1 AS AV
+        INNER JOIN
+            psn.Inscripto AS I ON AV.cod_socio = I.cod_socio
+        INNER JOIN
+            psn.Clase AS C ON I.cod_clase = C.cod_clase
+                                AND AV.cod_actividad = C.cod_actividad
+                                AND AV.dia_semana_asistencia = C.dia
+                                AND AV.cod_profesor = C.cod_prof;
+
+        -- Registrar errores de filas que no se pudieron validar
+        INSERT INTO #LogErroresImportacion (
+            Nro_Socio_Excel, Actividad_Excel, Fecha_Asistencia_Excel, Asistencia_Estado_Excel, Profesor_Excel, Motivo_Error
+        )
+        SELECT
+            AV.Nro_Socio_Excel_Src,
+            AV.Actividad_Excel_Src,
+            AV.Fecha_Asistencia_Excel_Src,
+            AV.Asistencia_Estado_Excel_Src,
+            AV.Profesor_Excel_Src,
+            CASE
+                WHEN NOT EXISTS (SELECT 1 FROM psn.Inscripto I JOIN psn.Clase C ON I.cod_clase = C.cod_clase WHERE I.cod_socio = AV.cod_socio AND C.cod_actividad = AV.cod_actividad) THEN 'Socio no inscripto en la actividad especificada.'
+                WHEN NOT EXISTS (SELECT 1 FROM psn.Inscripto I JOIN psn.Clase C ON I.cod_clase = C.cod_clase WHERE I.cod_socio = AV.cod_socio AND C.cod_actividad = AV.cod_actividad AND C.dia = AV.dia_semana_asistencia) THEN 'DÃ­a de asistencia no coincide con ningÃºn dÃ­a de clase del socio para esta actividad.'
+                ELSE 'ValidaciÃ³n de inscripciÃ³n o clase fallida. (Motivo no especificado en CASE)' -- [MODIFICACION]: Mensaje mÃ¡s descriptivo
+            END
+        FROM
+            #AsistenciaValidadaPaso1 AS AV
+        LEFT JOIN
+            #AsistenciasFinales AS AF ON AV.cod_socio = AF.cod_socio
+                                        AND AV.fecha_asistencia = AF.fecha
+                                        AND AV.cod_profesor = AF.cod_profesor
+        WHERE
+            AF.fecha IS NULL;
+
+        -- Insertar las asistencias en la tabla final psn.Asiste
+
+		-- Crear una tabla temporal con un ID para iterar
+		IF OBJECT_ID('tempdb..#AsistenciasParaInsertar') IS NOT NULL DROP TABLE #AsistenciasParaInsertar;
+		SELECT IDENTITY(INT, 1, 1) AS RowID, AF.fecha, AF.cod_socio, AF.cod_clase, AF.estado
+		INTO #AsistenciasParaInsertar
+		FROM #AsistenciasFinales AS AF
+		LEFT JOIN psn.Asiste AS PA ON AF.fecha = PA.fecha AND AF.cod_socio = PA.cod_socio AND AF.cod_clase = PA.cod_clase
+		WHERE PA.fecha IS NULL;
+
+		DECLARE @RowCount INT = (SELECT COUNT(*) FROM #AsistenciasParaInsertar);
+		DECLARE @CurrentRow INT = 1;
+
+		WHILE @CurrentRow <= @RowCount
+		BEGIN
+			SELECT
+				@Fecha = fecha,
+				@CodSocio = cod_socio,
+				@CodClase = cod_clase,
+				@Estado = estado
+			FROM #AsistenciasParaInsertar
+			WHERE RowID = @CurrentRow;
+
+            EXEC stp.insertarAsiste
+                @fecha      = @Fecha,
+                @cod_socio  = @CodSocio,
+                @cod_clase  = @CodClase,
+                @estado     = @Estado;
+
+			SET @CurrentRow = @CurrentRow + 1;
+		END;
+
+
+        -- Si todo fue bien, confirmar la transaccion
+        COMMIT TRANSACTION;
+        PRINT 'Importacion completada exitosamente.';
 		IF @mostrarErrores = 1
 		BEGIN
 			SELECT * FROM #LogErroresImportacion;
@@ -855,20 +847,20 @@ BEGIN
 	END TRY
 	BEGIN CATCH
 
-   		ROLLBACK TRANSACTION;
-   		INSERT INTO #LogErroresImportacion (
-       		Nro_Socio_Excel, Actividad_Excel, Fecha_Asistencia_Excel, Asistencia_Estado_Excel, Profesor_Excel, Motivo_Error
-   		)
-   		VALUES (
-       		NULL, 
-       		NULL, 
-       		NULL,
-       		NULL,
-       		NULL,
-       		'Error general en el proceso de importacion: ' + ERROR_MESSAGE()
-   		);
+        ROLLBACK TRANSACTION;
+        INSERT INTO #LogErroresImportacion (
+            Nro_Socio_Excel, Actividad_Excel, Fecha_Asistencia_Excel, Asistencia_Estado_Excel, Profesor_Excel, Motivo_Error
+        )
+        VALUES (
+            NULL, 
+            NULL, 
+            NULL,
+            NULL,
+            NULL,
+            'Error general en el proceso de importacion: ' + ERROR_MESSAGE()
+        );
 
-   		PRINT 'Importación fallida. La transaccion ha sido revertida. Error: ' + ERROR_MESSAGE();
+        PRINT 'ImportaciÃ³n fallida. La transaccion ha sido revertida. Error: ' + ERROR_MESSAGE();
 
 	END CATCH;
 
@@ -1062,13 +1054,13 @@ UPDATE psn.Actividad
 SET nombre = 'Ajedrez'
 WHERE nombre ='Ajederez'
 UPDATE psn.Actividad
-SET nombre = 'Vóley'
+SET nombre = 'Vï¿½ley'
 WHERE nombre ='Voley'
 UPDATE psn.Actividad
-SET nombre = 'Baile artístico'
+SET nombre = 'Baile artï¿½stico'
 WHERE nombre ='Baile artistico'
 UPDATE psn.Actividad
-SET nombre = 'Natación'
+SET nombre = 'Nataciï¿½n'
 WHERE nombre ='Natacion'
 
 select * from psn.Profesor

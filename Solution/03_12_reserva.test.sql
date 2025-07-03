@@ -4,14 +4,14 @@ GO
 -- 9. RESERVA
 
 -- Limpiar la tabla psn.Reserva para pruebas
-DELETE FROM psn.Reserva;
-DBCC CHECKIDENT ('psn.Reserva', RESEED, 0);
+DELETE FROM Actividad.Reserva;
+DBCC CHECKIDENT ('Actividad.Reserva', RESEED, 0);
 
 -- Vaciar tablas y Preparar tablas
-DELETE FROM psn.Socio;
-DELETE FROM psn.Invitado;
+DELETE FROM Persona.Socio;
+DELETE FROM Persona.Invitado;
 -- responsable
-EXEC stp.insertarInvitado
+EXEC Persona.insertarInvitado
 	@dni = '87654429',
     @cod_invitado = 'NS-0001',
 	@nombre = 'Carlos',
@@ -26,7 +26,7 @@ EXEC stp.insertarInvitado
 	@nro_afiliado = 'X12345',
 	@tel_cobertura = '1150000001',
 	@cod_responsable = NULL;
-EXEC stp.insertarSocio
+EXEC Persona.insertarSocio
     @cod_socio = 'SN-12345',
     @dni = '12345678',
     @nombre = 'Juan',
@@ -41,7 +41,7 @@ EXEC stp.insertarSocio
     @nro_afiliado = 'OS12345678',
     @tel_cobertura = '1144556677',
     @cod_responsable = NULL;
-EXEC stp.insertarSocio
+EXEC Persona.insertarSocio
     @cod_socio = 'SN-56789',
     @dni = '12333378',
     @nombre = 'Maria',
@@ -60,7 +60,7 @@ EXEC stp.insertarSocio
 --9.1 INSERCIÓN DE RESERVAS
 
 -- 9.1.1 INSERCIÓN VÁLIDA (Reserva de Socio)
-EXEC stp.insertarReserva
+EXEC Actividad.insertarReserva
     @cod_socio = 'SN-12345',
     @cod_invitado = NULL,
     @monto = 500.00,
@@ -69,10 +69,10 @@ EXEC stp.insertarReserva
     @piletaSUMColonia = 'Pileta Principal';
 
 -- Verificación de inserción
-SELECT * FROM psn.Reserva WHERE cod_socio = 'SN-12345';
+SELECT * FROM Actividad.Reserva WHERE cod_socio = 'SN-12345';
 
 -- 9.1.2 INSERCIÓN VÁLIDA (Reserva de Invitado)
-EXEC stp.insertarReserva
+EXEC Actividad.insertarReserva
     @cod_socio = NULL,
     @cod_invitado = 'NS-0001',
     @monto = 750.00,
@@ -81,10 +81,10 @@ EXEC stp.insertarReserva
     @piletaSUMColonia = 'SUM';
 
 -- Verificación de inserción
-SELECT * FROM psn.Reserva WHERE cod_invitado = 'NS-0001';
+SELECT * FROM Actividad.Reserva WHERE cod_invitado = 'NS-0001';
 
 -- 9.1.3 Error: Ni cod_socio ni cod_invitado especificados (debe dar error)
-EXEC stp.insertarReserva
+EXEC Actividad.insertarReserva
     @cod_socio = NULL,
     @cod_invitado = NULL,
     @monto = 100.00,
@@ -93,7 +93,7 @@ EXEC stp.insertarReserva
     @piletaSUMColonia = 'Colonia';
 
 -- 9.1.4 Error: Ambos cod_socio y cod_invitado especificados (debe dar error)
-EXEC stp.insertarReserva
+EXEC Actividad.insertarReserva
     @cod_socio = 'SN-12345',
     @cod_invitado = 'NS-0001',
     @monto = 200.00,
@@ -102,7 +102,7 @@ EXEC stp.insertarReserva
     @piletaSUMColonia = 'Pileta Niños';
 
 -- 9.1.5 Error: Formato de cod_socio erróneo (menos de 4 dígitos) (debe dar error)
-EXEC stp.insertarReserva
+EXEC Actividad.insertarReserva
     @cod_socio = 'SN-123',
     @cod_invitado = NULL,
     @monto = 300.00,
@@ -111,7 +111,7 @@ EXEC stp.insertarReserva
     @piletaSUMColonia = 'Cancha Futbol';
 
 -- 9.1.6 Error: Formato de cod_invitado erróneo (más de 4 dígitos, según SP) (debe dar error)
-EXEC stp.insertarReserva
+EXEC Actividad.insertarReserva
     @cod_socio = NULL,
     @cod_invitado = 'NS-00001', -- El SP solo acepta 4 dígitos para invitado
     @monto = 300.00,
@@ -120,7 +120,7 @@ EXEC stp.insertarReserva
     @piletaSUMColonia = 'Cancha Futbol';
 
 -- 9.1.7 Error: cod_socio no existente (debe dar error)
-EXEC stp.insertarReserva
+EXEC Actividad.insertarReserva
     @cod_socio = 'SN-9999',
     @cod_invitado = NULL,
     @monto = 400.00,
@@ -129,7 +129,7 @@ EXEC stp.insertarReserva
     @piletaSUMColonia = 'Gimnasio';
 
 -- 9.1.8 Error: cod_invitado no existente (debe dar error)
-EXEC stp.insertarReserva
+EXEC Actividad.insertarReserva
     @cod_socio = NULL,
     @cod_invitado = 'NS-9999',
     @monto = 500.00,
@@ -138,7 +138,7 @@ EXEC stp.insertarReserva
     @piletaSUMColonia = 'Salón Eventos';
 
 -- 9.1.9 Error: Monto NULL (debe dar error)
-EXEC stp.insertarReserva
+EXEC Actividad.insertarReserva
     @cod_socio = 'SN-12345',
     @cod_invitado = NULL,
     @monto = NULL, -- Inválido
@@ -147,7 +147,7 @@ EXEC stp.insertarReserva
     @piletaSUMColonia = 'Cancha Tenis';
 
 -- 9.1.10 Error: fechainicio NULL (debe dar error)
-EXEC stp.insertarReserva
+EXEC Actividad.insertarReserva
     @cod_socio = 'SN-12345',
     @cod_invitado = NULL,
     @monto = 100.00,
@@ -156,7 +156,7 @@ EXEC stp.insertarReserva
     @piletaSUMColonia = 'Cancha Tenis';
 
 -- 9.1.11 Error: fechafin NULL (debe dar error)
-EXEC stp.insertarReserva
+EXEC Actividad.insertarReserva
     @cod_socio = 'SN-12345',
     @cod_invitado = NULL,
     @monto = 100.00,
@@ -165,7 +165,7 @@ EXEC stp.insertarReserva
     @piletaSUMColonia = 'Cancha Tenis';
 
 -- 9.1.12 Error: piletaSUMColonia NULL (debe dar error)
-EXEC stp.insertarReserva
+EXEC Actividad.insertarReserva
     @cod_socio = 'SN-12345',
     @cod_invitado = NULL,
     @monto = 100.00,
@@ -174,7 +174,7 @@ EXEC stp.insertarReserva
     @piletaSUMColonia = NULL; -- Inválido
 
 -- 9.1.13 Error: Fecha y hora de inicio en el pasado (debe dar error)
-EXEC stp.insertarReserva
+EXEC Actividad.insertarReserva
     @cod_socio = 'SN-12345',
     @cod_invitado = NULL,
     @monto = 600.00,
@@ -183,7 +183,7 @@ EXEC stp.insertarReserva
     @piletaSUMColonia = 'Pileta Principal';
 
 -- 9.1.14 Error: Fecha y hora de inicio es igual o posterior a la de fin (debe dar error)
-EXEC stp.insertarReserva
+EXEC Actividad.insertarReserva
     @cod_socio = 'SN-12345',
     @cod_invitado = NULL,
     @monto = 700.00,
@@ -191,7 +191,7 @@ EXEC stp.insertarReserva
     @fechahoraFin = '2025-07-11 10:00:00', -- Igual
     @piletaSUMColonia = 'Pileta Principal';
 
-EXEC stp.insertarReserva
+EXEC Actividad.insertarReserva
     @cod_socio = 'SN-12345',
     @cod_invitado = NULL,
     @monto = 700.00,
@@ -200,7 +200,7 @@ EXEC stp.insertarReserva
     @piletaSUMColonia = 'Pileta Principal';
 
 -- 9.1.15 Error: Duración de reserva menor a 60 minutos (debe dar error)
-EXEC stp.insertarReserva
+EXEC Actividad.insertarReserva
     @cod_socio = 'SN-12345',
     @cod_invitado = NULL,
     @monto = 800.00,
@@ -209,7 +209,7 @@ EXEC stp.insertarReserva
     @piletaSUMColonia = 'Pileta Principal';
 
 -- 9.1.16 Error: Monto de reserva menor o igual a cero (debe dar error)
-EXEC stp.insertarReserva
+EXEC Actividad.insertarReserva
     @cod_socio = 'SN-12345',
     @cod_invitado = NULL,
     @monto = 0.00, -- Inválido
@@ -219,7 +219,7 @@ EXEC stp.insertarReserva
 
 -- 9.1.17 Error: Solapamiento de reserva para el mismo recurso (debe dar error)
 -- Insertar una reserva base para generar solapamiento
-EXEC stp.insertarReserva
+EXEC Actividad.insertarReserva
     @cod_socio = 'SN-12345',
     @cod_invitado = NULL,
     @monto = 500.00,
@@ -228,7 +228,7 @@ EXEC stp.insertarReserva
     @piletaSUMColonia = 'SUM';
 
 -- Intento de solapamiento total
-EXEC stp.insertarReserva
+EXEC Actividad.insertarReserva
     @cod_socio = 'SN-12345',
     @cod_invitado = NULL,
     @monto = 550.00,
@@ -237,7 +237,7 @@ EXEC stp.insertarReserva
     @piletaSUMColonia = 'SUM';
 
 -- Intento de solapamiento al inicio
-EXEC stp.insertarReserva
+EXEC Actividad.insertarReserva
     @cod_socio = 'SN-56789', -- Se cambió el socio para evitar la misma persona
     @cod_invitado = NULL,
     @monto = 550.00,
@@ -246,7 +246,7 @@ EXEC stp.insertarReserva
     @piletaSUMColonia = 'SUM';
 
 -- Intento de solapamiento al final
-EXEC stp.insertarReserva
+EXEC Actividad.insertarReserva
     @cod_socio = 'SN-12345',
     @cod_invitado = NULL,
     @monto = 550.00,
@@ -260,7 +260,7 @@ EXEC stp.insertarReserva
 
 -- Insertar una reserva para modificar
 DECLARE @codReservaModificar INT;
-EXEC stp.insertarReserva
+EXEC Actividad.insertarReserva
     @cod_socio = 'SN-56789',
     @cod_invitado = NULL,
     @monto = 900.00,
@@ -270,7 +270,7 @@ EXEC stp.insertarReserva
     @return_cod_reserva = @codReservaModificar OUTPUT; -- Obtener el ID de la reserva recién insertada
 
 -- 9.2.1 MODIFICACIÓN VÁLIDA
-EXEC stp.modificarReserva
+EXEC Actividad.modificarReserva
     @cod_reserva = @codReservaModificar,
     @cod_socio = 'SN-12345', -- Cambiando socio
     @cod_invitado = NULL,
@@ -280,11 +280,11 @@ EXEC stp.modificarReserva
     @piletaSUMColonia = 'Colonia';
 
 -- Verificación de modificación
--- SELECT * FROM psn.Reserva WHERE cod_reserva = @codReservaModificar;
+   SELECT * FROM Actividad.Reserva WHERE cod_reserva = @codReservaModificar;
 
 -- Insertar otra reserva para modificar (con invitado)
 DECLARE @codReservaModificar2 INT;
-EXEC stp.insertarReserva
+EXEC Actividad.insertarReserva
     @cod_socio = NULL,
     @cod_invitado = 'NS-0002',
     @monto = 600.00,
@@ -294,7 +294,7 @@ EXEC stp.insertarReserva
     @return_cod_reserva = @codReservaModificar2 OUTPUT;
 
 -- 9.2.2 MODIFICACIÓN VÁLIDA (cambiando de invitado a socio)
-EXEC stp.modificarReserva
+EXEC Actividad.modificarReserva
     @cod_reserva = @codReservaModificar2,
     @cod_socio = 'SN-12345',
     @cod_invitado = NULL,
@@ -307,7 +307,7 @@ EXEC stp.modificarReserva
 -- SELECT * FROM psn.Reserva WHERE cod_reserva = @codReservaModificar2;
 
 -- 9.2.3 Error: Código de reserva no existente (debe dar error)
-EXEC stp.modificarReserva
+EXEC Actividad.modificarReserva
     @cod_reserva = 9999, -- No existe
     @cod_socio = 'SN-12345',
     @cod_invitado = NULL,
@@ -317,7 +317,7 @@ EXEC stp.modificarReserva
     @piletaSUMColonia = 'Pileta Principal';
 
 -- 9.2.4 Error: Ni cod_socio ni cod_invitado especificados (debe dar error)
-EXEC stp.modificarReserva
+EXEC Actividad.modificarReserva
     @cod_reserva = @codReservaModificar,
     @cod_socio = NULL,
     @cod_invitado = NULL,
@@ -327,7 +327,7 @@ EXEC stp.modificarReserva
     @piletaSUMColonia = 'Pileta Principal';
 
 -- 9.2.5 Error: Ambos cod_socio y cod_invitado especificados (debe dar error)
-EXEC stp.modificarReserva
+EXEC Actividad.modificarReserva
     @cod_reserva = @codReservaModificar,
     @cod_socio = 'SN-12345',
     @cod_invitado = 'NS-0001',
@@ -337,7 +337,7 @@ EXEC stp.modificarReserva
     @piletaSUMColonia = 'Pileta Principal';
 
 -- 9.2.6 Error: Formato de cod_socio erróneo (debe dar error)
-EXEC stp.modificarReserva
+EXEC Actividad.modificarReserva
     @cod_reserva = @codReservaModificar,
     @cod_socio = 'SN-ABC',
     @cod_invitado = NULL,
@@ -347,7 +347,7 @@ EXEC stp.modificarReserva
     @piletaSUMColonia = 'Pileta Principal';
 
 -- 9.2.7 Error: cod_socio no existente (debe dar error)
-EXEC stp.modificarReserva
+EXEC Actividad.modificarReserva
     @cod_reserva = @codReservaModificar,
     @cod_socio = 'SN-9999',
     @cod_invitado = NULL,
@@ -357,7 +357,7 @@ EXEC stp.modificarReserva
     @piletaSUMColonia = 'Pileta Principal';
 
 -- 9.2.8 Error: Fecha de inicio en el pasado (debe dar error)
-EXEC stp.modificarReserva
+EXEC Actividad.modificarReserva
     @cod_reserva = @codReservaModificar,
     @cod_socio = 'SN-12345',
     @cod_invitado = NULL,
@@ -367,7 +367,7 @@ EXEC stp.modificarReserva
     @piletaSUMColonia = 'Pileta Principal';
 
 -- 9.2.9 Error: Monto menor o igual a cero (debe dar error)
-EXEC stp.modificarReserva
+EXEC Actividad.modificarReserva
     @cod_reserva = @codReservaModificar,
     @cod_socio = 'SN-12345',
     @cod_invitado = NULL,
@@ -379,7 +379,7 @@ EXEC stp.modificarReserva
 -- 9.2.10 Error: Solapamiento con otra reserva existente (debe dar error)
 -- Insertar una tercera reserva para causar solapamiento
 DECLARE @codReservaSolapada INT;
-EXEC stp.insertarReserva
+EXEC Actividad.insertarReserva
     @cod_socio = 'SN-12345',
     @cod_invitado = NULL,
     @monto = 400.00,
@@ -390,7 +390,7 @@ EXEC stp.insertarReserva
 PRINT 'Código de Reserva Solapada (esperado): ' + CAST(@codReservaSolapada AS VARCHAR(10));
 
 -- Intentar modificar @codReservaModificar para que se solape con @codReservaSolapada
-EXEC stp.modificarReserva
+EXEC Actividad.modificarReserva
     @cod_reserva = @codReservaModificar,
     @cod_socio = 'SN-56789', -- Se cambió el socio para evitar la misma persona
     @cod_invitado = NULL,
@@ -405,7 +405,7 @@ EXEC stp.modificarReserva
 
 -- Insertar una reserva para eliminar exitosamente
 DECLARE @codReservaEliminar INT;
-EXEC stp.insertarReserva
+EXEC Actividad.insertarReserva
     @cod_socio = 'SN-12345',
     @cod_invitado = NULL,
     @monto = 150.00,
@@ -415,10 +415,10 @@ EXEC stp.insertarReserva
     @return_cod_reserva = @codReservaEliminar OUTPUT;
 
 -- 9.3.1 Eliminación Exitosa
-EXEC stp.borrarReserva @cod_reserva = @codReservaEliminar;
+EXEC Actividad.borrarReserva @cod_reserva = @codReservaEliminar;
 
 -- Verificación de eliminación
 -- SELECT * FROM psn.Reserva WHERE cod_reserva = @codReservaEliminar; -- Debe retornar 0 filas
 
 -- 9.3.2 Eliminación Fallida (Reserva no existente)
-EXEC stp.borrarReserva @cod_reserva = 99999; -- No existe
+EXEC Actividad.borrarReserva @cod_reserva = 99999; -- No existe

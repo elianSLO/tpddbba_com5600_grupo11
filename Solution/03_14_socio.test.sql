@@ -1,15 +1,14 @@
-Use Com5600G11
+USE Com5600G11
 GO
 
 -----------PRUEBA 1: TABLA SOCIO
 
-DELETE FROM psn.Socio
+DELETE FROM Persona.Socio
 
 -- CASO 1.1 INSERCION
 
 -- CASO 1.1.1 Inserción válida
-
-EXEC stp.insertarSocio
+EXEC Persona.insertarSocio
     @cod_socio = 'SN-00001',
     @dni = '12345678',
     @nombre = 'Juan',
@@ -26,8 +25,7 @@ EXEC stp.insertarSocio
     @cod_responsable = 'NS-00001';
 
 -- CASO 1.1.2. DNI repetido (12345678 ya existe)
-
-EXEC stp.insertarSocio
+EXEC Persona.insertarSocio
     @cod_socio = 'SN-00002',
     @dni = '12345678',
     @nombre = 'Carlos',
@@ -44,8 +42,7 @@ EXEC stp.insertarSocio
     @cod_responsable = 'SN-00002';
 
 -- CASO 1.1.3. Código de socio con formato incorrecto
-
-EXEC stp.insertarSocio
+EXEC Persona.insertarSocio
     @cod_socio = 'S-00003',
     @dni = '23456789',
     @nombre = 'Ana',
@@ -61,9 +58,8 @@ EXEC stp.insertarSocio
     @tel_cobertura = '1156789012',
     @cod_responsable = 'SN-00003';
 
--- 1.1.4. Código de responsable con formato inválido
-
-EXEC stp.insertarSocio
+-- CASO 1.1.4. Código de responsable con formato inválido
+EXEC Persona.insertarSocio
     @cod_socio = 'SN-00004',
     @dni = '34567890',
     @nombre = 'Lucía',
@@ -77,18 +73,17 @@ EXEC stp.insertarSocio
     @nombre_cobertura = 'Galeno',
     @nro_afiliado = 'GL123456',
     @tel_cobertura = '1189012345',
-    @cod_responsable = 'XSN-00001'; -- inválido
+    @cod_responsable = 'XSN-00001';
 
--- 1.1.5. Teléfono con letras
-
-EXEC stp.insertarSocio
+-- CASO 1.1.5. Teléfono con letras
+EXEC Persona.insertarSocio
     @cod_socio = 'SN-00005',
     @dni = '45678901',
     @nombre = 'Pedro',
     @apellido = 'Ramírez',
     @fecha_nac = '1995-09-10',
     @email = 'pedro@mail.com',
-    @tel = '11ABC67890', -- inválido
+    @tel = '11ABC67890',
     @tel_emerg = '1122334455',
     @estado = 1,
     @saldo = 80,
@@ -97,15 +92,14 @@ EXEC stp.insertarSocio
     @tel_cobertura = '1133445566',
     @cod_responsable = 'SN-00005';
 
--- 1.1.6. Email inválido
-
-EXEC stp.insertarSocio
+-- CASO 1.1.6. Email inválido
+EXEC Persona.insertarSocio
     @cod_socio = 'SN-00006',
     @dni = '56789012',
     @nombre = 'María',
     @apellido = 'Suárez',
     @fecha_nac = '1993-11-25',
-    @email = 'maria.mail.com', -- inválido
+    @email = 'maria.mail.com',
     @tel = '1155667788',
     @tel_emerg = '1122334455',
     @estado = 1,
@@ -115,14 +109,13 @@ EXEC stp.insertarSocio
     @tel_cobertura = '1144556677',
     @cod_responsable = 'SN-00006';
 
--- 1.1.7. Fecha de nacimiento futura
-
-EXEC stp.insertarSocio
+-- CASO 1.1.7. Fecha de nacimiento futura
+EXEC Persona.insertarSocio
     @cod_socio = 'SN-00007',
     @dni = '67890123',
     @nombre = 'Esteban',
     @apellido = 'Sosa',
-    @fecha_nac = '2099-01-01', -- inválido
+    @fecha_nac = '2099-01-01',
     @email = 'esteban@mail.com',
     @tel = '1122446688',
     @tel_emerg = '1133557799',
@@ -133,9 +126,8 @@ EXEC stp.insertarSocio
     @tel_cobertura = '1177889900',
     @cod_responsable = 'NS-00007';
 
--- 1.1.8. Saldo negativo
-
-EXEC stp.insertarSocio
+-- CASO 1.1.8. Saldo negativo
+EXEC Persona.insertarSocio
     @cod_socio = 'SN-00008',
     @dni = '78901234',
     @nombre = 'Joaquín',
@@ -145,7 +137,7 @@ EXEC stp.insertarSocio
     @tel = '1199887766',
     @tel_emerg = '1122446688',
     @estado = 1,
-    @saldo = -100, -- inválido
+    @saldo = -100,
     @nombre_cobertura = 'Medicus',
     @nro_afiliado = 'MD654321',
     @tel_cobertura = '1166778899',
@@ -155,8 +147,7 @@ EXEC stp.insertarSocio
 -- CASO 1.2 MODIFICACION
 
 -- CASO 1.2.1 - Modificacion Valida
-
-EXEC stp.modificarSocio
+EXEC Persona.modificarSocio
     @cod_socio = 'SN-00001',
     @dni = '11112222',
     @nombre = 'Juan',
@@ -173,8 +164,8 @@ EXEC stp.modificarSocio
     @cod_responsable = 'SN-00001';
 
 -- CASO 1.2.2. Código de socio inexistente
-EXEC stp.modificarSocio
-    @cod_socio = 'SN-99999', -- no existe
+EXEC Persona.modificarSocio
+    @cod_socio = 'SN-99999',
     @dni = '12345678',
     @nombre = 'Carlos',
     @apellido = 'Rodríguez',
@@ -190,7 +181,7 @@ EXEC stp.modificarSocio
     @cod_responsable = 'NS-00002';
 
 -- CASO 1.2.3. Código de responsable inválido
-EXEC stp.modificarSocio
+EXEC Persona.modificarSocio
     @cod_socio = 'SN-00001',
     @dni = '11112222',
     @nombre = 'María',
@@ -204,17 +195,16 @@ EXEC stp.modificarSocio
     @nombre_cobertura = 'Medicus',
     @nro_afiliado = 'MD123456',
     @tel_cobertura = '1166778899',
-    @cod_responsable = 'XX-00001'; -- inválido
+    @cod_responsable = 'XX-00001';
 
 -- CASO 1.2.4. Email inválido
-
-EXEC stp.modificarSocio
+EXEC Persona.modificarSocio
     @cod_socio = 'SN-00001',
     @dni = '11112222',
     @nombre = 'Pedro',
     @apellido = 'Sosa',
     @fecha_nac = '1980-06-18',
-    @email = 'pedro.mail.com', -- mal formato
+    @email = 'pedro.mail.com',
     @tel = '1144556677',
     @tel_emerg = '1122334455',
     @estado = 1,
@@ -225,15 +215,14 @@ EXEC stp.modificarSocio
     @cod_responsable = 'NS-00002';
 
 -- CASO 1.2.5. Teléfono con letras
-
-EXEC stp.modificarSocio
+EXEC Persona.modificarSocio
     @cod_socio = 'SN-00001',
     @dni = '11112222',
     @nombre = 'Lucía',
     @apellido = 'García',
     @fecha_nac = '1999-02-15',
     @email = 'lucia@mail.com',
-    @tel = '11A234567', -- letras
+    @tel = '11A234567',
     @tel_emerg = '1144556677',
     @estado = 1,
     @saldo = 300,
@@ -243,13 +232,12 @@ EXEC stp.modificarSocio
     @cod_responsable = 'SN-00002';
 
 -- CASO 1.2.6. Fecha de nacimiento futura
-
-EXEC stp.modificarSocio
+EXEC Persona.modificarSocio
     @cod_socio = 'SN-00001',
     @dni = '11112222',
     @nombre = 'Esteban',
     @apellido = 'Martínez',
-    @fecha_nac = '2099-01-01', -- futura
+    @fecha_nac = '2099-01-01',
     @email = 'esteban@mail.com',
     @tel = '1122334455',
     @tel_emerg = '1122334455',
@@ -261,7 +249,7 @@ EXEC stp.modificarSocio
     @cod_responsable = 'SN-00001';
 
 -- CASO 1.2.7. Saldo negativo
-EXEC stp.modificarSocio
+EXEC Persona.modificarSocio
     @cod_socio = 'SN-00001',
     @dni = '11112222',
     @nombre = 'Joaquín',
@@ -271,7 +259,7 @@ EXEC stp.modificarSocio
     @tel = '1133557799',
     @tel_emerg = '1177889900',
     @estado = 1,
-    @saldo = -100, -- inválido
+    @saldo = -100,
     @nombre_cobertura = 'Medife',
     @nro_afiliado = 'MF123123',
     @tel_cobertura = '1188997766',
@@ -279,17 +267,17 @@ EXEC stp.modificarSocio
 
 -- CASO 1.3 BORRADO
 
--- 1.3.1.  Borrado válido (el socio SN-00001 debería existir si ejecutaste las pruebas anteriores)
-EXEC stp.borrarSocio @cod_socio = 'SN-00001';
+-- 1.3.1. Borrado válido
+EXEC Persona.borrarSocio @cod_socio = 'SN-00001';
 
 -- 1.3.2. Socio inexistente
-EXEC stp.borrarSocio @cod_socio = 'SN-99999';
+EXEC Persona.borrarSocio @cod_socio = 'SN-99999';
 
 -- 1.3.3. Formato de código inválido (letra de más)
-EXEC stp.borrarSocio @cod_socio = 'SNN-12345';
+EXEC Persona.borrarSocio @cod_socio = 'SNN-12345';
 
 -- 1.3.4. Formato de código inválido (faltan números)
-EXEC stp.borrarSocio @cod_socio = 'SN-123';
+EXEC Persona.borrarSocio @cod_socio = 'SN-123';
 
 -- 1.3.5. Código vacío
-EXEC stp.borrarSocio @cod_socio = '';
+EXEC Persona.borrarSocio @cod_socio = '';

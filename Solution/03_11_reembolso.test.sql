@@ -6,12 +6,12 @@ GO
 
 -- Limpiar la tabla para pruebas (solo si es seguro)
 
-DELETE FROM psn.Reembolso
-DBCC CHECKIDENT ('psn.Reembolso', RESEED, 0);
+DELETE FROM Finanzas.Reembolso
+DBCC CHECKIDENT ('Finanzas.Reembolso', RESEED, 0);
 
 -- 6.1 INSERCION
 
-EXEC stp.insertarReembolso
+EXEC Finanzas.insertarReembolso
     @monto = 1500.00,
     @medio_Pago = 'Transferencia',
     @fecha = '2025-06-10',
@@ -19,7 +19,7 @@ EXEC stp.insertarReembolso
 
 -- 6.2 MODIFICACION
 
-EXEC stp.modificarReembolso
+EXEC Finanzas.modificarReembolso
     @codReembolso = 1,
     @monto = 2000.00,
     @medio_Pago = 'Tarjeta de crédito',
@@ -30,8 +30,8 @@ EXEC stp.modificarReembolso
 
 -- 6.3.1 Borrado Exitoso
 
-EXEC stp.borrarReembolso @codReembolso = 1;
+EXEC Finanzas.borrarReembolso @codReembolso = 1;
 
 -- 6.3.2 Borrado Fallido
 
-EXEC stp.borrarReembolso @codReembolso = 99;
+EXEC Finanzas.borrarReembolso @codReembolso = 99;

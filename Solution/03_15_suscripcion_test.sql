@@ -6,9 +6,9 @@
 
 -- Inserto varios Socios en Tabla Socio
 
-DELETE FROM psn.Socio
+DELETE FROM Persona.Socio
 
-EXEC stp.insertarSocio
+EXEC Persona.insertarSocio
     @cod_socio = 'SN-00001',
     @dni = '12345678',
     @nombre = 'Juan',
@@ -24,7 +24,7 @@ EXEC stp.insertarSocio
     @tel_cobertura = '1144556677',
     @cod_responsable = NULL
 
-EXEC stp.insertarSocio
+EXEC Persona.insertarSocio
     @cod_socio = 'SN-00002',
     @dni = '23456789',
     @nombre = 'María',
@@ -40,7 +40,7 @@ EXEC stp.insertarSocio
     @tel_cobertura = '1199887766',
     @cod_responsable = NULL;
 
-EXEC stp.insertarSocio
+EXEC Persona.insertarSocio
     @cod_socio = 'SN-00003',
     @dni = '34567890',
     @nombre = 'Carlos',
@@ -56,7 +56,7 @@ EXEC stp.insertarSocio
     @tel_cobertura = '1133667788',
     @cod_responsable = NULL;
 
-EXEC stp.insertarSocio
+EXEC Persona.insertarSocio
     @cod_socio = 'SN-00004',
     @dni = '45678901',
     @nombre = 'Lucía',
@@ -72,7 +72,7 @@ EXEC stp.insertarSocio
     @tel_cobertura = '1122113344',
     @cod_responsable = NULL;
 
-EXEC stp.insertarSocio
+EXEC Persona.insertarSocio
     @cod_socio = 'SN-00005',
     @dni = '56789012',
     @nombre = 'Tomás',
@@ -90,19 +90,19 @@ EXEC stp.insertarSocio
 
 -- Verifico que se insertaron correctamente
 
-SELECT * FROM psn.Socio 
+SELECT * FROM Persona.Socio 
 
 
 ----- Inserto en tabla Categoria
 
 -- Limpiar la tabla para pruebas (solo si es seguro)
 
-DELETE FROM psn.Categoria
-DBCC CHECKIDENT ('psn.Categoria', RESEED, 0);
+DELETE FROM Actividad.Categoria
+DBCC CHECKIDENT ('Actividad.Categoria', RESEED, 0);
 
 -- INSERTO LAS 3 CATEGORIAS VALIDAS
 
-EXEC stp.insertarCategoria 
+EXEC Actividad.insertarCategoria 
     @descripcion = 'Menor',
 	@edad_max = 12,
     @valor_mensual = 10000.00, 
@@ -110,7 +110,7 @@ EXEC stp.insertarCategoria
     @valor_anual = 1200000.00, 
     @vig_valor_anual = '10-05-2025';
 
-EXEC stp.insertarCategoria 
+EXEC Actividad.insertarCategoria 
     @descripcion = 'Cadete',
 	@edad_max = 17,
     @valor_mensual = 10000.00, 
@@ -118,7 +118,7 @@ EXEC stp.insertarCategoria
     @valor_anual = 2000000.00, 
     @vig_valor_anual = '10-05-2025';
 
-EXEC stp.insertarCategoria 
+EXEC Actividad.insertarCategoria 
     @descripcion = 'Mayor',
 	@edad_max = 99,
     @valor_mensual = 25000.00, 
@@ -128,21 +128,21 @@ EXEC stp.insertarCategoria
 
 -- Verifico 
 
-SELECT * FROM psn.Categoria
+SELECT * FROM Actividad.Categoria
 
 
 -- Pruebo SP insertarSuscripcion
 
 -- Limpio la tabla Suscripcion para pruebas (si es seguro)
 
-DELETE FROM psn.Suscripcion
+DELETE FROM Club.Suscripcion
 
 
 ----------------------------------------------------------- 1. PRUEBAS STORED PROCEDURE insertarSuscripcion
 
 
 -- PRUEBA 1
-EXEC stp.insertarSuscripcion
+EXEC Club.insertarSuscripcion
     @cod_socio = 'SN-00003',
     @tipoSuscripcion = 'M',
     @cod_categoria = 2;  
@@ -151,7 +151,7 @@ EXEC stp.insertarSuscripcion
 
 -- PRUEBA 2: Suscripción válida anual
 -- Tomás (14 años) en categoría Cadete (edad_max = 17)
-EXEC stp.insertarSuscripcion
+EXEC Club.insertarSuscripcion
     @cod_socio = 'SN-00005',
     @tipoSuscripcion = 'A',
     @cod_categoria = 2; 
@@ -160,7 +160,7 @@ EXEC stp.insertarSuscripcion
 
 -- PRUEBA 3: Suscripción válida mensual
 -- Juan (35 años) en categoría Mayor (edad_max = 99)
-EXEC stp.insertarSuscripcion
+EXEC Club.insertarSuscripcion
     @cod_socio = 'SN-00001',
     @tipoSuscripcion = 'M',
     @cod_categoria = 3; 
@@ -168,7 +168,7 @@ EXEC stp.insertarSuscripcion
 
 
 -- PRUEBA 4: Tipo de suscripción inválido ('Z')
-EXEC stp.insertarSuscripcion
+EXEC Club.insertarSuscripcion
     @cod_socio = 'SN-00001',
     @tipoSuscripcion = 'Z',
     @cod_categoria = 3;
@@ -176,7 +176,7 @@ EXEC stp.insertarSuscripcion
 
 
 -- PRUEBA 5: Socio inexistente
-EXEC stp.insertarSuscripcion
+EXEC Club.insertarSuscripcion
     @cod_socio = 'SN-99999',
     @tipoSuscripcion = 'M',
     @cod_categoria = 1;
@@ -185,7 +185,7 @@ EXEC stp.insertarSuscripcion
 
 -- PRUEBA 6: Edad fuera de rango
 -- María (39 años) en categoría Menor (edad_max = 12)
-EXEC stp.insertarSuscripcion
+EXEC Club.insertarSuscripcion
     @cod_socio = 'SN-00002',
     @tipoSuscripcion = 'A',
     @cod_categoria = 1; 
@@ -193,7 +193,7 @@ EXEC stp.insertarSuscripcion
 
 
 -- Verificar resultados esperados del test (2 inserciones correctas, una mensual y una anual)
-SELECT * FROM psn.Suscripcion;
+SELECT * FROM Club.Suscripcion;
 
 
 --------------------------------------------------------2. PRUEBAS DE STORED PROCEDURE modificarSuscripcion
@@ -201,7 +201,7 @@ SELECT * FROM psn.Suscripcion;
 
 -- PRUEBA 1: Modificación correcta
 
-EXEC stp.modificarSuscripcion
+EXEC Club.modificarSuscripcion
     @cod_socio = 'SN-00005',
     @nueva_cat = 3,  
     @tiempo = 'A';
@@ -209,21 +209,21 @@ EXEC stp.modificarSuscripcion
 
 -- PRUEBA 2: Categoría incorrecta
 
-EXEC stp.modificarSuscripcion
+EXEC Club.modificarSuscripcion
     @cod_socio = 'SN-00001',
     @nueva_cat = 4,  
     @tiempo = 'M';
 
 -- PRUEBA 3: Socio que no tiene suscripción
 
-EXEC stp.modificarSuscripcion
+EXEC Club.modificarSuscripcion
     @cod_socio = 'SN-00002',  
     @nueva_cat = 3,
     @tiempo = 'M';
 
 -- PRUEBA 5: Tipo de Suscripción no válido
 
-EXEC stp.modificarSuscripcion
+EXEC Club.modificarSuscripcion
     @cod_socio = 'SN-00001',
     @nueva_cat = 3,  
     @tiempo = 'D';
@@ -235,42 +235,42 @@ EXEC stp.modificarSuscripcion
 
 -- Elimino suscripciones
 
-DELETE FROM psn.Suscripcion 
+DELETE FROM Club.Suscripcion 
 
 -- Inserto una suscripción para cada uno para probar luego el borrado
-EXEC stp.insertarSuscripcion
+EXEC Club.insertarSuscripcion
     @cod_socio = 'SN-00001',
     @tipoSuscripcion = 'M',
     @cod_categoria = 3;  
 
-EXEC stp.insertarSuscripcion
+EXEC Club.insertarSuscripcion
     @cod_socio = 'SN-00005',
     @tipoSuscripcion = 'A',
     @cod_categoria = 2;  
 
 -- VERIFICACIÓN DE INSERCIONES
 
-SELECT * FROM psn.Suscripcion WHERE cod_socio IN ('SN-00001', 'SN-00005');
+SELECT * FROM Club.Suscripcion WHERE cod_socio IN ('SN-00001', 'SN-00005');
 
 -- PRUEBA 3.1: Eliminar suscripción existente (SN-00001)
 
-EXEC stp.borrarSuscripcion @cod_socio = 'SN-00001';
+EXEC Club.borrarSuscripcion @cod_socio = 'SN-00001';
 
 --  PRUEBA 3.2: Eliminar nuevamente la misma (debería dar error)
 
-EXEC stp.borrarSuscripcion @cod_socio = 'SN-00001';
+EXEC Club.borrarSuscripcion @cod_socio = 'SN-00001';
 
 -- PRUEBA 3.3: Eliminar otra suscripción válida (SN-00005)
 
-EXEC stp.borrarSuscripcion @cod_socio = 'SN-00005';
+EXEC Club.borrarSuscripcion @cod_socio = 'SN-00005';
 
 -- PRUEBA 3.4: Intentar borrar un código inexistente
 
-EXEC stp.borrarSuscripcion @cod_socio = 'SN-99999';
+EXEC Club.borrarSuscripcion @cod_socio = 'SN-99999';
 
 --- VERIFICACIÓN FINAL: Los socios 1 y 5 fueron dados de baja como suscriptores
 
-SELECT * FROM psn.Suscripcion WHERE cod_socio IN ('SN-00001', 'SN-00005');
+SELECT * FROM Club.Suscripcion WHERE cod_socio IN ('SN-00001', 'SN-00005');
 
 
 

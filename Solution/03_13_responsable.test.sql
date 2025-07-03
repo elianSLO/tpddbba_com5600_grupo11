@@ -5,13 +5,13 @@ GO
 
 -- Limpiar la tabla para pruebas (solo si es seguro)
 
-DELETE FROM psn.Responsable
-DBCC CHECKIDENT ('psn.Responsable', RESEED, 0);
+DELETE FROM Persona.Responsable
+DBCC CHECKIDENT ('Persona.Responsable', RESEED, 0);
 
 
 -- 5.1 PRUEBA DE INSERCIÓN DE RESPONSABLE
 
-EXEC stp.insertarResponsable
+EXEC Persona.insertarResponsable
     @dni = '12345678',
     @nombre = 'Carlos',
     @apellido = 'Ramirez',
@@ -24,7 +24,7 @@ GO
 
 -- 5.2 PRUEBA DE MODIFICACIÓN DE RESPONSABLE
 
-EXEC stp.modificarResponsable
+EXEC Persona.modificarResponsable
     @cod_responsable = 1,     -- Reemplazar por el valor real
     @dni = '12345678',
     @nombre = 'Carlos',
@@ -38,6 +38,6 @@ GO
 
 -- 5.3 PRUEBA DE BORRADO DE RESPONSABLE
 
-EXEC stp.borrarResponsable
+EXEC Persona.borrarResponsable
     @cod_responsable = 'SN-00003';
 GO

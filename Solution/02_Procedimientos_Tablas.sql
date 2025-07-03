@@ -2422,7 +2422,7 @@ BEGIN
     END;
 
     IF EXISTS (
-        SELECT 1 FROM Club.Clase
+        SELECT 1 FROM Actividad.Clase
         WHERE categoria = @categoria AND cod_actividad = @cod_actividad
               AND dia = @dia AND horario = @horario
     )
@@ -2431,7 +2431,7 @@ BEGIN
         RETURN;
     END;
 
-    INSERT INTO Club.Clase (categoria, cod_actividad, dia, horario, cod_prof)
+    INSERT INTO Actividad.Clase (categoria, cod_actividad, dia, horario, cod_prof)
     VALUES (@categoria, @cod_actividad, @dia, @horario, @cod_prof);
 
     PRINT 'Clase insertada correctamente.';
@@ -2488,7 +2488,7 @@ BEGIN
     END;
 
     IF EXISTS (
-        SELECT 1 FROM Club.Clase
+        SELECT 1 FROM Actividad.Clase
         WHERE categoria = @categoria AND cod_actividad = @cod_actividad
               AND dia = @dia AND horario = @horario
               AND cod_clase <> @cod_clase
@@ -2498,7 +2498,7 @@ BEGIN
         RETURN;
     END;
 
-    UPDATE Club.Clase
+    UPDATE Actividad.Clase
     SET
         categoria     = @categoria,
         cod_actividad = @cod_actividad,
@@ -2531,13 +2531,13 @@ BEGIN
         RETURN;
     END;
 
-    IF NOT EXISTS (SELECT 1 FROM Club.Clase WHERE cod_clase = @cod_clase)
+    IF NOT EXISTS (SELECT 1 FROM Actividad.Clase WHERE cod_clase = @cod_clase)
     BEGIN
         PRINT 'Error: La clase con el código especificado no existe.';
         RETURN;
     END;
 
-    DELETE FROM Club.Clase
+    DELETE FROM Actividad.Clase
     WHERE cod_clase = @cod_clase;
 
     PRINT 'Clase eliminada correctamente.';

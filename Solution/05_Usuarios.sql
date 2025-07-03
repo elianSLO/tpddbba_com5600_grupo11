@@ -100,107 +100,60 @@ IF NOT EXISTS (SELECT * FROM sys.database_principals WHERE name = 'Vocales' AND 
 ----------------------------------------------
 -- ROL: Jefe_Tesoreria
 ----------------------------------------------
-GRANT EXECUTE ON OBJECT::stp.insertarPago			TO Jefe_Tesoreria;
-GRANT EXECUTE ON OBJECT::stp.modificarPago			TO Jefe_Tesoreria;
-GRANT EXECUTE ON OBJECT::stp.borrarPago				TO Jefe_Tesoreria;
-GRANT EXECUTE ON OBJECT::stp.insertarReembolso		TO Jefe_Tesoreria;
-GRANT EXECUTE ON OBJECT::stp.modificarReembolso		TO Jefe_Tesoreria;
-GRANT EXECUTE ON OBJECT::stp.borrarReembolso		TO Jefe_Tesoreria;
-
+GRANT EXECUTE ON SCHEMA::Finanzas   TO Jefe_Tesoreria;
 
 ----------------------------------------------
 -- ROL: Administrativo_Cobranza
 ----------------------------------------------
-GRANT EXECUTE ON OBJECT::stp.insertarPago			TO Administrativo_Cobranza;
-GRANT EXECUTE ON OBJECT::stp.modificarPago			TO Administrativo_Cobranza;
-GRANT EXECUTE ON OBJECT::stp.insertarReembolso		TO Administrativo_Cobranza;
-GRANT EXECUTE ON OBJECT::stp.modificarReembolso		TO Administrativo_Cobranza;
+GRANT EXECUTE ON SCHEMA::Finanzas	TO Administrativo_Cobranza;
 
 
 ----------------------------------------------
 -- ROL: Administrativo_Morosidad
 ----------------------------------------------
-GRANT EXECUTE ON OBJECT::stp.emitirFactura			TO Administrativo_Morosidad;
-GRANT EXECUTE ON OBJECT::stp.modificarFactura		TO Administrativo_Morosidad;
+GRANT EXECUTE ON SCHEMA::Finanzas	TO Administrativo_Morosidad;
 
 ----------------------------------------------
 -- ROL: Administrativo_Facturacion
 ----------------------------------------------
-GRANT EXECUTE ON OBJECT::stp.emitirFactura			TO Administrativo_Facturacion;
-GRANT EXECUTE ON OBJECT::stp.modificarFactura		TO Administrativo_Facturacion;
-GRANT EXECUTE ON OBJECT::stp.borrarFactura			TO Administrativo_Facturacion;
-GRANT EXECUTE ON OBJECT::stp.insertarItem_factura	TO Administrativo_Facturacion;
-GRANT EXECUTE ON OBJECT::stp.modificarItem_factura	TO Administrativo_Facturacion;
-GRANT EXECUTE ON OBJECT::stp.borrarItem_factura		TO Administrativo_Facturacion;
+GRANT EXECUTE ON SCHEMA::Finanzas	TO Administrativo_Facturacion;
 
 ----------------------------------------------
 -- ROL: Administrativo_Socio
 ----------------------------------------------
-GRANT EXECUTE ON OBJECT::stp.insertarSocio			TO Administrativo_Socio;
-GRANT EXECUTE ON OBJECT::stp.modificarSocio			TO Administrativo_Socio;
-GRANT EXECUTE ON OBJECT::stp.borrarSocio			TO Administrativo_Socio;
+GRANT EXECUTE ON SCHEMA::Persona	TO Administrativo_Socio;
 
-GRANT EXECUTE ON OBJECT::stp.insertarInvitado		TO Administrativo_Socio;
-GRANT EXECUTE ON OBJECT::stp.modificarInvitado		TO Administrativo_Socio;
-GRANT EXECUTE ON OBJECT::stp.borrarInvitado			TO Administrativo_Socio;
-
-GRANT EXECUTE ON OBJECT::stp.insertarSuscripcion	TO Administrativo_Socio;
-GRANT EXECUTE ON OBJECT::stp.modificarSuscripcion	TO Administrativo_Socio;
-GRANT EXECUTE ON OBJECT::stp.borrarSuscripcion		TO Administrativo_Socio;
-
-GRANT EXECUTE ON OBJECT::stp.insertarResponsable	TO Administrativo_Socio;
-GRANT EXECUTE ON OBJECT::stp.modificarResponsable	TO Administrativo_Socio;
-GRANT EXECUTE ON OBJECT::stp.borrarResponsable		TO Administrativo_Socio;
-
-GRANT EXECUTE ON OBJECT::stp.insertarCategoria		TO Administrativo_Socio;
-GRANT EXECUTE ON OBJECT::stp.modificarCategoria		TO Administrativo_Socio;
-GRANT EXECUTE ON OBJECT::stp.borrarCategoria		TO Administrativo_Socio;
-
-GRANT EXECUTE ON OBJECT::stp.insertarActividad		TO Administrativo_Socio;
-GRANT EXECUTE ON OBJECT::stp.modificarActividad		TO Administrativo_Socio;
-GRANT EXECUTE ON OBJECT::stp.eliminarActividad		TO Administrativo_Socio;
 
 ----------------------------------------------
 -- ROL: Socio_Web
 ----------------------------------------------
-GRANT EXECUTE ON OBJECT::stp.insertarReserva		TO Socio_Web;
+GRANT EXECUTE ON OBJECT::Actividad.insertarReserva		TO Socio_Web;
 
 ----------------------------------------------
 -- ROL: Presidente
 ----------------------------------------------
-GRANT EXECUTE ON SCHEMA::stp						TO Presidente;
-GRANT EXECUTE ON SCHEMA::Rep						TO Presidente;
+GRANT EXECUTE ON SCHEMA::Finanzas	TO Presidente;
+GRANT EXECUTE ON SCHEMA::Club	    TO Presidente;
+GRANT EXECUTE ON SCHEMA::Persona	TO Presidente;
+GRANT EXECUTE ON SCHEMA::Actividad	TO Presidente;
+GRANT EXECUTE ON SCHEMA::Rep		TO Presidente;
 
 ----------------------------------------------
 -- ROL: Vicepresidente
 ----------------------------------------------
-GRANT EXECUTE ON SCHEMA::stp						TO Vicepresidente;
-GRANT EXECUTE ON SCHEMA::Rep						TO Vicepresidente;
+GRANT EXECUTE ON SCHEMA::Finanzas	TO Vicepresidente;
+GRANT EXECUTE ON SCHEMA::Club	    TO Vicepresidente;
+GRANT EXECUTE ON SCHEMA::Persona	TO Vicepresidente;
+GRANT EXECUTE ON SCHEMA::Actividad	TO Vicepresidente;
+GRANT EXECUTE ON SCHEMA::Rep		TO Vicepresidente;
 
 ----------------------------------------------
 -- ROL: Secretario
 ----------------------------------------------
-GRANT EXECUTE ON SCHEMA::Rep						TO Secretario;
-
-GRANT EXECUTE ON OBJECT::stp.emitirFactura			TO Secretario;
-GRANT EXECUTE ON OBJECT::stp.insertarItem_factura	TO Secretario;
-
-GRANT EXECUTE ON OBJECT::stp.insertarSocio			TO Secretario;
-GRANT EXECUTE ON OBJECT::stp.modificarSocio			TO Secretario;
-
-GRANT EXECUTE ON OBJECT::stp.insertarInvitado		TO Secretario;
-GRANT EXECUTE ON OBJECT::stp.modificarInvitado		TO Secretario;
-
-GRANT EXECUTE ON OBJECT::stp.insertarResponsable	TO Administrativo_Socio;
-GRANT EXECUTE ON OBJECT::stp.modificarResponsable	TO Administrativo_Socio;
-
-GRANT EXECUTE ON OBJECT::stp.insertarCategoria		TO Secretario;
-GRANT EXECUTE ON OBJECT::stp.modificarCategoria		TO Secretario;
-GRANT EXECUTE ON OBJECT::stp.borrarCategoria		TO Secretario;
-
-GRANT EXECUTE ON OBJECT::stp.insertarActividad		TO Secretario;
-GRANT EXECUTE ON OBJECT::stp.modificarActividad		TO Secretario;
-GRANT EXECUTE ON OBJECT::stp.eliminarActividad		TO Secretario;
+GRANT EXECUTE ON SCHEMA::Club	    TO Secretario;
+GRANT EXECUTE ON SCHEMA::Persona	TO Secretario;
+GRANT EXECUTE ON SCHEMA::Actividad	TO Secretario;
+GRANT EXECUTE ON SCHEMA::Rep		TO Secretario;
 
 ----------------------------------------------
 -- ROL: Vocales

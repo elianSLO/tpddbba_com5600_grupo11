@@ -391,7 +391,7 @@ IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'Com5600G1
 			cod_clase		INT NOT NULL,
 			estado			CHAR(1) CHECK (estado IN ('P','A','J')),
 			CONSTRAINT fk_socio FOREIGN KEY (cod_socio) REFERENCES Persona.Socio (cod_socio),
-			CONSTRAINT fk_clase FOREIGN KEY (cod_clase) REFERENCES Club.Clase(cod_clase)
+			CONSTRAINT fk_clase FOREIGN KEY (cod_clase) REFERENCES Actividad.Clase(cod_clase)
 		);	
 		PRINT 'Tabla Asiste creada correctamente.';
 	END
@@ -485,26 +485,26 @@ END;
 
 ----------------------------------------------------------------------------------------------------------------
 
--- FK Club.Clase -> Club.Actividad
+-- FK Actividad.Clase -> Club.Actividad
 IF NOT EXISTS (
     SELECT 1 FROM sys.foreign_keys 
-    WHERE name = 'fk_act_clase' AND parent_object_id = OBJECT_ID('Club.Clase')
+    WHERE name = 'fk_act_clase' AND parent_object_id = OBJECT_ID('Actividad.Clase')
 )
 BEGIN
-    ALTER TABLE Club.Clase 
+    ALTER TABLE Actividad.Clase 
     ADD CONSTRAINT fk_act_clase 
     FOREIGN KEY (cod_actividad) REFERENCES Club.Actividad(cod_actividad);
 END;
 
 ----------------------------------------------------------------------------------------------------------------
 
--- FK Club.Clase -> Persona.Profesor
+-- FK Actividad.Clase -> Persona.Profesor
 IF NOT EXISTS (
     SELECT 1 FROM sys.foreign_keys 
-    WHERE name = 'fk_prof_clase' AND parent_object_id = OBJECT_ID('Club.Clase')
+    WHERE name = 'fk_prof_clase' AND parent_object_id = OBJECT_ID('Actividad.Clase')
 )
 BEGIN
-    ALTER TABLE Club.Clase 
+    ALTER TABLE Actividad.Clase 
     ADD CONSTRAINT fk_prof_clase 
     FOREIGN KEY (cod_prof) REFERENCES Persona.Profesor(cod_prof);
 END;
@@ -537,7 +537,7 @@ END;
 
 ----------------------------------------------------------------------------------------------------------------
 
--- FK Actividad.Inscripto -> Club.Clase
+-- FK Actividad.Inscripto -> Actividad.Clase
 IF NOT EXISTS (
     SELECT 1 FROM sys.foreign_keys 
     WHERE name = 'fk_clase_inscripto' AND parent_object_id = OBJECT_ID('Actividad.Inscripto')
@@ -545,7 +545,7 @@ IF NOT EXISTS (
 BEGIN
     ALTER TABLE Actividad.Inscripto 
     ADD CONSTRAINT fk_clase_inscripto 
-    FOREIGN KEY (cod_clase) REFERENCES Club.Clase(cod_clase);
+    FOREIGN KEY (cod_clase) REFERENCES Actividad.Clase(cod_clase);
 END;
 
 ----------------------------------------------------------------------------------------------------------------
@@ -576,7 +576,7 @@ END;
 
 ----------------------------------------------------------------------------------------------------------------
 
--- FK Actividad.Asiste -> Club.Clase
+-- FK Actividad.Asiste -> Actividad.Clase
 IF NOT EXISTS (
     SELECT 1 FROM sys.foreign_keys 
     WHERE name = 'fk_clase_asiste' AND parent_object_id = OBJECT_ID('Actividad.Asiste')
@@ -584,6 +584,6 @@ IF NOT EXISTS (
 BEGIN
     ALTER TABLE Actividad.Asiste 
     ADD CONSTRAINT fk_clase_asiste 
-    FOREIGN KEY (cod_clase) REFERENCES Club.Clase(cod_clase);
+    FOREIGN KEY (cod_clase) REFERENCES Actividad.Clase(cod_clase);
 END;
 GO

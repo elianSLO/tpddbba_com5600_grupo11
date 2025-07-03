@@ -2469,7 +2469,7 @@ BEGIN
         RETURN;
     END;
 
-    IF NOT EXISTS (SELECT 1 FROM Club.Clase WHERE cod_clase = @cod_clase)
+    IF NOT EXISTS (SELECT 1 FROM Actividad.Clase WHERE cod_clase = @cod_clase)
     BEGIN
         PRINT 'Error: La clase especificada no existe.';
         RETURN;
@@ -2810,7 +2810,7 @@ BEGIN
     END
 
     IF NOT EXISTS (
-        SELECT 1 FROM Club.Clase
+        SELECT 1 FROM Actividad.Clase
         WHERE cod_clase = @cod_clase
     )
     BEGIN
@@ -2894,7 +2894,7 @@ BEGIN
     END
 
     IF NOT EXISTS (
-        SELECT 1 FROM Club.Clase
+        SELECT 1 FROM Actividad.Clase
         WHERE cod_clase = @nuevo_cod_clase
     )
     BEGIN

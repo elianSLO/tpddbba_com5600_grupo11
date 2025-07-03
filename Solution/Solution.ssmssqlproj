@@ -56,8 +56,8 @@
           <FullPath>03_01_actividad.test.sql</FullPath>
         </FileNode>
         <FileNode Name="03_02_asiste_test.sql">
-          <AssociatedConnectionMoniker>8c91a03d-f9b4-46c0-a305-b5dcc79ff907:localhost\SQLEXPRESS:True</AssociatedConnectionMoniker>
-          <AssociatedConnSrvName>localhost\SQLEXPRESS</AssociatedConnSrvName>
+          <AssociatedConnectionMoniker>8c91a03d-f9b4-46c0-a305-b5dcc79ff907:localhost\SQLEXPRESS_PSN:True</AssociatedConnectionMoniker>
+          <AssociatedConnSrvName>localhost\SQLEXPRESS_PSN</AssociatedConnSrvName>
           <AssociatedConnUserName />
           <FullPath>03_02_asiste_test.sql</FullPath>
         </FileNode>
@@ -140,8 +140,8 @@
           <FullPath>03_15_suscripcion_test.sql</FullPath>
         </FileNode>
         <FileNode Name="04.1_Importaciones.sql">
-          <AssociatedConnectionMoniker>8c91a03d-f9b4-46c0-a305-b5dcc79ff907:localhost\SQLEXPRESS:True</AssociatedConnectionMoniker>
-          <AssociatedConnSrvName>localhost\SQLEXPRESS</AssociatedConnSrvName>
+          <AssociatedConnectionMoniker />
+          <AssociatedConnSrvName />
           <AssociatedConnUserName />
           <FullPath>04.1_Importaciones.sql</FullPath>
         </FileNode>

@@ -5,14 +5,14 @@ USE Com5600G11;
 GO
 
 -- Borrado de tabla previo
-DELETE FROM psn.Invitado 
+DELETE FROM Persona.Invitado 
 
 
 -- PRUEBAS: INSERTAR INVITADO
 
 
 -- Caso válido
-EXEC stp.insertarInvitado
+EXEC Persona.insertarInvitado
     @cod_invitado = 'NS-9001',
     @dni = '12345678',
     @nombre = 'Lucas',
@@ -29,7 +29,7 @@ EXEC stp.insertarInvitado
     @cod_responsable = NULL;
 
 -- Error: DNI duplicado
-EXEC stp.insertarInvitado
+EXEC Persona.insertarInvitado
     @cod_invitado = 'NS-9002',
     @dni = '12345678', -- ya existe
     @nombre = 'Pedro',
@@ -46,7 +46,7 @@ EXEC stp.insertarInvitado
     @cod_responsable = NULL;
 
 -- Error: Formato código inválido
-EXEC stp.insertarInvitado
+EXEC Persona.insertarInvitado
     @cod_invitado = 'XX-0001',
     @dni = '87654321',
     @nombre = 'Ana',
@@ -67,7 +67,7 @@ EXEC stp.insertarInvitado
 
 
 -- Modificación válida
-EXEC stp.modificarInvitado
+EXEC Persona.modificarInvitado
     @cod_invitado = 'NS-9001',
     @dni = '12345678',
     @nombre = 'Lucas Modificado',
@@ -84,7 +84,7 @@ EXEC stp.modificarInvitado
     @cod_responsable = 0;
 
 -- Error: No existe el invitado
-EXEC stp.modificarInvitado
+EXEC Persona.modificarInvitado
     @cod_invitado = 'NS-9999', -- no existe
     @dni = '99999999',
     @nombre = 'No',
@@ -105,11 +105,11 @@ EXEC stp.modificarInvitado
 
 
 -- Borrado correcto
-EXEC stp.borrarInvitado @cod_invitado = 'NS-9001';
+EXEC Persona.borrarInvitado @cod_invitado = 'NS-9001';
 
 -- Error: Código no existe
-EXEC stp.borrarInvitado @cod_invitado = 'NS-9999';
+EXEC Persona.borrarInvitado @cod_invitado = 'NS-9999';
 
 -- Error: Código malformado
-EXEC stp.borrarInvitado @cod_invitado = 'BAD-CODE';
+EXEC Persona.borrarInvitado @cod_invitado = 'BAD-CODE';
 

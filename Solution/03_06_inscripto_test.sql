@@ -7,12 +7,13 @@ GO
 
 -- Tabla Socio
 
+DELETE FROM Actividad.Inscripto
+DELETE FROM Actividad.Clase
 DELETE FROM Persona.Socio 
 DELETE FROM Persona.Profesor
 DELETE FROM Finanzas.Factura
-DELETE FROM Actividad.Clase
 DELETE FROM Club.Actividad
-DELETE FROM Actividad.Inscripto
+
 
 DBCC CHECKIDENT ('Finanzas.Factura', RESEED, 0);
 DBCC CHECKIDENT ('Persona.Profesor', RESEED, 0);

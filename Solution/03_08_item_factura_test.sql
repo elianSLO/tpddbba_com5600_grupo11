@@ -6,10 +6,11 @@ USE Com5600G11
 GO
 
 -- Borrado de tablas
-
-DELETE FROM Persona.Socio 
-DELETE FROM Finanzas.Factura
 DELETE FROM Finanzas.Item_Factura
+DELETE FROM Finanzas.Factura
+DELETE FROM Persona.Socio 
+
+
 
 
 ------------------------------------------------------------ 1. PRUEBAS insertarItem_Factura

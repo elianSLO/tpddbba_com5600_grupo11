@@ -3,25 +3,27 @@
 -- Para las pruebas tengo que insertar datos en las tablas Socio, Clase, Actividad y Categoria
 
 -- Limpiar tablas para pruebas limpias y consistentes (si es seguro)
+USE Com5600G11
+GO
 
 SET NOCOUNT ON;
 
-DELETE FROM psn.Suscripcion
-DELETE FROM psn.Inscripto
-DELETE FROM psn.Asiste;
-DELETE FROM psn.Clase;
-DBCC CHECKIDENT ('psn.Clase', RESEED, 0);
-DELETE FROM psn.Categoria;
-DBCC CHECKIDENT ('psn.Categoria', RESEED, 0);
-DELETE FROM psn.Actividad;
-DBCC CHECKIDENT ('psn.Actividad', RESEED, 0);
-DELETE FROM psn.Profesor;
-DBCC CHECKIDENT ('psn.Profesor', RESEED, 0);
-DELETE FROM psn.Socio
+DELETE FROM Club.Suscripcion
+DELETE FROM Actividad.Inscripto
+DELETE FROM Actividad.Asiste;
+DELETE FROM Actividad.Clase;
+DBCC CHECKIDENT ('Actividad.Clase', RESEED, 0);
+DELETE FROM Club.Categoria;
+DBCC CHECKIDENT ('Club.Categoria', RESEED, 0);
+DELETE FROM Club.Actividad;
+DBCC CHECKIDENT ('Club.Actividad', RESEED, 0);
+DELETE FROM Persona.Profesor;
+DBCC CHECKIDENT ('Persona.Profesor', RESEED, 0);
+DELETE FROM Persona.Socio
 
 -- Insertar socios usando SP
 
-EXEC stp.insertarSocio
+EXEC Persona.insertarSocio
     @cod_socio = 'SN-00001',
     @dni = '12345678',
     @nombre = 'Juan',
@@ -40,7 +42,7 @@ GO
 
 -- Insertar socio 2
 
-EXEC stp.insertarSocio
+EXEC Persona.insertarSocio
     @cod_socio = 'SN-00002',
     @dni = '87654321',
     @nombre = 'Lucía',
@@ -58,41 +60,43 @@ EXEC stp.insertarSocio
 GO
 
 
-EXEC stp.insertarCategoria 'Cadete', 17,13, 1800.00, '2025-12-31', 18000.00, '2025-12-31';
-EXEC stp.insertarCategoria 'Mayor', 99,18, 2300.00, '2025-12-31', 23000.00, '2025-12-31';
+EXEC Club.insertarCategoria 'Cadete', 17,13, 1800.00, '2025-12-31', 18000.00, '2025-12-31';
+EXEC Club.insertarCategoria 'Mayor', 99,18, 2300.00, '2025-12-31', 23000.00, '2025-12-31';
 
-delete from psn.Suscripcion
-EXEC stp.insertarActividad 'Futsal', 2500.00, '2025-12-31';
-EXEC stp.insertarActividad 'Natación', 3000.00, '2025-12-31';
+delete from Club.Suscripcion
+EXEC Club.insertarActividad 'Futsal', 2500.00, '2025-12-31';
+EXEC Club.insertarActividad 'Natación', 3000.00, '2025-12-31';
 
-EXEC stp.insertarProfesor 12123123, 'Pablo', 'Ramirez', 'pablo@mail.com', '1112312323';
+EXEC Persona.insertarProfesor 12123123, 'Pablo', 'Ramirez', 'pablo@mail.com', '1112312323';
 
-EXEC stp.insertarClase 1, 1, 1, 'Lunes', '18:00';
-EXEC stp.insertarClase 1, 2, 1, 'Lunes', '18:00';
-EXEC stp.insertarClase 1, 2, 1, 'Miercoles', '18:00';
+EXEC Actividad.insertarClase 1, 1, 1, 'Lunes', '18:00';
+EXEC Actividad.insertarClase 1, 2, 1, 'Lunes', '18:00';
+EXEC Actividad.insertarClase 1, 2, 1, 'Miercoles', '18:00';
+
 
 DECLARE @FechaActual DATE;
 SET @FechaActual = CAST(GETDATE() AS DATE);
-EXEC stp.insertarInscripto
+EXEC Actividad.insertarInscripto
     @fecha_inscripcion = @FechaActual,
     @estado            = 1,
     @cod_socio         = 'SN-00001',
     @cod_clase         = 1;
 
-EXEC stp.insertarInscripto
+
+EXEC Actividad.insertarInscripto
     @fecha_inscripcion = @FechaActual,
     @estado            = 1,
     @cod_socio         = 'SN-00002',
     @cod_clase         = 1;
 
 
-EXEC stp.insertarInscripto
+EXEC Actividad.insertarInscripto
     @fecha_inscripcion = @FechaActual,
     @estado            = 1,
     @cod_socio         = 'SN-00001',
     @cod_clase         = 2;
 
-EXEC stp.insertarInscripto
+EXEC Actividad.insertarInscripto
     @fecha_inscripcion = @FechaActual,
     @estado            = 1,
     @cod_socio         = 'SN-00002',
@@ -106,7 +110,7 @@ PRINT ' '
 PRINT '-------------------- TESTS --------------------'
 
 -- 1. Caso válido
-EXEC stp.insertarAsiste 
+EXEC Actividad.insertarAsiste 
     @fecha = '2025-06-16',
     @cod_socio = 'SN-00001',
     @estado = 'P',
@@ -114,7 +118,7 @@ EXEC stp.insertarAsiste
 GO
 
 -- 2. Registro duplicado (mismo socio, clase y fecha)
-EXEC stp.insertarAsiste 
+EXEC Actividad.insertarAsiste 
     @fecha = '2025-06-16',
     @cod_socio = 'SN-00001',
     @estado = 'P',
@@ -122,7 +126,7 @@ EXEC stp.insertarAsiste
 GO
 
 -- 3. Fecha futura
-EXEC stp.insertarAsiste 
+EXEC Actividad.insertarAsiste 
     @fecha = '2025-12-31',
     @cod_socio = 'SN-00001',
     @estado = 'P',
@@ -130,7 +134,7 @@ EXEC stp.insertarAsiste
 GO
 
 -- 4. Fecha nula
-EXEC stp.insertarAsiste 
+EXEC Actividad.insertarAsiste 
     @fecha = NULL,
     @cod_socio = 'SN-00001',
     @estado = 'P',
@@ -138,7 +142,7 @@ EXEC stp.insertarAsiste
 GO
 
 -- 5. Código de socio inválido (formato incorrecto)
-EXEC stp.insertarAsiste 
+EXEC Actividad.insertarAsiste 
     @fecha = '2025-06-16',
     @estado = 'P',
     @cod_socio = 'S-00001', 
@@ -146,7 +150,7 @@ EXEC stp.insertarAsiste
 GO
 
 -- 6. Código de clase inválido (NULL)
-EXEC stp.insertarAsiste 
+EXEC Actividad.insertarAsiste 
     @fecha = '2025-06-16',
     @estado = 'P',
     @cod_socio = 'SN-00001',
@@ -154,7 +158,7 @@ EXEC stp.insertarAsiste
 GO
 
 -- 6. Código de clase inválido (negativo)
-EXEC stp.insertarAsiste 
+EXEC Actividad.insertarAsiste 
     @fecha = '2025-06-16',
     @estado = 'P',
     @cod_socio = 'SN-00001',
@@ -162,7 +166,7 @@ EXEC stp.insertarAsiste
 GO
 
 --  7. Socio no existente (pero formato válido)
-EXEC stp.insertarAsiste 
+EXEC Actividad.insertarAsiste 
     @fecha = '2025-06-16',
     @estado = 'P',
     @cod_socio = 'SN-99999',
@@ -170,7 +174,7 @@ EXEC stp.insertarAsiste
 GO
 
 -- 8. Estado invalido (opcion incorrecta)
-EXEC stp.insertarAsiste 
+EXEC Actividad.insertarAsiste 
     @fecha = '2025-06-14',
     @estado = 'G',
     @cod_socio = 'SN-00002',
@@ -178,7 +182,7 @@ EXEC stp.insertarAsiste
 GO
 
 -- 8. Estado invalido (NULL)
-EXEC stp.insertarAsiste 
+EXEC Actividad.insertarAsiste 
     @fecha = '2025-06-14',
     @estado = NULL,
     @cod_socio = 'SN-00002',
@@ -186,7 +190,7 @@ EXEC stp.insertarAsiste
 GO
 
 -- 10. Segundo registro válido (otro socio y clase)
-EXEC stp.insertarAsiste 
+EXEC Actividad.insertarAsiste 
     @fecha = '2025-06-14',
     @estado = 'P',
     @cod_socio = 'SN-00002',
@@ -199,7 +203,7 @@ GO
 ----------------------------------------------------------------- Prueba SP modificarAsiste
 
 -- 1. Modificación válida: cambiar fecha y clase del socio SN-00001
-EXEC stp.modificarAsiste
+EXEC Actividad.modificarAsiste
     @fecha_original     = '2025-06-16',
     @cod_socio_original = 'SN-00001',
     @cod_clase_original = 1,
@@ -211,7 +215,7 @@ GO
 
 -- 2. Intentar modificar a un registro ya existente (duplicado)
 -- El registro (2025-06-14, SN-00002, clase 2) ya existe
-EXEC stp.modificarAsiste
+EXEC Actividad.modificarAsiste
     @fecha_original     = '2025-06-16',
     @cod_socio_original = 'SN-00001',
     @cod_clase_original = 2,
@@ -222,7 +226,7 @@ EXEC stp.modificarAsiste
 GO
 
 -- 3. Registro original inexistente
-EXEC stp.modificarAsiste
+EXEC Actividad.modificarAsiste
     @fecha_original     = '2025-01-01',
     @cod_socio_original = 'SN-00099',
     @cod_clase_original = 9,
@@ -233,7 +237,7 @@ EXEC stp.modificarAsiste
 GO
 
 -- 4. Nueva fecha futura
-EXEC stp.modificarAsiste
+EXEC Actividad.modificarAsiste
     @fecha_original     = '2025-06-14',
     @cod_socio_original = 'SN-00002',
     @cod_clase_original = 2,
@@ -244,7 +248,7 @@ EXEC stp.modificarAsiste
 GO
 
 -- 5. Nueva fecha nula
-EXEC stp.modificarAsiste
+EXEC Actividad.modificarAsiste
     @fecha_original     = '2025-06-14',
     @cod_socio_original = 'SN-00002',
     @cod_clase_original = 2,
@@ -255,7 +259,7 @@ EXEC stp.modificarAsiste
 GO
 
 -- 6. Código de socio inválido (mal formado)
-EXEC stp.modificarAsiste
+EXEC Actividad.modificarAsiste
     @fecha_original     = '2025-06-14',
     @cod_socio_original = 'SN-00002',
     @cod_clase_original = 2,
@@ -266,7 +270,7 @@ EXEC stp.modificarAsiste
 GO
 
 -- 7. Código de socio inválido (no existe)
-EXEC stp.modificarAsiste
+EXEC Actividad.modificarAsiste
     @fecha_original     = '2025-06-14',
     @cod_socio_original = 'SN-02302',
     @cod_clase_original = 2,
@@ -277,7 +281,7 @@ EXEC stp.modificarAsiste
 GO
 
 -- 8. Código de clase inválido (NULL)
-EXEC stp.modificarAsiste
+EXEC Actividad.modificarAsiste
     @fecha_original     = '2025-06-14',
     @cod_socio_original = 'SN-00002',
     @cod_clase_original = 2,
@@ -288,7 +292,7 @@ EXEC stp.modificarAsiste
 GO
 
 -- 9. Código de clase inválido (No existe)
-EXEC stp.modificarAsiste
+EXEC Actividad.modificarAsiste
     @fecha_original     = '2025-06-14',
     @cod_socio_original = 'SN-00002',
     @cod_clase_original = 2,
@@ -299,7 +303,7 @@ EXEC stp.modificarAsiste
 GO
 
 -- 10. Código de clase inválido (negativo)
-EXEC stp.modificarAsiste
+EXEC Actividad.modificarAsiste
     @fecha_original     = '2025-06-14',
     @cod_socio_original = 'SN-00002',
     @cod_clase_original = 2,
@@ -310,7 +314,7 @@ EXEC stp.modificarAsiste
 GO
 
 -- 11. Estado inválido (opcion incorrecta)
-EXEC stp.modificarAsiste
+EXEC Actividad.modificarAsiste
     @fecha_original     = '2025-06-14',
     @cod_socio_original = 'SN-00002',
     @cod_clase_original = 2,
@@ -321,7 +325,7 @@ EXEC stp.modificarAsiste
 GO
 
 -- 12. Estado inválido (NULL)
-EXEC stp.modificarAsiste
+EXEC Actividad.modificarAsiste
     @fecha_original     = '2025-06-14',
     @cod_socio_original = 'SN-00002',
     @cod_clase_original = 2,
@@ -332,7 +336,7 @@ EXEC stp.modificarAsiste
 GO
 
 -- 13. Restaurar registro original modificado en la prueba 1 (opcional para dejar limpio)
-EXEC stp.modificarAsiste
+EXEC Actividad.modificarAsiste
     @fecha_original     = '2025-06-16',
     @cod_socio_original = 'SN-00001',
     @cod_clase_original = 2,
@@ -346,7 +350,7 @@ GO
 
 -- 1. Borrar un registro existente (SN-00001, clase 1, fecha 2025-06-15)
 -- Primero volvemos a insertar para asegurarnos que existe
-EXEC stp.insertarAsiste 
+EXEC Actividad.insertarAsiste 
     @fecha = '2025-06-16',
     @cod_socio = 'SN-00001',
     @estado = 'P',
@@ -354,42 +358,42 @@ EXEC stp.insertarAsiste
 GO
 
 -- Luego lo eliminamos
-EXEC stp.borrarAsiste
+EXEC Actividad.borrarAsiste
     @fecha = '2025-06-16',
     @cod_socio = 'SN-00001',
     @cod_clase = 1;
 GO
 
 -- 2. Intentar borrar nuevamente el mismo registro (ya no existe)
-EXEC stp.borrarAsiste
+EXEC Actividad.borrarAsiste
     @fecha = '2025-06-16',
     @cod_socio = 'SN-00001',
     @cod_clase = 1;
 GO
 
 -- 3. Eliminar un registro inexistente (fecha/código no coincide)
-EXEC stp.borrarAsiste
+EXEC Actividad.borrarAsiste
     @fecha = '2025-01-01',
     @cod_socio = 'SN-00001',
     @cod_clase = 1;
 GO
 
 -- 4. Código de socio con formato válido pero no existente
-EXEC stp.borrarAsiste
+EXEC Actividad.borrarAsiste
     @fecha = '2025-06-16',
     @cod_socio = 'SN-99999',
     @cod_clase = 1;
 GO
 
 -- 5. Borrar otro registro real existente (SN-00002, clase 2, fecha 2025-06-14)
-EXEC stp.insertarAsiste 
+EXEC Actividad.insertarAsiste 
     @fecha = '2025-06-14',
     @cod_socio = 'SN-00002',
     @estado = 'P',
     @cod_clase = 2;
 GO
 
-EXEC stp.borrarAsiste
+EXEC Actividad.borrarAsiste
     @fecha = '2025-06-14',
     @cod_socio = 'SN-00002',
     @cod_clase = 2;

@@ -9,19 +9,19 @@ GO
 
 -- Limpio la tabla Factura para pruebas (si es seguro)
 
-DELETE FROM psn.Factura
-DBCC CHECKIDENT ('psn.Factura', RESEED, 0);
+DELETE FROM Finanzas.Factura
+DBCC CHECKIDENT ('Finanzas.Factura', RESEED, 0);
 
 -- Inserto Socio para pruebas
 -- Limpio la tabla primero (si es seguro)
-DELETE FROM psn.Socio 
+DELETE FROM Persona.Socio 
 
-EXEC stp.insertarSocio
+EXEC Persona.insertarSocio
     @cod_socio = 'SN-00001',
     @dni = '12345672',
     @nombre = 'Juan',
     @apellido = 'Pérez',
-    @fecha_nac = '2015-05-15',
+    @fecha_nac = '2001-05-15',
     @email = 'juan.perez@mail.com',
     @tel = '1122334455',
     @tel_emerg = '1133445566',
@@ -33,45 +33,45 @@ EXEC stp.insertarSocio
     @cod_responsable = NULL ;
 
 -- Verifico que se insertó correctamente.
-SELECT * FROM psn.Socio
+SELECT * FROM Persona.Socio
 
 -- CASO 10.1.1 Pruebo emitirFactura con socio existente
-EXEC stp.emitirFactura @cod_socio = 'SN-00001' 
+EXEC Finanzas.emitirFactura @cod_socio = 'SN-00001' 
 
 -- Verifico que se insertó correctamente.
-SELECT * from psn.Factura
+SELECT * from Finanzas.Factura
 
 -- CASO 10.1.2 Pruebo emitirFactura con socio inexistente
 
-EXEC stp.emitirFactura @cod_socio = 'SN-00002' 
+EXEC Finanzas.emitirFactura @cod_socio = 'SN-00002' 
 
 
 
 -- CASO 10.2  PRUEBA modificarFactura
 
 -- 10.2.1 Estado inválido
-EXEC stp.modificarFactura @cod_socio = 'SN-00001', @cod_Factura = 1, @nuevo_estado = 'PENDIENTE';
+EXEC Finanzas.modificarFactura @cod_socio = 'SN-00001', @cod_Factura = 1, @nuevo_estado = 'PENDIENTE';
 
 -- 10.2.2 Factura no existente
-EXEC stp.modificarFactura @cod_socio = 'SN-00001', @cod_Factura = 9999, @nuevo_estado = 'PAGADA';
+EXEC Finanzas.modificarFactura @cod_socio = 'SN-00001', @cod_Factura = 9999, @nuevo_estado = 'PAGADA';
 
 -- 10.2.3 Marcar como PAGADA
-EXEC stp.modificarFactura @cod_socio = 'SN-00001', @cod_Factura = 1, @nuevo_estado = 'PAGADA';
+EXEC Finanzas.modificarFactura @cod_socio = 'SN-00001', @cod_Factura = 1, @nuevo_estado = 'PAGADA';
 
 -- Verifico que se actualizó:
-SELECT * FROM psn.Factura
+SELECT * FROM Finanzas.Factura
 
 -- 10.2.4 Marcar como VENCIDA (Si está vencida luego la segunda fecha aplica recargo)
-EXEC stp.modificarFactura @cod_socio = 'SN-00001', @cod_Factura = 1, @nuevo_estado = 'VENCIDA';
+EXEC Finanzas.modificarFactura @cod_socio = 'SN-00001', @cod_Factura = 1, @nuevo_estado = 'VENCIDA';
 
 -- Verifico que se actualizó:
-SELECT * from psn.Factura
+SELECT * from Finanzas.Factura
 
 -- 10.2.5 Marcar como ANULADA
-EXEC stp.modificarFactura @cod_socio = 'SN-00001', @cod_Factura = 1, @nuevo_estado = 'ANULADA';
+EXEC Finanzas.modificarFactura @cod_socio = 'SN-00001', @cod_Factura = 1, @nuevo_estado = 'ANULADA';
 
 -- Verifico que se actualizó (ver que el monto pasa a ser 0.00):
-SELECT * from psn.Factura
+SELECT * from Finanzas.Factura
 
 
 
@@ -80,15 +80,15 @@ SELECT * from psn.Factura
 
 -- 10.3.1 Borro factura existente
 
-EXEC stp.borrarFactura @cod_Factura = 1
+EXEC Finanzas.borrarFactura @cod_Factura = 1
 
 -- 10.3.2 Borro la misma factura devuelta y verifico que ya no existe
 
-EXEC stp.borrarFactura @cod_Factura = 1
+EXEC Finanzas.borrarFactura @cod_Factura = 1
 
 -- 10.3.3 Borro factura inexistente 
 
-EXEC stp.borrarFactura @cod_Factura = 999
+EXEC Finanzas.borrarFactura @cod_Factura = 999
 
 
 

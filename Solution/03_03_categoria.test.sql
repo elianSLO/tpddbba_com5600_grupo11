@@ -1,17 +1,16 @@
-Use Com5600G11
+USE Com5600G11
 GO
 
 -- 7. CATEGORIA
 
 -- Limpiar la tabla para pruebas (solo si es seguro)
 
-DELETE FROM psn.Categoria
-DBCC CHECKIDENT ('psn.Categoria', RESEED, 0);
-
+DELETE FROM Club.Categoria
+DBCC CHECKIDENT ('Club.Categoria', RESEED, 0);
 
 -- 7.1.1 INSERCION VALIDA
 
-EXEC stp.insertarCategoria 
+EXEC Club.insertarCategoria 
     @descripcion = 'Mayor',
 	@edad_max = 99,
     @valor_mensual = 25000.00, 
@@ -21,11 +20,11 @@ EXEC stp.insertarCategoria
 
 -- Verificación de inserción
 
-SELECT * FROM psn.Categoria WHERE descripcion = 'Mayor';
+SELECT * FROM Club.Categoria WHERE descripcion = 'Mayor';
 
 -- 7.1.2 Valor incorrecto en Descripcion (debe dar error)
 
-EXEC stp.insertarCategoria 
+EXEC Club.insertarCategoria 
     @descripcion = 'Adulto', -- debe ser 'Cadete','Mayor' o 'Menor'
 	@edad_max = 40,
     @valor_mensual = 1500.00,
@@ -35,7 +34,7 @@ EXEC stp.insertarCategoria
 
 -- 7.1.3 Valor de la suscripción negativo (debe dar error)
 
-EXEC stp.insertarCategoria 
+EXEC Club.insertarCategoria 
     @descripcion = 'Menor',
 	@edad_max = 15,
     @valor_mensual = -100.00,  -- Negativo
@@ -45,7 +44,7 @@ EXEC stp.insertarCategoria
 
 -- 7.1.4 Valor anual nulo (debe dar error)
 
-EXEC stp.insertarCategoria 
+EXEC Club.insertarCategoria 
     @descripcion = 'Cadete',
 	@edad_max = 20,
     @valor_mensual = 1200.00,
@@ -55,7 +54,7 @@ EXEC stp.insertarCategoria
 
 -- 7.1.5 Fecha pasada (debe dar error) 
 
-EXEC stp.insertarCategoria 
+EXEC Club.insertarCategoria 
     @descripcion = 'Cadete',
 	@edad_max = 40,
     @valor_mensual = 1200.00,
@@ -65,7 +64,7 @@ EXEC stp.insertarCategoria
 
 -- 7.1.6 Fecha pasada anual (Debe dar error)
 
-EXEC stp.insertarCategoria 
+EXEC Club.insertarCategoria 
     @descripcion = 'Menor',
 	@edad_max = 12,
     @valor_mensual = 1300.00,
@@ -75,7 +74,7 @@ EXEC stp.insertarCategoria
 
 -- 7.1.7 Edad incorrecta
 
-EXEC stp.insertarCategoria 
+EXEC Club.insertarCategoria 
     @descripcion = 'Cadete',
 	@edad_max = -19,
     @valor_mensual = 1500.00,
@@ -83,12 +82,11 @@ EXEC stp.insertarCategoria
     @valor_anual = 16000.00,
     @vig_valor_anual = '2025-07-01';
 
-
 -- 7.2 MODIFICACION 
 
 -- 7.2.1 MODIFICACIÓN VÁLIDA
 
-EXEC stp.modificarCategoria 
+EXEC Club.modificarCategoria 
     @cod_categoria = 1,
     @descripcion = 'Cadete',
     @edad_max = 35,
@@ -99,7 +97,7 @@ EXEC stp.modificarCategoria
 
 --  7.2.2 Categoría no existente
 
-EXEC stp.modificarCategoria 
+EXEC Club.modificarCategoria 
     @cod_categoria = 999,
     @descripcion = 'Mayor',
     @edad_max = 40,
@@ -110,7 +108,7 @@ EXEC stp.modificarCategoria
 
 --  7.2.3 Descripción inválida
 
-EXEC stp.modificarCategoria 
+EXEC Club.modificarCategoria 
     @cod_categoria = 1,
     @descripcion = 'Senior', -- inválido
     @edad_max = 40,
@@ -121,7 +119,7 @@ EXEC stp.modificarCategoria
 
 --  7.2.4 Edad máxima <= 0
 
-EXEC stp.modificarCategoria 
+EXEC Club.modificarCategoria 
     @cod_categoria = 1,
     @descripcion = 'Mayor',
     @edad_max = 0,
@@ -132,7 +130,7 @@ EXEC stp.modificarCategoria
 
 --  7.2.5 Valor mensual <= 0
 
-EXEC stp.modificarCategoria 
+EXEC Club.modificarCategoria 
     @cod_categoria = 1,
     @descripcion = 'Menor',
     @edad_max = 40,
@@ -143,7 +141,7 @@ EXEC stp.modificarCategoria
 
 --  7.2.6 Valor anual nulo
 
-EXEC stp.modificarCategoria 
+EXEC Club.modificarCategoria 
     @cod_categoria = 1,
     @descripcion = 'Menor',
     @edad_max = 40,
@@ -154,7 +152,7 @@ EXEC stp.modificarCategoria
 
 -- 7.2.7 Fecha de vigencia mensual pasada
 
-EXEC stp.modificarCategoria 
+EXEC Club.modificarCategoria 
     @cod_categoria = 1,
     @descripcion = 'Cadete',
     @edad_max = 40,
@@ -165,7 +163,7 @@ EXEC stp.modificarCategoria
 
 --- 7.2.8 Fecha de vigencia anual pasada
 
-EXEC stp.modificarCategoria 
+EXEC Club.modificarCategoria 
     @cod_categoria = 1,
     @descripcion = 'Mayor',
     @edad_max = 40,
@@ -174,13 +172,12 @@ EXEC stp.modificarCategoria
     @valor_anual = 12000.00,
     @vig_valor_anual = '2020-01-01'; -- pasada
 
-
------------ 7.3 BORADO DE CATEGORIA
+-- 7.3 BORADO DE CATEGORIA
 
 -- 7.3.1 Borrado Exitoso
 
-EXEC stp.borrarCategoria @cod_categoria = 1;
+EXEC Club.borrarCategoria @cod_categoria = 1;
 
 -- 7.3.2 Borrado Fallido
 
-EXEC stp.borrarCategoria @cod_categoria = 999;
+EXEC Club.borrarCategoria @cod_categoria = 999;

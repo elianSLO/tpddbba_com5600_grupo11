@@ -1690,7 +1690,8 @@ CREATE OR ALTER PROCEDURE stp.insertarReembolso
     @monto       DECIMAL(10,2),
     @medio_Pago  VARCHAR(50),
     @fecha       DATE,
-    @motivo      VARCHAR(50)
+    @motivo      VARCHAR(50),
+    @cod_factura INT
 AS
 BEGIN
     SET NOCOUNT ON;
@@ -1699,6 +1700,18 @@ BEGIN
     IF @monto <= 0
     BEGIN
         PRINT 'Error: El monto debe ser mayor a cero.';
+        RETURN;
+    END
+
+    IF @cod_factura <= 0
+    BEGIN
+        PRINT 'Error: El código de factura debe ser mayor a cero.';
+        RETURN;
+    END
+
+    IF @cod_factura IS NULL OR NOT EXISTS (SELECT 1 FROM psn.Factura WHERE cod_Factura = @cod_factura AND estado = 'Pagada')
+    BEGIN
+        PRINT 'Error: No existe una factura con estado <Pagada> con el código especificado.';
         RETURN;
     END
 
@@ -1723,9 +1736,24 @@ BEGIN
         RETURN;
     END
 
-    -- Inserción de datos
-    INSERT INTO psn.Reembolso (monto, medio_Pago, fecha, motivo)
-    VALUES (@monto, @medio_Pago, @fecha, @motivo);
+    -- Transaccion para insertar el reembolso y cambiar el estado de la factura a 'Anulada'
+    BEGIN TRANSACTION;
+    BEGIN TRY
+        UPDATE psn.Factura
+        SET estado = 'Anulada'
+        WHERE cod_Factura = @cod_factura;
+
+        INSERT INTO psn.Reembolso (monto, medio_Pago, fecha, motivo, cod_factura)
+        VALUES (@monto, @medio_Pago, @fecha, @motivo, @cod_factura);
+
+        COMMIT TRANSACTION;
+    END TRY
+    BEGIN CATCH
+        -- Si ocurre un error, revertir la transacción
+        ROLLBACK TRANSACTION;
+        PRINT 'Error al insertar el reembolso: ' + ERROR_MESSAGE();
+        RETURN;
+    END CATCH;
 
     PRINT 'Reembolso insertado correctamente.';
 END;

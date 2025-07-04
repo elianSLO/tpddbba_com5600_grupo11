@@ -912,8 +912,8 @@ BEGIN
         @cod_invitado LIKE 'NS-[0-9][0-9][0-9][0-9][0-9]')
     BEGIN
         PRINT 'Error: Formato err�neo para @cod_invitado.';
-       �RETURN;
-����END
+        RETURN;
+    END
 
 	IF @cod_responsable IS NOT NULL AND NOT (
         @cod_responsable NOT LIKE 'SN-[0-9][0-9][0-9][0-9][0-9]' OR 
@@ -1045,8 +1045,8 @@ BEGIN
         @cod_invitado LIKE 'NS-[0-9][0-9][0-9][0-9]')
     BEGIN
         PRINT 'Error: Formato err�neo para @cod_invitado.';
-       �RETURN;
-����END
+        RETURN;
+    END
 
     IF NOT EXISTS (SELECT 1 FROM Persona.Invitado WHERE cod_invitado = @cod_invitado)
     BEGIN
@@ -1150,8 +1150,8 @@ BEGIN
         @cod_invitado LIKE 'NS-[0-9][0-9][0-9][0-9]')
     BEGIN
         PRINT 'Error: Formato err�neo para @cod_invitado.';
-       �RETURN;
-����END
+        RETURN;
+    END
 
     IF EXISTS (SELECT 1 FROM Persona.Invitado WHERE cod_invitado = @cod_invitado)
     BEGIN
@@ -1177,10 +1177,8 @@ END;
 GO
 
 CREATE OR ALTER PROCEDURE Finanzas.insertarPago
-	@cod_pago			BIGINT,
-	@monto				DECIMAL(10,2),
+	@cod_factura		INT,
 	@fecha_pago			DATE,
-	@estado				VARCHAR(15),
 	@responsable		VARCHAR(15),
 	@medio_pago			VARCHAR(15)
 AS
@@ -1188,40 +1186,34 @@ BEGIN
 	SET NOCOUNT ON;
 
 	--	Validaci�n de campos obligatorios
-	IF	@cod_pago		IS NULL OR	@monto		IS NULL OR		@fecha_pago	IS NULL OR	
-		@responsable	IS NULL	OR	@estado		IS NULL 
+	IF	@cod_factura	IS NULL OR  @fecha_pago	IS NULL OR	
+		@responsable	IS NULL	OR  @medio_pago IS NULL
 	BEGIN
 		PRINT 'ERROR: Faltan datos.';
 		RETURN;
 	END
 
-	IF @cod_pago <= 0
+	IF @cod_factura <= 0
 	BEGIN
-		PRINT 'ERROR: El codigo de pago debe ser mayor a 0.';
+		PRINT 'ERROR: El codigo de factura debe ser mayor a 0.';
 		RETURN;
 	END
 
-	IF EXISTS (SELECT 1 FROM Finanzas.Pago WHERE cod_pago = @cod_pago)
-	BEGIN
-		PRINT CONCAT('ERROR: El codigo de pago ya existe. (', @cod_pago, ')');
-		RETURN;
-	END
+    IF EXISTS (SELECT 1 FROM Finanzas.Pago WHERE cod_factura = @cod_factura)
+    BEGIN
+		PRINT 'ERROR: Ya existe un pago asociado a esa factura.';
+        RETURN;
+    END
 
-	IF @monto <= 0
+	IF NOT EXISTS (SELECT 1 FROM Finanzas.Factura WHERE cod_factura = @cod_factura)
 	BEGIN
-		PRINT 'ERROR: El monto debe ser mayor a cero.';
-		RETURN;
-	END
+		PRINT 'ERROR: No existe una factura con el c�digo especificado.';
+        RETURN;
+    END
 
 	IF @fecha_pago > GETDATE()
 	BEGIN
 		PRINT 'ERROR: La fecha de pago no puede ser futura.';
-		RETURN;
-	END
-
-	IF @estado NOT IN ('Pendiente', 'Pagado', 'Anulado')
-	BEGIN
-		PRINT 'ERROR: El estado debe ser: Pendiente, Pagado o Anulado.';
 		RETURN;
 	END
 
@@ -1249,10 +1241,24 @@ BEGIN
 		RETURN;
 	END
 
+	 -- transaccion para insertar pago y actualizar factura a Pagada
+    BEGIN TRANSACTION;
+    BEGIN TRY
+        UPDATE Finanzas.Factura
+        SET estado = 'Pagada'
+        WHERE cod_Factura = @cod_factura;
 
-	
-	INSERT INTO Finanzas.Pago (cod_pago, monto, fecha_pago, estado, responsable, medio_pago)
-	VALUES (@cod_pago,@monto, @fecha_pago, @estado, @responsable, @medio_pago);
+        INSERT INTO Finanzas.Pago (cod_factura, fecha_pago, responsable, medio_pago)
+	    VALUES (@cod_factura, @fecha_pago, @responsable, @medio_pago);
+
+        COMMIT TRANSACTION;
+    END TRY
+    BEGIN CATCH
+        -- Si ocurre un error, revertir la transacción
+        ROLLBACK TRANSACTION;
+        PRINT 'Error al insertar el reembolso: ' + ERROR_MESSAGE();
+        RETURN;
+    END CATCH;
 
 	PRINT 'Pago insertado correctamente.';
 	RETURN 1;
@@ -1269,37 +1275,23 @@ END;
 GO
 
 CREATE OR ALTER PROCEDURE Finanzas.modificarPago
-	@cod_pago			BIGINT,
-	@monto				DECIMAL(10,2),
+	@cod_factura		INT,
 	@fecha_pago			DATE,
-	@estado				VARCHAR(15),
 	@responsable		VARCHAR(15),
 	@medio_pago			VARCHAR(15)
 AS
 BEGIN
 	SET NOCOUNT ON;
 
-	IF NOT EXISTS (SELECT 1 FROM Finanzas.Pago WHERE cod_pago = @cod_pago)
+	IF NOT EXISTS (SELECT 1 FROM Finanzas.Factura WHERE cod_Factura = @cod_factura)
 	BEGIN
-		PRINT 'ERROR: No existe un pago con el c�digo especificado.';
-		RETURN;
-	END
-
-	IF @monto <= 0
-	BEGIN
-		PRINT 'ERROR: El monto debe ser mayor a cero.';
+		PRINT 'ERROR: No existe una Factura con el c�digo especificado.';
 		RETURN;
 	END
 
 	IF @fecha_pago > GETDATE()
 	BEGIN
 		PRINT 'ERROR: La fecha de pago no puede ser futura.';
-		RETURN;
-	END
-
-	IF @estado NOT IN ('Pendiente', 'Pagado', 'Anulado')
-	BEGIN
-		PRINT 'ERROR: El estado debe ser: Pendiente, Pagado o Anulado.';
 		RETURN;
 	END
 
@@ -1327,12 +1319,10 @@ BEGIN
 	END
 
 	UPDATE Finanzas.Pago
-	SET monto = @monto,
-		fecha_pago = @fecha_pago,
-		estado = @estado,
+	SET fecha_pago = @fecha_pago,
 		responsable = @responsable,
 		medio_pago = @medio_pago
-	WHERE cod_pago = @cod_pago;
+	WHERE cod_factura = @cod_factura;
 
 	PRINT 'Pago modificado correctamente.';
 END;
@@ -1348,21 +1338,33 @@ END;
 GO
 
 CREATE PROCEDURE Finanzas.borrarPago
-	@cod_pago INT
+	@cod_factura INT
 AS
 BEGIN
 	SET NOCOUNT ON;
 
-	-- Validaci�n: existencia del pago
-	IF NOT EXISTS (SELECT 1 FROM Finanzas.Pago WHERE cod_pago = @cod_pago)
+	IF NOT EXISTS (SELECT 1 FROM Finanzas.Pago WHERE cod_factura = @cod_factura)
 	BEGIN
-		PRINT 'ERROR: No existe un pago con ese c�digo.';
+		PRINT 'ERROR: No existe un pago para esa factura.';
 		RETURN;
 	END
 
-	-- Eliminaci�n
-	DELETE FROM Finanzas.Pago
-	WHERE cod_pago = @cod_pago;
+    BEGIN TRANSACTION;
+    BEGIN TRY
+        UPDATE Finanzas.Factura
+        SET estado = 'Pendiente'
+        WHERE cod_Factura = @cod_factura;
+
+	    DELETE FROM Finanzas.Pago
+	    WHERE cod_factura = @cod_factura;
+
+        COMMIT TRANSACTION;
+    END TRY
+    BEGIN CATCH
+        ROLLBACK TRANSACTION;
+        PRINT 'Error al insertar el reembolso: ' + ERROR_MESSAGE();
+        RETURN;
+    END CATCH;
 
 	PRINT 'Pago eliminado correctamente.';
 END;
@@ -1678,21 +1680,12 @@ END;
 GO
 
 CREATE OR ALTER PROCEDURE Finanzas.insertarReembolso
-    @monto       DECIMAL(10,2),
-    @medio_Pago  VARCHAR(50),
     @fecha       DATE,
     @motivo      VARCHAR(50),
     @cod_factura INT
 AS
 BEGIN
     SET NOCOUNT ON;
-
-    -- Validaci�n: monto debe ser mayor a 0
-    IF @monto <= 0
-    BEGIN
-        PRINT 'Error: El monto debe ser mayor a cero.';
-        RETURN;
-    END
 
     IF @cod_factura <= 0
     BEGIN
@@ -1706,10 +1699,9 @@ BEGIN
         RETURN;
     END
 
-    -- Validaci�n: medio_Pago no debe ser NULL ni vac�o
-    IF @medio_Pago IS NULL OR LTRIM(RTRIM(@medio_Pago)) = ''
+    IF NOT EXISTS (SELECT 1 FROM Finanzas.Pago WHERE cod_factura = @cod_factura)
     BEGIN
-        PRINT 'Error: El medio de pago no puede estar vac�o.';
+        PRINT 'Error: No existe un pago asociado a la factura especificada.';
         RETURN;
     END
 
@@ -1734,8 +1726,8 @@ BEGIN
         SET estado = 'Anulada'
         WHERE cod_Factura = @cod_factura;
 
-        INSERT INTO Finanzas.Reembolso (monto, medio_Pago, fecha, motivo, cod_factura)
-        VALUES (@monto, @medio_Pago, @fecha, @motivo, @cod_factura);
+        INSERT INTO Finanzas.Reembolso (fecha, motivo, cod_factura)
+        VALUES (@fecha, @motivo, @cod_factura);
 
         COMMIT TRANSACTION;
     END TRY
@@ -1760,9 +1752,7 @@ END;
 GO
 
 CREATE OR ALTER PROCEDURE Finanzas.modificarReembolso
-    @codReembolso INT,
-    @monto        DECIMAL(10,2),
-    @medio_Pago   VARCHAR(50),
+    @cod_factura  INT,
     @fecha        DATE,
     @motivo       VARCHAR(50)
 AS
@@ -1770,23 +1760,9 @@ BEGIN
     SET NOCOUNT ON;
 
     -- Validaci�n: c�digo debe existir
-    IF NOT EXISTS (SELECT 1 FROM Finanzas.Reembolso WHERE codReembolso = @codReembolso)
+    IF NOT EXISTS (SELECT 1 FROM Finanzas.Reembolso WHERE cod_factura = @cod_factura)
     BEGIN
-        PRINT 'Error: No existe un reembolso con el c�digo especificado.';
-        RETURN;
-    END
-
-    -- Validaci�n: monto debe ser mayor a 0
-    IF @monto <= 0
-    BEGIN
-        PRINT 'Error: El monto debe ser mayor a cero.';
-        RETURN;
-    END
-
-    -- Validaci�n: medio_Pago no debe ser NULL ni vac�o
-    IF @medio_Pago IS NULL OR LTRIM(RTRIM(@medio_Pago)) = ''
-    BEGIN
-        PRINT 'Error: El medio de pago no puede estar vac�o.';
+        PRINT 'Error: No existe un reembolso para la factura especificada.';
         RETURN;
     END
 
@@ -1807,11 +1783,9 @@ BEGIN
     -- Actualizaci�n de datos
     UPDATE Finanzas.Reembolso
     SET
-        monto = @monto,
-        medio_Pago = @medio_Pago,
         fecha = @fecha,
         motivo = @motivo
-    WHERE codReembolso = @codReembolso;
+    WHERE cod_factura = @cod_factura;
 
     PRINT 'Reembolso modificado correctamente.';
 END;
@@ -1827,15 +1801,15 @@ END;
 GO
 
 CREATE OR ALTER PROCEDURE Finanzas.borrarReembolso
-    @codReembolso INT
+    @cod_factura INT
 AS
 BEGIN
     SET NOCOUNT ON;
 
     -- Validaci�n: verificar que exista el c�digo
-    IF NOT EXISTS (SELECT 1 FROM Finanzas.Reembolso WHERE codReembolso = @codReembolso)
+    IF NOT EXISTS (SELECT 1 FROM Finanzas.Reembolso WHERE cod_factura = @cod_factura)
     BEGIN
-        PRINT 'Error: No existe un reembolso con el c�digo especificado.';
+        PRINT 'Error: No existe un reembolso para la factura especificada.';
         RETURN;
     END
 
@@ -1843,14 +1817,12 @@ BEGIN
     BEGIN TRANSACTION;
     BEGIN TRY
         -- Revertir el estado de la factura a 'Pagada'
-        DECLARE @cod_factura INT;
-        SELECT @cod_factura = cod_factura FROM Finanzas.Reembolso WHERE codReembolso = @codReembolso;
         UPDATE Finanzas.Factura
         SET estado = 'Pagada'
         WHERE cod_Factura = @cod_factura;
         -- Eliminar el reembolso
         DELETE FROM Finanzas.Reembolso
-        WHERE codReembolso = @codReembolso;
+        WHERE cod_factura = @cod_factura;
         COMMIT TRANSACTION;
     END TRY
     BEGIN CATCH
@@ -2018,8 +1990,8 @@ BEGIN
         @cod_responsable LIKE 'NS-[0-9][0-9][0-9][0-9][0-9]')
     BEGIN
         PRINT 'Error: Formato err�neo para cod_responsable.';
-       �RETURN;
-����END
+        RETURN;
+    END
 
     -- Validar existencia
     IF NOT EXISTS (SELECT 1 FROM Persona.Responsable WHERE cod_responsable = @cod_responsable)
@@ -2122,8 +2094,8 @@ BEGIN
         @cod_responsable LIKE 'NS-[0-9][0-9][0-9][0-9][0-9]')
     BEGIN
         PRINT 'Error: Formato err�neo para cod_responsable.';
-       �RETURN;
-����END
+        RETURN;
+    END
 
     -- Validar existencia
     IF NOT EXISTS (SELECT 1 FROM Persona.Responsable WHERE cod_responsable = @cod_responsable)
@@ -2180,16 +2152,16 @@ BEGIN
         @cod_socio LIKE 'SN-[0-9][0-9][0-9][0-9][0-9]')
     BEGIN
         PRINT 'Error: Formato err�neo para @cod_socio.';
-       �RETURN;
-����END
+        RETURN;
+    END
 
     IF @cod_invitado IS NOT NULL AND NOT (
         @cod_invitado LIKE 'NS-[0-9][0-9][0-9][0-9]' OR
         @cod_invitado LIKE 'NS-[0-9][0-9][0-9][0-9]')
     BEGIN
         PRINT 'Error: Formato err�neo para cod_invitado.';
-       �RETURN;
-����END
+        RETURN;
+    END
 
     IF @cod_socio IS NOT NULL AND NOT EXISTS (SELECT 1 FROM Persona.Socio WHERE cod_socio = @cod_socio)
     BEGIN
@@ -2309,16 +2281,16 @@ BEGIN
         @cod_socio LIKE 'SN-[0-9][0-9][0-9][0-9][0-9]')
     BEGIN
         PRINT 'Error: Formato err�neo para @cod_socio.';
-       �RETURN;
-����END
+        RETURN;
+    END
 
     IF @cod_invitado IS NOT NULL AND NOT (
         @cod_invitado LIKE 'NS-[0-9][0-9][0-9][0-9]' OR
         @cod_invitado LIKE 'NS-[0-9][0-9][0-9][0-9]')
     BEGIN
         PRINT 'Error: Formato err�neo para cod_invitado.';
-       �RETURN;
-����END
+        RETURN;
+    END
 
     IF @cod_socio IS NOT NULL AND NOT EXISTS (SELECT 1 FROM Persona.Socio WHERE cod_socio = @cod_socio)
     BEGIN

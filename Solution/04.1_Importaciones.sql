@@ -684,7 +684,7 @@ GO
 ----------------------------------------------------------------------------------------------------------------
 IF EXISTS (SELECT * FROM sys.procedures WHERE name = 'Importar_Asistencias') 
 BEGIN
-    DROP PROCEDURE imp.Importar_Asistencias;
+    DROP PROCEDURE Actividad.Importar_Asistencias;
 END;
 GO
 
@@ -695,10 +695,10 @@ CREATE OR ALTER PROCEDURE Actividad.Importar_Asistencias
 AS
 BEGIN
     IF @mostrarErrores NOT BETWEEN 0 AND 1
-        THROW 50001, 'El parámetro @mostrarErrores debe ser 0 o 1.', 1;
+        THROW 50001, 'El parï¿½metro @mostrarErrores debe ser 0 o 1.', 1;
 
     IF @mostrarImportadas NOT BETWEEN 0 AND 1
-        THROW 50002, 'El parámetro @mostrarImportadas debe ser 0 o 1.', 1;
+        THROW 50002, 'El parï¿½metro @mostrarImportadas debe ser 0 o 1.', 1;
 
 	SET NOCOUNT ON;
 
@@ -796,7 +796,7 @@ BEGIN
             AND ACT.cod_actividad IS NOT NULL
             AND P.cod_prof IS NOT NULL
             AND TRY_CAST(AC.Fecha_Asistencia_Excel AS DATE) IS NOT NULL
-            AND LEFT(AC.Asistencia_Estado_Excel, 1) IN ('P','A','J'); -- [MODIFICACION]: Reestablecido el filtro de estados válidos
+            AND LEFT(AC.Asistencia_Estado_Excel, 1) IN ('P','A','J'); -- [MODIFICACION]: Reestablecido el filtro de estados vï¿½lidos
 
 
         -- Registrar errores de filas que no se pudieron validar
@@ -813,9 +813,9 @@ BEGIN
                 WHEN S.cod_socio IS NULL THEN 'Socio no existe en la base de datos.'
                 WHEN ACT.cod_actividad IS NULL THEN 'Actividad no existe en la base de datos.'
                 WHEN P.cod_prof IS NULL THEN 'Profesor no existe en la base de datos.'
-                WHEN TRY_CAST(AC.Fecha_Asistencia_Excel AS DATE) IS NULL THEN 'Formato de fecha de asistencia inválido: ' + AC.Fecha_Asistencia_Excel
-                WHEN LEFT(AC.Asistencia_Estado_Excel, 1) NOT IN ('P','A','J') THEN 'Estado de asistencia inválido: ' + AC.Asistencia_Estado_Excel
-                ELSE 'Error de validación desconocido en Paso 2.'
+                WHEN TRY_CAST(AC.Fecha_Asistencia_Excel AS DATE) IS NULL THEN 'Formato de fecha de asistencia invï¿½lido: ' + AC.Fecha_Asistencia_Excel
+                WHEN LEFT(AC.Asistencia_Estado_Excel, 1) NOT IN ('P','A','J') THEN 'Estado de asistencia invï¿½lido: ' + AC.Asistencia_Estado_Excel
+                ELSE 'Error de validaciï¿½n desconocido en Paso 2.'
             END
         FROM
             #AsistenciaCruda AS AC
@@ -877,8 +877,8 @@ BEGIN
             AV.Profesor_Excel_Src,
             CASE
                 WHEN NOT EXISTS (SELECT 1 FROM Actividad.Inscripto I JOIN Actividad.Clase C ON I.cod_clase = C.cod_clase WHERE I.cod_socio = AV.cod_socio AND C.cod_actividad = AV.cod_actividad) THEN 'Socio no inscripto en la actividad especificada.'
-                WHEN NOT EXISTS (SELECT 1 FROM Actividad.Inscripto I JOIN Actividad.Clase C ON I.cod_clase = C.cod_clase WHERE I.cod_socio = AV.cod_socio AND C.cod_actividad = AV.cod_actividad AND C.dia = AV.dia_semana_asistencia) THEN 'Día de asistencia no coincide con ningún día de clase del socio para esta actividad.'
-                ELSE 'Validación de inscripción o clase fallida. (Motivo no especificado en CASE)' -- [MODIFICACION]: Mensaje más descriptivo
+                WHEN NOT EXISTS (SELECT 1 FROM Actividad.Inscripto I JOIN Actividad.Clase C ON I.cod_clase = C.cod_clase WHERE I.cod_socio = AV.cod_socio AND C.cod_actividad = AV.cod_actividad AND C.dia = AV.dia_semana_asistencia) THEN 'Dï¿½a de asistencia no coincide con ningï¿½n dï¿½a de clase del socio para esta actividad.'
+                ELSE 'Validaciï¿½n de inscripciï¿½n o clase fallida. (Motivo no especificado en CASE)' -- [MODIFICACION]: Mensaje mï¿½s descriptivo
             END
         FROM
             #AsistenciaValidadaPaso1 AS AV
@@ -950,7 +950,7 @@ BEGIN
             'Error general en el proceso de importacion: ' + ERROR_MESSAGE()
         );
 
-        PRINT 'Importación fallida. La transaccion ha sido revertida. Error: ' + ERROR_MESSAGE();
+        PRINT 'Importaciï¿½n fallida. La transaccion ha sido revertida. Error: ' + ERROR_MESSAGE();
 
 	END CATCH;
 

@@ -128,3 +128,22 @@ VALUES (
 );
 
 select * FROM Persona.Empleado
+
+-- Desencriptar
+
+DECLARE @passphrase NVARCHAR(100) = 'Xg7#pV@1zK$9mTqW';
+
+SELECT
+    CAST(DECRYPTBYPASSPHRASE(@passphrase, nombre_enc) AS VARCHAR(100)) AS nombre_desenc,
+    CAST(DECRYPTBYPASSPHRASE(@passphrase, apellido_enc) AS VARCHAR(100)) AS apellido_desenc,
+    CAST(DECRYPTBYPASSPHRASE(@passphrase, dni_enc) AS INT) AS dni_desenc,
+    CAST(DECRYPTBYPASSPHRASE(@passphrase, direccion_enc) AS VARCHAR(255)) AS direccion_desenc,
+    CAST(DECRYPTBYPASSPHRASE(@passphrase, cuil_enc) AS VARCHAR(200)) AS cuil_desenc,
+    CAST(DECRYPTBYPASSPHRASE(@passphrase, email_personal_enc) AS VARCHAR(255)) AS email_personal_desenc,
+    CAST(DECRYPTBYPASSPHRASE(@passphrase, email_empresarial_enc) AS VARCHAR(255)) AS email_empresarial_desenc,
+    CAST(DECRYPTBYPASSPHRASE(@passphrase, turno_enc) AS VARCHAR(50)) AS turno_desenc,
+    CAST(DECRYPTBYPASSPHRASE(@passphrase, rol_enc) AS VARCHAR(50)) AS rol_desenc,
+    CAST(DECRYPTBYPASSPHRASE(@passphrase, area_enc) AS VARCHAR(50)) AS area_desenc
+FROM
+    Persona.Empleado;
+GO

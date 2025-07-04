@@ -81,7 +81,7 @@ GO
 
 
 /*
-
-EXEC imp.Importar_Clima @RutaArchivo = N'D:\repos\tpddbba_com5600_grupo11\Solution\import\open-meteo-buenosaires_2025.csv';
+--DELETE FROM imp.ClimaDiario
+EXEC imp.Importar_Clima @RutaArchivo = N'D:\repos\tpddbba_com5600_grupo11\Solution\import\open-meteo-buenosaires_2024.csv';
 SELECT * FROM imp.ClimaDiario
 */

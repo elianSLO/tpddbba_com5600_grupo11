@@ -16,7 +16,6 @@ EXEC Finanzas.insertarReembolso
     @medio_Pago = 'Transferencia',
     @fecha = '2025-06-10',
     @motivo = 'Consulta médica'; 
-
 -- 6.2 MODIFICACION
 
 EXEC Finanzas.modificarReembolso

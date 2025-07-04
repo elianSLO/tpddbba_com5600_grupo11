@@ -74,8 +74,8 @@
           <FullPath>03_04_clase_test.sql</FullPath>
         </FileNode>
         <FileNode Name="03_05_factura_test.sql">
-          <AssociatedConnectionMoniker />
-          <AssociatedConnSrvName />
+          <AssociatedConnectionMoniker>8c91a03d-f9b4-46c0-a305-b5dcc79ff907:localhost\SQLEXPRESS_PSN:True</AssociatedConnectionMoniker>
+          <AssociatedConnSrvName>localhost\SQLEXPRESS_PSN</AssociatedConnSrvName>
           <AssociatedConnUserName />
           <FullPath>03_05_factura_test.sql</FullPath>
         </FileNode>
@@ -98,8 +98,8 @@
           <FullPath>03_08_item_factura_test.sql</FullPath>
         </FileNode>
         <FileNode Name="03_09_pago.test.sql">
-          <AssociatedConnectionMoniker />
-          <AssociatedConnSrvName />
+          <AssociatedConnectionMoniker>8c91a03d-f9b4-46c0-a305-b5dcc79ff907:localhost\SQLEXPRESS_PSN:True</AssociatedConnectionMoniker>
+          <AssociatedConnSrvName>localhost\SQLEXPRESS_PSN</AssociatedConnSrvName>
           <AssociatedConnUserName />
           <FullPath>03_09_pago.test.sql</FullPath>
         </FileNode>
@@ -110,8 +110,8 @@
           <FullPath>03_10_profesor.test.sql</FullPath>
         </FileNode>
         <FileNode Name="03_11_reembolso.test.sql">
-          <AssociatedConnectionMoniker />
-          <AssociatedConnSrvName />
+          <AssociatedConnectionMoniker>8c91a03d-f9b4-46c0-a305-b5dcc79ff907:localhost\SQLEXPRESS_PSN:True</AssociatedConnectionMoniker>
+          <AssociatedConnSrvName>localhost\SQLEXPRESS_PSN</AssociatedConnSrvName>
           <AssociatedConnUserName />
           <FullPath>03_11_reembolso.test.sql</FullPath>
         </FileNode>
@@ -128,8 +128,8 @@
           <FullPath>03_13_responsable.test.sql</FullPath>
         </FileNode>
         <FileNode Name="03_14_socio.test.sql">
-          <AssociatedConnectionMoniker />
-          <AssociatedConnSrvName />
+          <AssociatedConnectionMoniker>8c91a03d-f9b4-46c0-a305-b5dcc79ff907:localhost\SQLEXPRESS_PSN:True</AssociatedConnectionMoniker>
+          <AssociatedConnSrvName>localhost\SQLEXPRESS_PSN</AssociatedConnSrvName>
           <AssociatedConnUserName />
           <FullPath>03_14_socio.test.sql</FullPath>
         </FileNode>
@@ -140,8 +140,8 @@
           <FullPath>03_15_suscripcion_test.sql</FullPath>
         </FileNode>
         <FileNode Name="04.1_Importaciones.sql">
-          <AssociatedConnectionMoniker />
-          <AssociatedConnSrvName />
+          <AssociatedConnectionMoniker>8c91a03d-f9b4-46c0-a305-b5dcc79ff907:localhost\SQLEXPRESS_PSN:True</AssociatedConnectionMoniker>
+          <AssociatedConnSrvName>localhost\SQLEXPRESS_PSN</AssociatedConnSrvName>
           <AssociatedConnUserName />
           <FullPath>04.1_Importaciones.sql</FullPath>
         </FileNode>
@@ -158,14 +158,14 @@
           <FullPath>05_Usuarios.sql</FullPath>
         </FileNode>
         <FileNode Name="06_Reportes.sql">
-          <AssociatedConnectionMoniker>8c91a03d-f9b4-46c0-a305-b5dcc79ff907:localhost\SQLEXPRESS:True</AssociatedConnectionMoniker>
-          <AssociatedConnSrvName>localhost\SQLEXPRESS</AssociatedConnSrvName>
+          <AssociatedConnectionMoniker>8c91a03d-f9b4-46c0-a305-b5dcc79ff907:localhost\SQLEXPRESS_PSN:True</AssociatedConnectionMoniker>
+          <AssociatedConnSrvName>localhost\SQLEXPRESS_PSN</AssociatedConnSrvName>
           <AssociatedConnUserName />
           <FullPath>06_Reportes.sql</FullPath>
         </FileNode>
         <FileNode Name="07_Encriptacion.sql">
-          <AssociatedConnectionMoniker>8c91a03d-f9b4-46c0-a305-b5dcc79ff907:localhost\SQLEXPRESS:True</AssociatedConnectionMoniker>
-          <AssociatedConnSrvName>localhost\SQLEXPRESS</AssociatedConnSrvName>
+          <AssociatedConnectionMoniker>8c91a03d-f9b4-46c0-a305-b5dcc79ff907:localhost\SQLEXPRESS_PSN:True</AssociatedConnectionMoniker>
+          <AssociatedConnSrvName>localhost\SQLEXPRESS_PSN</AssociatedConnSrvName>
           <AssociatedConnUserName />
           <FullPath>07_Encriptacion.sql</FullPath>
         </FileNode>

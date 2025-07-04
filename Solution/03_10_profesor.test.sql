@@ -195,3 +195,65 @@ SELECT * FROM psn.Profesor WHERE cod_prof = 1;
 
 -- CASO 3.3.2: Borrado de socio inexistente
 EXEC Persona.borrarProfesor @cod_prof = 9999;
+
+
+/*
+    EXEC Persona.insertarProfesor 
+    @dni = '12345678',
+    @nombre = 'Pablo',
+    @apellido = 'Rodrigez',
+    @email = 'pablorodriguez@email.com',
+    @tel = '9876114321';
+
+	EXEC Persona.insertarProfesor 
+    @dni = '88822211',
+    @nombre = 'Ana Paula',
+    @apellido = 'Alvarez',
+    @email = 'apalvarez@email.com',
+    @tel = '9876114321';
+
+	EXEC Persona.insertarProfesor 
+    @dni = '78822211',
+    @nombre = 'Kito',
+    @apellido = 'Mihaji',
+    @email = 'kito@email.com',
+    @tel = '9876114321';
+
+	EXEC Persona.insertarProfesor 
+    @dni = '77822211',
+    @nombre = 'Carolina',
+    @apellido = 'Herreta',
+    @email = 'cherreta@email.com',
+    @tel = '9876114321';
+
+	EXEC Persona.insertarProfesor 
+    @dni = '77722211',
+    @nombre = 'Paula',
+    @apellido = 'Quiroga',
+    @email = 'quirogapaula@email.com',
+    @tel = '9876114321';
+
+	EXEC Persona.insertarProfesor 
+    @dni = '77723331',
+    @nombre = 'Hector',
+    @apellido = 'Alvarez',
+    @email = 'halvarez@email.com',
+    @tel = '9876114321';
+
+	EXEC Persona.insertarProfesor 
+    @dni = '77723331',
+    @nombre = 'Hector',
+    @apellido = 'Alvarez',
+    @email = 'halvarez@email.com',
+    @tel = '9876114321';
+
+	EXEC Persona.insertarProfesor 
+    @dni = '77743331',
+    @nombre = 'Roxana',
+    @apellido = 'Guiterrez',
+    @email = 'rg@email.com',
+    @tel = '9876114321';
+
+
+
+*/

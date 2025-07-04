@@ -969,6 +969,7 @@ GO
 
 
 /*
+
 --DELETE FROM Persona.Socio
 EXEC Persona.Importar_Socios'D:\repos\tpddbba_com5600_grupo11\Solution\import\Datos socios.xlsx'
 SELECT * FROM Persona.Socio
@@ -992,7 +993,5 @@ SELECT * FROM Persona.Socio
 --DELETE FROM Actividad.Asiste
 EXEC Actividad.Importar_Asistencias 'D:\repos\tpddbba_com5600_grupo11\Solution\import\Datos socios.xlsx',1,0
 SELECT * FROM Actividad.Asiste
-
-
 
 */

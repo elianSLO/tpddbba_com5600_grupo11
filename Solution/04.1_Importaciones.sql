@@ -509,35 +509,6 @@ GO
 -- IMPORTAR_GRUPO_FAMILIAR
 ----------------------------------------------------------------------------------------------------------------
 
---EXEC Persona.insertarSocio 'SN-4001','20004001','Nombre Socio','Apellido Socio','1990-01-01',NULL,NULL,NULL,1,0,'OSDE','OS40010000',NULL,NULL;
---EXEC Persona.insertarSocio 'SN-4002','20004002','Nombre Socio','Apellido Socio','1990-01-02',NULL,NULL,NULL,1,0,'OSDE','OS40020000',NULL,NULL;
---EXEC Persona.insertarSocio 'SN-4005','20004005','Nombre Socio','Apellido Socio','1990-01-03',NULL,NULL,NULL,1,0,'Swiss Medical','SM40050000',NULL,NULL;
---EXEC Persona.insertarSocio 'SN-4011','20004011','Nombre Socio','Apellido Socio','1990-01-04',NULL,NULL,NULL,1,0,'Medife','MF40110000',NULL,NULL;
---EXEC Persona.insertarSocio 'SN-4013','20004013','Nombre Socio','Apellido Socio','1990-01-05',NULL,NULL,NULL,1,0,'Galeno','GL40130000',NULL,NULL;
---EXEC Persona.insertarSocio 'SN-4014','20004014','Nombre Socio','Apellido Socio','1990-01-06',NULL,NULL,NULL,1,0,'OSDE','OS40140000',NULL,NULL;
---EXEC Persona.insertarSocio 'SN-4019','20004019','Nombre Socio','Apellido Socio','1990-01-07',NULL,NULL,NULL,1,0,'Swiss Medical','SM40190000',NULL,NULL;
---EXEC Persona.insertarSocio 'SN-4022','20004022','Nombre Socio','Apellido Socio','1990-01-08',NULL,NULL,NULL,1,0,'Medife','MF40220000',NULL,NULL;
---EXEC Persona.insertarSocio 'SN-4031','20004031','Nombre Socio','Apellido Socio','1990-01-09',NULL,NULL,NULL,1,0,'Galeno','GL40310000',NULL,NULL;
---EXEC Persona.insertarSocio 'SN-4032','20004032','Nombre Socio','Apellido Socio','1990-01-10',NULL,NULL,NULL,1,0,'OSDE','OS40320000',NULL,NULL;
---EXEC Persona.insertarSocio 'SN-4045','20004045','Nombre Socio','Apellido Socio','1990-01-11',NULL,NULL,NULL,1,0,'Swiss Medical','SM40450000',NULL,NULL;
---EXEC Persona.insertarSocio 'SN-4046','20004046','Nombre Socio','Apellido Socio','1990-01-12',NULL,NULL,NULL,1,0,'Medife','MF40460000',NULL,NULL;
---EXEC Persona.insertarSocio 'SN-4047','20004047','Nombre Socio','Apellido Socio','1990-01-13',NULL,NULL,NULL,1,0,'Galeno','GL40470000',NULL,NULL;
---EXEC Persona.insertarSocio 'SN-4048','20004048','Nombre Socio','Apellido Socio','1990-01-14',NULL,NULL,NULL,1,0,'OSDE','OS40480000',NULL,NULL;
---EXEC Persona.insertarSocio 'SN-4051','20004051','Nombre Socio','Apellido Socio','1990-01-15',NULL,NULL,NULL,1,0,'Swiss Medical','SM40510000',NULL,NULL;
---EXEC Persona.insertarSocio 'SN-4056','20004056','Nombre Socio','Apellido Socio','1990-01-16',NULL,NULL,NULL,1,0,'Medife','MF40560000',NULL,NULL;
---EXEC Persona.insertarSocio 'SN-4059','20004059','Nombre Socio','Apellido Socio','1990-01-17',NULL,NULL,NULL,1,0,'Galeno','GL40590000',NULL,NULL;
---EXEC Persona.insertarSocio 'SN-4061','20004061','Nombre Socio','Apellido Socio','1990-01-18',NULL,NULL,NULL,1,0,'OSDE','OS40610000',NULL,NULL;
---EXEC Persona.insertarSocio 'SN-4062','20004062','Nombre Socio','Apellido Socio','1990-01-19',NULL,NULL,NULL,1,0,'Swiss Medical','SM40620000',NULL,NULL;
---EXEC Persona.insertarSocio 'SN-4063','20004063','Nombre Socio','Apellido Socio','1990-01-20',NULL,NULL,NULL,1,0,'Medife','MF40630000',NULL,NULL;
---EXEC Persona.insertarSocio 'SN-4073','20004073','Nombre Socio','Apellido Socio','1990-01-21',NULL,NULL,NULL,1,0,'Galeno','GL40730000',NULL,NULL;
---EXEC Persona.insertarSocio 'SN-4074','20004074','Nombre Socio','Apellido Socio','1990-01-22',NULL,NULL,NULL,1,0,'OSDE','OS40740000',NULL,NULL;
---EXEC Persona.insertarSocio 'SN-4077','20004077','Nombre Socio','Apellido Socio','1990-01-23',NULL,NULL,NULL,1,0,'Swiss Medical','SM40770000',NULL,NULL;
---EXEC Persona.insertarSocio 'SN-4079','20004079','Nombre Socio','Apellido Socio','1990-01-24',NULL,NULL,NULL,1,0,'Medife','MF40790000',NULL,NULL;
---EXEC Persona.insertarSocio 'SN-4080','20004080','Nombre Socio','Apellido Socio','1990-01-25',NULL,NULL,NULL,1,0,'Galeno','GL40800000',NULL,NULL;
---EXEC Persona.insertarSocio 'SN-4081','20004081','Nombre Socio','Apellido Socio','1990-01-26',NULL,NULL,NULL,1,0,'OSDE','OS40810000',NULL,NULL;
-
---EXEC Persona.Importar_SociosConResponsable 'C:\Users\matia\Desktop\BDDA\tpddbba_com5600_grupo11\Solution\import\Datos socios.xlsx'
-
 IF EXISTS (SELECT * FROM sys.procedures WHERE name = 'Importar_SociosConResponsable') 
 BEGIN
     DROP PROCEDURE Persona.Importar_SociosConResponsable;
@@ -817,11 +788,11 @@ BEGIN
         FROM
             #AsistenciaCruda AS AC
         LEFT JOIN
-            psn.Socio AS S ON AC.Nro_Socio_Excel = S.cod_socio
+            Persona.Socio AS S ON AC.Nro_Socio_Excel = S.cod_socio
         LEFT JOIN
-            psn.Actividad AS ACT ON AC.Actividad_Excel = ACT.nombre
+            Club.Actividad AS ACT ON AC.Actividad_Excel = ACT.nombre
         LEFT JOIN
-            psn.Profesor AS P ON TRIM(AC.Profesor_Excel) = P.nombre + ' ' + P.apellido COLLATE Modern_Spanish_CI_AS
+            Persona.Profesor AS P ON TRIM(AC.Profesor_Excel) = P.nombre + ' ' + P.apellido COLLATE Modern_Spanish_CI_AS
         WHERE
             S.cod_socio IS NOT NULL
             AND ACT.cod_actividad IS NOT NULL
@@ -996,13 +967,8 @@ BEGIN
 END
 GO
 
---EXEC imp.Importar_Asistencias 
---'D:\repos\tpddbba_com5600_grupo11\Solution\import\Datos socios.xlsx','presentismo_actividades',1,0
---'C:\Users\matia\Desktop\BDDA\tpddbba_com5600_grupo11\Creacion_BD\import\Datos socios prueba.xlsx',
---'presentismo_actividades',
---1, 1
 
-
+/*
 --DELETE FROM Persona.Socio
 EXEC Persona.Importar_Socios'D:\repos\tpddbba_com5600_grupo11\Solution\import\Datos socios.xlsx'
 SELECT * FROM Persona.Socio
@@ -1019,7 +985,14 @@ SELECT * FROM Club.Categoria
 EXEC Club.Importar_Actividades'D:\repos\tpddbba_com5600_grupo11\Solution\import\Datos socios.xlsx'
 SELECT * FROM Club.Actividad
 
---DELETE FROM Persona.Socio DELETE FROM Persona.Responsable
+--DELETE FROM Persona.Socio
 EXEC Persona.Importar_SociosConResponsable'D:\repos\tpddbba_com5600_grupo11\Solution\import\Datos socios.xlsx'
 SELECT * FROM Persona.Socio
-SELECT * FROM Persona.Responsable
+
+--DELETE FROM Actividad.Asiste
+EXEC Actividad.Importar_Asistencias 'D:\repos\tpddbba_com5600_grupo11\Solution\import\Datos socios.xlsx',1,0
+SELECT * FROM Actividad.Asiste
+
+
+
+*/

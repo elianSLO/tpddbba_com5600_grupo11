@@ -175,12 +175,13 @@ IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'Com5600G1
 	BEGIN
 		CREATE TABLE Finanzas.Pago 
 		(
-			cod_pago			BIGINT PRIMARY KEY,
-			monto				DECIMAL(10,2),
+			cod_pago	INT IDENTITY(1,1) PRIMARY KEY,
+			cod_factura	INT NOT NULL,
 			fecha_pago			DATE,
-			estado				VARCHAR(15),
 			responsable			VARCHAR(15) CHECK (responsable LIKE 'SN-[0-9][0-9][0-9][0-9][0-9]' OR 
-												   responsable LIKE 'SN-[0-9][0-9][0-9][0-9]'),
+												   								responsable LIKE 'SN-[0-9][0-9][0-9][0-9]'OR 
+												   								responsable LIKE 'NS-[0-9][0-9][0-9][0-9][0-9]'OR 
+												   								responsable LIKE 'NS-[0-9][0-9][0-9][0-9]'),
 			medio_pago			VARCHAR(15)
 		);
 		PRINT 'Tabla Pago creada correctamente.';
@@ -244,8 +245,6 @@ IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'Com5600G1
 	BEGIN
 		CREATE TABLE Finanzas.Reembolso (
 			codReembolso		INT IDENTITY(1,1) PRIMARY KEY,
-			monto				DECIMAL(10,2),
-			medio_Pago			VARCHAR(50),
 			fecha				DATE,
 			motivo				VARCHAR(50),
 			cod_factura		INT NOT NULL
@@ -598,6 +597,20 @@ IF NOT EXISTS (
 BEGIN
     ALTER TABLE Finanzas.Reembolso
     ADD CONSTRAINT fk_fact_reembolso
+    FOREIGN KEY (cod_factura) REFERENCES Finanzas.Factura(cod_Factura);
+END;
+GO
+
+----------------------------------------------------------------------------------------------------------------
+
+-- FK Finanzas.Factura -> Finanzas.Pago
+IF NOT EXISTS (
+    SELECT 1 FROM sys.foreign_keys 
+    WHERE name = 'fk_fact_pago' AND parent_object_id = OBJECT_ID('Finanzas.Pago')
+)
+BEGIN
+    ALTER TABLE Finanzas.Pago
+    ADD CONSTRAINT fk_fact_pago
     FOREIGN KEY (cod_factura) REFERENCES Finanzas.Factura(cod_Factura);
 END;
 GO

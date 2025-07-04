@@ -1700,7 +1700,7 @@ BEGIN
         RETURN;
     END
 
-    IF @cod_factura IS NULL OR NOT EXISTS (SELECT 1 FROM psn.Factura WHERE cod_Factura = @cod_factura AND estado = 'Pagada')
+    IF @cod_factura IS NULL OR NOT EXISTS (SELECT 1 FROM Finanzas.Factura WHERE cod_Factura = @cod_factura AND estado = 'Pagada')
     BEGIN
         PRINT 'Error: No existe una factura con estado <Pagada> con el código especificado.';
         RETURN;
@@ -1730,11 +1730,11 @@ BEGIN
     -- Transaccion para insertar el reembolso y cambiar el estado de la factura a 'Anulada'
     BEGIN TRANSACTION;
     BEGIN TRY
-        UPDATE psn.Factura
+        UPDATE Finanzas.Factura
         SET estado = 'Anulada'
         WHERE cod_Factura = @cod_factura;
 
-        INSERT INTO psn.Reembolso (monto, medio_Pago, fecha, motivo, cod_factura)
+        INSERT INTO Finanzas.Reembolso (monto, medio_Pago, fecha, motivo, cod_factura)
         VALUES (@monto, @medio_Pago, @fecha, @motivo, @cod_factura);
 
         COMMIT TRANSACTION;
@@ -1844,12 +1844,12 @@ BEGIN
     BEGIN TRY
         -- Revertir el estado de la factura a 'Pagada'
         DECLARE @cod_factura INT;
-        SELECT @cod_factura = cod_factura FROM psn.Reembolso WHERE codReembolso = @codReembolso;
-        UPDATE psn.Factura
+        SELECT @cod_factura = cod_factura FROM Finanzas.Reembolso WHERE codReembolso = @codReembolso;
+        UPDATE Finanzas.Factura
         SET estado = 'Pagada'
         WHERE cod_Factura = @cod_factura;
         -- Eliminar el reembolso
-        DELETE FROM psn.Reembolso
+        DELETE FROM Finanzas.Reembolso
         WHERE codReembolso = @codReembolso;
         COMMIT TRANSACTION;
     END TRY

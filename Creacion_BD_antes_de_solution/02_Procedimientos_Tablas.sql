@@ -1848,9 +1848,28 @@ BEGIN
         RETURN;
     END
 
-    -- Eliminación del registro
-    DELETE FROM psn.Reembolso
-    WHERE codReembolso = @codReembolso;
+    -- transacción para eliminar el reembolso y revertir el estado de la factura a 'Pagada'
+    BEGIN TRANSACTION;
+    BEGIN TRY
+        -- Revertir el estado de la factura a 'Pagada'
+        DECLARE @cod_factura INT;
+        SELECT @cod_factura = cod_factura FROM psn.Reembolso WHERE codReembolso = @codReembolso;
+        UPDATE psn.Factura
+        SET estado = 'Pagada'
+        WHERE cod_Factura = @cod_factura;
+        -- Eliminar el reembolso
+        DELETE FROM psn.Reembolso
+        WHERE codReembolso = @codReembolso;
+        COMMIT TRANSACTION;
+    END TRY
+    BEGIN CATCH
+        -- Si ocurre un error, revertir la transacción
+        ROLLBACK TRANSACTION;
+        PRINT 'Error al eliminar el reembolso: ' + ERROR_MESSAGE();
+        RETURN;
+    END CATCH;
+
+
 
     PRINT 'Reembolso eliminado correctamente.';
 END;

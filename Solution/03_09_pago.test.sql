@@ -20,7 +20,7 @@ VALUES ('SN-10000', 'María', 'López', '87654321', 'maria@correo.com', '1144556
 EXEC Finanzas.emitirFactura @cod_socio = 'SN-9000' 
 SELECT * FROM Finanzas.Factura
 
--- 4.1 PRUEBA DE INSERCIÓN DE PAGO
+-- 4.1 PRUEBA DE INSERCIÓN DE PAGO -- EJECUTAR 2 VECES PARA ERROR DE DUPLICADO
 
 EXEC Finanzas.insertarPago
 	@cod_factura = 1,
@@ -46,4 +46,13 @@ select * from Finanzas.Pago
 EXEC Finanzas.borrarPago
 	@cod_factura = 1;
 GO
-SELECT * FROM Finanzas.Factura -- Factura pasa a estado Pendiente
+SELECT * FROM Finanzas.Factura -- Factura pasa a estado Pendient
+
+-- 4.4 FACTURA ERRONEA
+
+EXEC Finanzas.insertarPago
+	@cod_factura = 1000,
+	@fecha_pago = '2025-06-10',
+	@responsable = 'SN-9000',
+	@medio_pago = 'TARJETA';
+GO

@@ -29,6 +29,16 @@ EXEC Persona.insertarSocio
     @cod_responsable = NULL ;
 
 EXEC Finanzas.emitirFactura @cod_socio = 'SN-00001' 
+
+-- 6.0 ERROR, FACTURA SIN PAGO REGISTRADO
+
+EXEC Finanzas.insertarReembolso
+    @cod_factura = 1,
+    @fecha = '2025-06-10',
+    @motivo = 'Consulta médica'; 
+
+-----------------
+
 EXEC Finanzas.insertarPago
 	@cod_factura = 1,
 	@fecha_pago = '2025-06-10',
@@ -43,8 +53,10 @@ EXEC Finanzas.insertarReembolso
     @cod_factura = 1,
     @fecha = '2025-06-10',
     @motivo = 'Consulta médica'; 
+
 SELECT * FROM Finanzas.Reembolso
 SELECT * FROM Finanzas.Factura -- Factura pasa a estado Anulada
+
 -- 6.2 MODIFICACION
 
 EXEC Finanzas.modificarReembolso
@@ -52,13 +64,12 @@ EXEC Finanzas.modificarReembolso
     @fecha = '2025-06-11',
     @motivo = 'Estudios clínicos';
 SELECT * FROM Finanzas.Reembolso
--- 6.3 BORRADO
 
--- 6.3.1 Borrado Exitoso
+-- 6.3 BORRADO EXITOSO
 
 EXEC Finanzas.borrarReembolso @cod_factura = 1;
 SELECT * FROM Finanzas.Factura -- Factura pasa a estado Pagada
 
--- 6.3.2 Borrado Fallido
+-- 6.4 BORRADO FALLIDO
 
 EXEC Finanzas.borrarReembolso @cod_factura = 99;

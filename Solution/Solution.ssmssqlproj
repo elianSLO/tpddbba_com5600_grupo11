@@ -86,14 +86,14 @@
           <FullPath>03_06_inscripto_test.sql</FullPath>
         </FileNode>
         <FileNode Name="03_07_invitado.test.sql">
-          <AssociatedConnectionMoniker />
-          <AssociatedConnSrvName />
+          <AssociatedConnectionMoniker>8c91a03d-f9b4-46c0-a305-b5dcc79ff907:localhost\SQLEXPRESS_PSN:True</AssociatedConnectionMoniker>
+          <AssociatedConnSrvName>localhost\SQLEXPRESS_PSN</AssociatedConnSrvName>
           <AssociatedConnUserName />
           <FullPath>03_07_invitado.test.sql</FullPath>
         </FileNode>
         <FileNode Name="03_08_item_factura_test.sql">
-          <AssociatedConnectionMoniker />
-          <AssociatedConnSrvName />
+          <AssociatedConnectionMoniker>8c91a03d-f9b4-46c0-a305-b5dcc79ff907:localhost\SQLEXPRESS_PSN:True</AssociatedConnectionMoniker>
+          <AssociatedConnSrvName>localhost\SQLEXPRESS_PSN</AssociatedConnSrvName>
           <AssociatedConnUserName />
           <FullPath>03_08_item_factura_test.sql</FullPath>
         </FileNode>
@@ -104,8 +104,8 @@
           <FullPath>03_09_pago.test.sql</FullPath>
         </FileNode>
         <FileNode Name="03_10_profesor.test.sql">
-          <AssociatedConnectionMoniker>8c91a03d-f9b4-46c0-a305-b5dcc79ff907:localhost\SQLEXPRESS:True</AssociatedConnectionMoniker>
-          <AssociatedConnSrvName>localhost\SQLEXPRESS</AssociatedConnSrvName>
+          <AssociatedConnectionMoniker>8c91a03d-f9b4-46c0-a305-b5dcc79ff907:localhost\SQLEXPRESS_PSN:True</AssociatedConnectionMoniker>
+          <AssociatedConnSrvName>localhost\SQLEXPRESS_PSN</AssociatedConnSrvName>
           <AssociatedConnUserName />
           <FullPath>03_10_profesor.test.sql</FullPath>
         </FileNode>
@@ -152,8 +152,8 @@
           <FullPath>04.2_Importaciones_Clima.sql</FullPath>
         </FileNode>
         <FileNode Name="05_Usuarios.sql">
-          <AssociatedConnectionMoniker>8c91a03d-f9b4-46c0-a305-b5dcc79ff907:localhost\SQLEXPRESS:True</AssociatedConnectionMoniker>
-          <AssociatedConnSrvName>localhost\SQLEXPRESS</AssociatedConnSrvName>
+          <AssociatedConnectionMoniker>8c91a03d-f9b4-46c0-a305-b5dcc79ff907:localhost\SQLEXPRESS_PSN:True</AssociatedConnectionMoniker>
+          <AssociatedConnSrvName>localhost\SQLEXPRESS_PSN</AssociatedConnSrvName>
           <AssociatedConnUserName />
           <FullPath>05_Usuarios.sql</FullPath>
         </FileNode>

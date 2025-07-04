@@ -315,7 +315,7 @@ BEGIN
     SELECT 
         CONVERT(VARCHAR(255), F1),
         CONVERT(VARCHAR(255), F2),
-		CONVERT(VARCHAR(255), F3),
+		CONVERT(VARCHAR(255), F3)
     FROM OPENROWSET(
         ''Microsoft.ACE.OLEDB.12.0'',
         ''Excel 12.0;HDR=NO;IMEX=1;Database=' + @RutaArchivo + ''',
@@ -391,9 +391,6 @@ BEGIN
 		SET @id += 1;
 	END
 
-	SELECT * FROM ##Temp;
-	SELECT * FROM ##Temp2;
-
 	DROP TABLE ##Temp;
 	DROP TABLE ##Temp2;
 
@@ -440,7 +437,7 @@ BEGIN
     FROM OPENROWSET(
         ''Microsoft.ACE.OLEDB.12.0'',
         ''Excel 12.0;HDR=NO;IMEX=1;Database=' + @RutaArchivo + ''',
-        ''SELECT * FROM [Tarifas$B2:D8]''
+        ''SELECT * FROM [Tarifas$B3:D8]''
     )';
 
 	EXEC sp_executesql @SQL;
@@ -523,8 +520,7 @@ AS
 BEGIN
     SET NOCOUNT ON;
 
-    IF OBJECT_ID('tempdb..##Temp') IS NOT NULL
-        DROP TABLE ##Temp;
+    IF OBJECT_ID('tempdb..##Temp') IS NOT NULL DROP TABLE ##Temp;
 
     CREATE TABLE ##Temp
     (
@@ -544,7 +540,25 @@ BEGIN
     );
 
     DECLARE @SQL NVARCHAR(MAX);
-    DECLARE @filas_importadas INT = 0, @filas_ignoradas INT = 0;
+    DECLARE 
+        @maxId INT,
+        @id INT = 1,
+
+        @tcod_socio VARCHAR(255), @tcod_responsable VARCHAR(255),
+        @tnombre VARCHAR(255), @tapellido VARCHAR(255),
+        @tdni VARCHAR(255), @temail VARCHAR(255), @tfecha_nac VARCHAR(255),
+        @ttel VARCHAR(255), @ttel_emerg VARCHAR(255), @tnombre_cobertura VARCHAR(255),
+        @tnro_afiliado VARCHAR(255), @ttel_cobertura VARCHAR(255),
+
+        @cod_socio VARCHAR(15), @cod_responsable VARCHAR(15),
+        @nombre VARCHAR(50), @apellido VARCHAR(50),
+        @dni CHAR(8), @email VARCHAR(100), @fecha_nac DATE,
+        @tel VARCHAR(15), @tel_emerg VARCHAR(15), @nombre_cobertura VARCHAR(50),
+        @nro_afiliado VARCHAR(50), @tel_cobertura VARCHAR(15),
+
+        @resultado INT,
+        @filas_socios_importadas INT = 0,
+        @filas_socios_ignoradas INT = 0;
 
     SET @SQL = '
         INSERT INTO ##Temp (tcod_socio, tcod_responsable, tnombre, tapellido, tdni, temail, tfecha_nac, ttel, ttel_emerg, tnombre_cobertura, tnro_afiliado, ttel_cobertura)
@@ -569,56 +583,59 @@ BEGIN
 
     EXEC sp_executesql @SQL;
 
-    DELETE FROM ##Temp WHERE tcod_socio = 'Nro de Socio';
-
-    DECLARE 
-        @maxId INT,
-        @id INT = 1,
-        @tcod_socio VARCHAR(255), @tcod_responsable VARCHAR(255),
-        @tnombre VARCHAR(255), @tapellido VARCHAR(255),
-        @tdni VARCHAR(255), @temail VARCHAR(255), @tfecha_nac VARCHAR(255),
-        @ttel VARCHAR(255), @ttel_emerg VARCHAR(255), @tnombre_cobertura VARCHAR(255),
-        @tnro_afiliado VARCHAR(255), @ttel_cobertura VARCHAR(255),
-
-        @cod_socio VARCHAR(15), @cod_responsable VARCHAR(15),
-        @nombre VARCHAR(50), @apellido VARCHAR(50),
-        @dni CHAR(8), @email VARCHAR(100), @fecha_nac DATE,
-        @tel VARCHAR(15), @tel_emerg VARCHAR(15), @nombre_cobertura VARCHAR(50),
-        @nro_afiliado VARCHAR(50), @tel_cobertura VARCHAR(15),
-
-        @resultado INT;
+    DELETE FROM ##Temp WHERE tcod_socio = 'Nro de Socio' OR tcod_socio IS NULL OR tcod_socio = '';
 
     SELECT @maxId = MAX(id) FROM ##Temp;
 
+    SET @id = 1;
     WHILE @id <= @maxId
     BEGIN
         SELECT 
-            @tcod_socio = tcod_socio,
-            @tcod_responsable = tcod_responsable,
-            @tnombre = tnombre,
-            @tapellido = tapellido,
-            @tdni = tdni,
-            @temail = temail,
-            @tfecha_nac = tfecha_nac,
-            @ttel = ttel,
-            @ttel_emerg = ttel_emerg,
-            @tnombre_cobertura = tnombre_cobertura,
-            @tnro_afiliado = tnro_afiliado,
-            @ttel_cobertura = ttel_cobertura
+            @tcod_socio = LTRIM(RTRIM(tcod_socio)),
+            @tcod_responsable = LTRIM(RTRIM(tcod_responsable)),
+            @tnombre = LTRIM(RTRIM(tnombre)),
+            @tapellido = LTRIM(RTRIM(tapellido)),
+            @tdni = LTRIM(RTRIM(tdni)),
+            @temail = LTRIM(RTRIM(temail)),
+            @tfecha_nac = LTRIM(RTRIM(tfecha_nac)),
+            @ttel = LTRIM(RTRIM(ttel)),
+            @ttel_emerg = LTRIM(RTRIM(ttel_emerg)),
+            @tnombre_cobertura = LTRIM(RTRIM(tnombre_cobertura)),
+            @tnro_afiliado = LTRIM(RTRIM(tnro_afiliado)),
+            @ttel_cobertura = LTRIM(RTRIM(ttel_cobertura))
         FROM ##Temp WHERE id = @id;
 
-        SET @cod_socio = LEFT(LTRIM(RTRIM(@tcod_socio)), 15);
-        SET @cod_responsable = LEFT(LTRIM(RTRIM(@tcod_responsable)), 15);
-        SET @nombre = LEFT(LTRIM(RTRIM(@tnombre)), 50);
-        SET @apellido = LEFT(LTRIM(RTRIM(@tapellido)), 50);
-        SET @dni = LEFT(LTRIM(RTRIM(@tdni)), 8);
-        SET @email = LEFT(LTRIM(RTRIM(@temail)), 100);
-        SET @fecha_nac = TRY_CONVERT(DATE, REPLACE(LTRIM(RTRIM(@tfecha_nac)), CHAR(160), ''), 103);
-        SET @tel = LEFT(LTRIM(RTRIM(@ttel)), 15);
-        SET @tel_emerg = LEFT(LTRIM(RTRIM(@ttel_emerg)), 15);
-        SET @nombre_cobertura = LEFT(LTRIM(RTRIM(@tnombre_cobertura)), 50);
-        SET @nro_afiliado = LEFT(LTRIM(RTRIM(@tnro_afiliado)), 50);
-        SET @tel_cobertura = LEFT(LTRIM(RTRIM(@ttel_cobertura)), 15);
+        SET @cod_socio = LEFT(@tcod_socio, 15);
+        SET @cod_responsable = LEFT(@tcod_responsable, 15);
+        SET @nombre = LEFT(@tnombre, 50);
+        SET @apellido = LEFT(@tapellido, 50);
+        SET @dni = LEFT(@tdni, 8);
+        SET @email = LEFT(@temail, 100);
+        SET @tel = LEFT(@ttel, 15);
+        SET @tel_emerg = LEFT(@ttel_emerg, 15);
+        SET @nombre_cobertura = LEFT(@tnombre_cobertura, 50);
+        SET @nro_afiliado = LEFT(@tnro_afiliado, 50);
+        SET @tel_cobertura = LEFT(@ttel_cobertura, 15);
+
+        SET @fecha_nac = TRY_CONVERT(DATE, REPLACE(@tfecha_nac, CHAR(160), ''), 103);
+
+        IF @cod_socio IS NULL OR @cod_socio = ''
+        BEGIN
+            PRINT 'Error al insertar socio en fila ' + CAST(@id AS VARCHAR) + ': Falta codigo de socio.';
+            SET @filas_socios_ignoradas += 1;
+            SET @id += 1;
+            CONTINUE;
+        END
+
+        -- Verifico que el responsable socio exista para no violar FK
+        IF @cod_responsable IS NOT NULL AND @cod_responsable <> ''
+            AND NOT EXISTS(SELECT 1 FROM Persona.Responsable WHERE cod_responsable = @cod_responsable)
+        BEGIN
+            PRINT 'Error al insertar socio en fila ' + CAST(@id AS VARCHAR) + ': Responsable ' + @cod_responsable + ' no existe.';
+            SET @filas_socios_ignoradas += 1;
+            SET @id += 1;
+            CONTINUE;
+        END
 
         BEGIN TRY
             EXEC @resultado = Persona.insertarSocio
@@ -636,19 +653,28 @@ BEGIN
                 @cod_responsable = @cod_responsable,
                 @estado = NULL,
                 @saldo = NULL;
+
+            IF @resultado = 1
+                SET @filas_socios_importadas += 1;
+            ELSE
+                SET @filas_socios_ignoradas += 1;
         END TRY
         BEGIN CATCH
-            -- Podés agregar manejo de error si querés
-        END CATCH
+            PRINT 'Error al insertar socio en fila ' + CAST(@id AS VARCHAR) + ': ' + ERROR_MESSAGE();
+            SET @filas_socios_ignoradas += 1;
+        END CATCH;
 
         SET @id += 1;
     END
 
     DROP TABLE ##Temp;
 
-    PRINT 'Importación finalizada.';
+    PRINT 'Socios importados: ' + CAST(@filas_socios_importadas AS VARCHAR);
+    PRINT 'Socios ignorados: ' + CAST(@filas_socios_ignoradas AS VARCHAR);
 END;
 GO
+
+
 
 -----------------------------------------------------------------------------------------------------------------------
 

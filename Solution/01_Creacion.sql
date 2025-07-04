@@ -406,7 +406,7 @@ GO
 ----------------------------------------------
 --	Claves y restricciones.
 ----------------------------------------------
-
+/*	
 -- FK Persona.Socio -> Persona.Responsable
 IF NOT EXISTS (
     SELECT 1 FROM sys.foreign_keys 
@@ -417,7 +417,7 @@ BEGIN
     ADD CONSTRAINT fk_responsable 
     FOREIGN KEY (cod_responsable) REFERENCES Persona.Responsable(cod_responsable);
 END;
-
+*/
 ----------------------------------------------------------------------------------------------------------------
 
 -- FK Club.Suscripcion -> Persona.Socio

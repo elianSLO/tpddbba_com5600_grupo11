@@ -60,12 +60,34 @@ GO
 alter role db_owner add member elian
 alter role db_owner add member lucas
 alter role db_owner add member matias
-go
+GO
 
-----------------------------------------------------------------------------------------------------------------
 
+--  ACÁ PROBAMOS PERMISOS SOLO CON EL JEFE DE TESORERIA
+--  DANDOLE PERMISOS SOLO SOBRE FINANZAS
+--------------------------------------------------------------------------------------
 IF NOT EXISTS (SELECT * FROM sys.database_principals WHERE name = 'Jefe_Tesoreria' AND type = 'R')
     CREATE ROLE Jefe_Tesoreria;
+
+
+IF NOT EXISTS (SELECT * FROM sys.sql_logins WHERE name = 'JefeTesoreria')
+BEGIN
+    CREATE LOGIN JefeTesoreria
+    WITH PASSWORD = 'JefeTesoreria',
+         DEFAULT_DATABASE = Com5600G11,
+         CHECK_POLICY = OFF,
+         CHECK_EXPIRATION = OFF;
+END
+GO
+
+IF NOT EXISTS (SELECT * FROM sys.database_principals WHERE name = 'JefeTesoreria')
+    CREATE USER JefeTesoreria FOR LOGIN JefeTesoreria;
+
+
+
+ALTER ROLE Jefe_Tesoreria ADD MEMBER JefeTesoreria;
+----------------------------------------------------------------------------------------------------------------
+
 
 IF NOT EXISTS (SELECT * FROM sys.database_principals WHERE name = 'Administrativo_Cobranza' AND type = 'R')
     CREATE ROLE Administrativo_Cobranza;
@@ -93,7 +115,6 @@ IF NOT EXISTS (SELECT * FROM sys.database_principals WHERE name = 'Secretario' A
 
 IF NOT EXISTS (SELECT * FROM sys.database_principals WHERE name = 'Vocales' AND type = 'R')
     CREATE ROLE Vocales;
-
 
 
 
@@ -159,9 +180,3 @@ GRANT EXECUTE ON SCHEMA::Rep		TO Secretario;
 -- ROL: Vocales
 
 ----------------------------------------------
-
-
-
-
-
-

@@ -1,11 +1,11 @@
 /*
 ====================================================================================
  Archivo		: 01_Creacion.sql
- Proyecto		: Institución Deportiva Sol Norte.
- Descripción	: Scripts para creación/eliminación de la base de datos.
+ Proyecto		: Instituciï¿½n Deportiva Sol Norte.
+ Descripciï¿½n	: Scripts para creaciï¿½n/eliminaciï¿½n de la base de datos.
  Autor			: COM5600_G11
  Fecha entrega	: 2025-06-20
- Versión		: 1.0
+ Versiï¿½n		: 1.0
 ====================================================================================
 */
 
@@ -247,7 +247,8 @@ IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'Com5600G1
 			monto				DECIMAL(10,2),
 			medio_Pago			VARCHAR(50),
 			fecha				DATE,
-			motivo				VARCHAR(50)
+			motivo				VARCHAR(50),
+			cod_factura		INT NOT NULL
 		);
 		PRINT 'Tabla Reembolso creada correctamente.';
 	END
@@ -585,5 +586,18 @@ BEGIN
     ALTER TABLE Actividad.Asiste 
     ADD CONSTRAINT fk_clase_asiste 
     FOREIGN KEY (cod_clase) REFERENCES Actividad.Clase(cod_clase);
+END;
+
+----------------------------------------------------------------------------------------------------------------
+
+-- FK Finanzas.Factura -> Finanzas.Reembolso
+IF NOT EXISTS (
+    SELECT 1 FROM sys.foreign_keys 
+    WHERE name = 'fk_fact_reembolso' AND parent_object_id = OBJECT_ID('Finanzas.Reembolso')
+)
+BEGIN
+    ALTER TABLE Finanzas.Reembolso
+    ADD CONSTRAINT fk_fact_reembolso
+    FOREIGN KEY (cod_factura) REFERENCES Finanzas.Factura(cod_Factura);
 END;
 GO

@@ -1,11 +1,11 @@
 /*
 ====================================================================================
  Archivo		: 02_Procedimientos_Tablas.sql
- Proyecto		: Institución Deportiva Sol Norte.
- Descripción	: Scripts para inserción, modificación y eliminación en tablas.
+ Proyecto		: Instituciï¿½n Deportiva Sol Norte.
+ Descripciï¿½n	: Scripts para inserciï¿½n, modificaciï¿½n y eliminaciï¿½n en tablas.
  Autor			: COM5600_G11
  Fecha entrega	: 2025-06-20
- Versión		: 1.0
+ Versiï¿½n		: 1.0
 ====================================================================================
 */
 
@@ -41,57 +41,57 @@ AS
 BEGIN
 	SET NOCOUNT ON;
 
-	-- Validar que la descripcion sea válida
+	-- Validar que la descripcion sea vï¿½lida
 	IF @descripcion NOT IN ('Cadete', 'Mayor', 'Menor')
 	BEGIN
-		PRINT 'La descripción debe ser Cadete, Mayor o Menor.'
+		PRINT 'La descripciï¿½n debe ser Cadete, Mayor o Menor.'
 		RETURN;
 	END
 
 	-- Validar que no exista ya una categoria con la misma descripcion
 	IF EXISTS (SELECT 1 FROM Club.Categoria WHERE descripcion = @descripcion)
 	BEGIN
-		PRINT 'Ya existe una categoría con esa descripción.'
+		PRINT 'Ya existe una categorï¿½a con esa descripciï¿½n.'
 		RETURN;
 	END
 
-	-- Validar que la edad máxima sea mayor a 0
+	-- Validar que la edad mï¿½xima sea mayor a 0
 	IF (@edad_max <= 0 AND @edad_max < @edad_min)
 	BEGIN
-		PRINT 'La edad máxima debe ser un número mayor a 0.'
+		PRINT 'La edad mï¿½xima debe ser un nï¿½mero mayor a 0.'
 		RETURN;
 	END
 
 	IF (@edad_min <= 0 AND @edad_min > @edad_max)
 	BEGIN
-		PRINT 'La edad máxima debe ser un número mayor a 0.'
+		PRINT 'La edad mï¿½xima debe ser un nï¿½mero mayor a 0.'
 		RETURN;
 	END
 
 	-- Validar que los montos no sean nulos o negativos
 	IF	@valor_mensual <= 0 OR @valor_mensual IS NULL 
 	BEGIN
-		PRINT 'El valor de la suscripción mensual debe ser mayor a cero'
+		PRINT 'El valor de la suscripciï¿½n mensual debe ser mayor a cero'
 		RETURN;
 	END
 
 	/*IF	@valor_anual <= 0 OR @valor_anual IS NULL 
 	BEGIN
-		PRINT 'El valor de la suscripción debe ser mayor a cero'
+		PRINT 'El valor de la suscripciï¿½n debe ser mayor a cero'
 		RETURN;
 	END
 
 	-- Validar que las fechas de vigencia no sean anteriores a hoy
 	IF (@vig_valor_mens < CAST(GETDATE() AS DATE) OR @vig_valor_anual < CAST(GETDATE() AS DATE))
 	BEGIN
-		PRINT 'Fecha de vigencia anual inválida'
+		PRINT 'Fecha de vigencia anual invï¿½lida'
 		RETURN;
 	END*/
 
 	INSERT INTO Club.Categoria(descripcion,edad_max,valor_mensual,vig_valor_mens,valor_anual,vig_valor_anual, edad_min)
 	VALUES (@descripcion,@edad_max,@valor_mensual,@vig_valor_mens,@valor_anual,@vig_valor_anual, @edad_min);
 
-	PRINT 'Categoría insertada correctamente'
+	PRINT 'Categorï¿½a insertada correctamente'
 	RETURN 1;
 END
 GO
@@ -118,58 +118,58 @@ AS
 BEGIN
     SET NOCOUNT ON;
 
-    -- Validar que la categoría exista por código
+    -- Validar que la categorï¿½a exista por cï¿½digo
     IF NOT EXISTS (SELECT 1 FROM Club.Categoria WHERE cod_categoria = @cod_categoria)
     BEGIN
-        PRINT 'No existe una categoría con ese código para modificar.'
+        PRINT 'No existe una categorï¿½a con ese cï¿½digo para modificar.'
         RETURN;
     END
 
-    -- Validar que la descripción sea válida
+    -- Validar que la descripciï¿½n sea vï¿½lida
     IF @descripcion NOT IN ('Cadete', 'Mayor', 'Menor')
     BEGIN
-        PRINT 'La descripción debe ser Cadete, Mayor o Menor.'
+        PRINT 'La descripciï¿½n debe ser Cadete, Mayor o Menor.'
         RETURN;
     END
 
-    -- Validar que la nueva descripción no esté en uso por otra categoría diferente
+    -- Validar que la nueva descripciï¿½n no estï¿½ en uso por otra categorï¿½a diferente
     IF EXISTS (
         SELECT 1 FROM Club.Categoria
         WHERE descripcion = @descripcion AND cod_categoria <> @cod_categoria
     )
     BEGIN
-        PRINT 'Otra categoría ya tiene esa descripción.'
+        PRINT 'Otra categorï¿½a ya tiene esa descripciï¿½n.'
         RETURN;
     END
 
-    -- Validar que la edad máxima sea mayor a 0
+    -- Validar que la edad mï¿½xima sea mayor a 0
 	IF (@edad_max <= 0 AND @edad_max < @edad_min)
 	BEGIN
-		PRINT 'La edad máxima debe ser un número mayor a 0.'
+		PRINT 'La edad mï¿½xima debe ser un nï¿½mero mayor a 0.'
 		RETURN;
 	END
 
 	IF (@edad_min <= 0 AND @edad_min > @edad_max)
 	BEGIN
-		PRINT 'La edad máxima debe ser un número mayor a 0.'
+		PRINT 'La edad mï¿½xima debe ser un nï¿½mero mayor a 0.'
 		RETURN;
 	END
 
     -- Validar que los montos no sean nulos o negativos
     IF (@valor_mensual <= 0 OR @valor_mensual IS NULL OR @valor_anual <= 0 OR @valor_anual IS NULL)
     BEGIN
-        PRINT 'El valor de la suscripción debe ser mayor a cero.'
+        PRINT 'El valor de la suscripciï¿½n debe ser mayor a cero.'
         RETURN;
     END
 
     -- Validar que las fechas de vigencia no sean anteriores a hoy
     IF (@vig_valor_mens < CAST(GETDATE() AS DATE) OR @vig_valor_anual < CAST(GETDATE() AS DATE))
     BEGIN
-        PRINT 'Fecha de vigencia inválida.'
+        PRINT 'Fecha de vigencia invï¿½lida.'
         RETURN;
     END
 
-    -- Actualizar la categoría
+    -- Actualizar la categorï¿½a
     UPDATE Club.Categoria
     SET descripcion = @descripcion,
 		edad_min = @edad_min,
@@ -180,7 +180,7 @@ BEGIN
         vig_valor_anual = @vig_valor_anual
     WHERE cod_categoria = @cod_categoria;
 
-    PRINT 'Categoría modificada correctamente.';
+    PRINT 'Categorï¿½a modificada correctamente.';
 END
 GO
 
@@ -295,10 +295,10 @@ BEGIN
 	-- Validar que exista la actividad
 		 IF @nombre COLLATE Modern_Spanish_CI_AI NOT IN (
         'Futsal',
-        'Vóley',
+        'Vï¿½ley',
         'Taekwondo',
-        'Baile artístico',
-        'Natación',
+        'Baile artï¿½stico',
+        'Nataciï¿½n',
         'Ajedrez'
     )
 	 BEGIN
@@ -313,10 +313,10 @@ BEGIN
 		RETURN;
 	END
 
-	-- Validar que la fecha no esté en el pasado
+	-- Validar que la fecha no estï¿½ en el pasado
 	IF @vig_valor < GETDATE()
 	BEGIN
-		PRINT 'Fecha de vigencia inválida.'
+		PRINT 'Fecha de vigencia invï¿½lida.'
 		RETURN;
 	END
 
@@ -344,7 +344,7 @@ CREATE OR ALTER PROCEDURE Club.eliminarActividad
 	@nombre VARCHAR(50)
 AS
 BEGIN
-	-- Validar que exista la descripción de la actividad
+	-- Validar que exista la descripciï¿½n de la actividad
 	IF NOT EXISTS (SELECT 1 FROM Club.Actividad WHERE nombre = @nombre)
 	BEGIN
 		PRINT 'No existe esa actividad.'
@@ -419,7 +419,7 @@ AS
 BEGIN
 	SET NOCOUNT ON;
 
-	--	Validación de campos obligatorios
+	--	Validaciï¿½n de campos obligatorios
 	/*IF	@cod_socio			IS NULL OR	@dni			IS NULL OR	@nombre		IS NULL OR	@apellido IS NULL OR 
 		@fecha_nac			IS NULL /*OR	@email			IS NULL OR	@tel		IS NULL*/ OR	@tel_emerg IS NULL OR
 		@nombre_cobertura	IS NULL OR	@nro_afiliado	IS NULL OR	@tel_cobertura IS NULL
@@ -433,7 +433,7 @@ BEGIN
 	IF NOT (@cod_socio LIKE 'SN-[0-9][0-9][0-9][0-9][0-9]' OR
             @cod_socio LIKE 'SN-[0-9][0-9][0-9][0-9]')
 	BEGIN
-		PRINT 'Error: El código de socio debe tener formato "SN-XXXXX".';
+		PRINT 'Error: El cï¿½digo de socio debe tener formato "SN-XXXXX".';
 		RETURN;
 	END;
 
@@ -442,7 +442,7 @@ BEGIN
 
 	IF @edad < 18 AND @cod_responsable IS NULL
 	BEGIN
-		PRINT 'Error: El socio es menor de 18 años y debe tener un responsable asignado.';
+		PRINT 'Error: El socio es menor de 18 aï¿½os y debe tener un responsable asignado.';
 		RETURN;
 	END;
 
@@ -452,13 +452,13 @@ BEGIN
 	    @cod_responsable NOT LIKE 'NS-[0-9][0-9][0-9][0-9][0-9]' OR
         @cod_responsable NOT LIKE 'NS-[0-9][0-9][0-9][0-9]')
 	BEGIN
-		PRINT 'Error: El código de responsable debe tener formato "SN-XXXXX" o "NS-XXXXX".';
+		PRINT 'Error: El cï¿½digo de responsable debe tener formato "SN-XXXXX" o "NS-XXXXX".';
 		RETURN;
     END;
 
 	IF LEN(@dni) <> 8
 	BEGIN
-		PRINT 'Error: El DNI debe ser de 8 dígitos';
+		PRINT 'Error: El DNI debe ser de 8 dï¿½gitos';
 		RETURN;
 	END;
 
@@ -488,20 +488,20 @@ BEGIN
 
 	IF @email NOT LIKE '_%@_%._%'
 	BEGIN
-		PRINT 'Error: Email inválido. Debe tener formato ejemplo@dominio.com.';
+		PRINT 'Error: Email invï¿½lido. Debe tener formato ejemplo@dominio.com.';
 		RETURN;
 	END;
 
 	IF @saldo < 0
 	BEGIN
-		PRINT 'Error: Saldo inválido. No puede ser negativo.';
+		PRINT 'Error: Saldo invï¿½lido. No puede ser negativo.';
 		RETURN;
 	END;
 
 	/*-- Solo se valida que no tenga letras
 	IF @tel LIKE '%[^0-9 ()-/]%' OR @tel_emerg LIKE '%[^0-9 ()-/]%' OR @tel_cobertura LIKE '%[^0-9 ()-/]%'
 	BEGIN
-		PRINT 'Error: Los teléfonos solo deben contener números.';
+		PRINT 'Error: Los telï¿½fonos solo deben contener nï¿½meros.';
 		RETURN;
 	END;*/
 
@@ -558,13 +558,13 @@ BEGIN
 	   @estado IS NULL OR @saldo IS NULL OR @nombre_cobertura IS NULL OR @nro_afiliado IS NULL 
 	   OR @tel_cobertura IS NULL
 	BEGIN
-		PRINT 'Error: Ningún campo puede ser NULL';
+		PRINT 'Error: Ningï¿½n campo puede ser NULL';
 		RETURN;
 	END;
 
 	IF @cod_socio NOT LIKE 'SN-[0-9][0-9][0-9][0-9][0-9]'
 	BEGIN
-		PRINT 'El código de socio debe tener formato "SN-XXXXX".';
+		PRINT 'El cï¿½digo de socio debe tener formato "SN-XXXXX".';
 		RETURN;
 	END;
 
@@ -574,7 +574,7 @@ BEGIN
 	    @cod_responsable NOT LIKE 'NS-[0-9][0-9][0-9][0-9][0-9]' OR
         @cod_responsable NOT LIKE 'NS-[0-9][0-9][0-9][0-9]')
 	BEGIN
-		PRINT 'El código de responsable debe tener formato "SN-XXXXX" o "NS-XXXXX".';
+		PRINT 'El cï¿½digo de responsable debe tener formato "SN-XXXXX" o "NS-XXXXX".';
 		RETURN;
     END;
 
@@ -586,7 +586,7 @@ BEGIN
 
 	IF LEN(@dni) <> 8
 	BEGIN
-		PRINT 'Error: El DNI debe ser de 8 dígitos';
+		PRINT 'Error: El DNI debe ser de 8 dï¿½gitos';
 		RETURN;
 	END;
 
@@ -604,20 +604,20 @@ BEGIN
 
 	IF @email NOT LIKE '_%@_%._%'
 	BEGIN
-		PRINT 'Error: Email inválido. Debe tener formato ejemplo@dominio.com.';
+		PRINT 'Error: Email invï¿½lido. Debe tener formato ejemplo@dominio.com.';
 		RETURN;
 	END;
 
 	IF @saldo < 0
 	BEGIN
-		PRINT 'Saldo inválido. No puede ser negativo.';
+		PRINT 'Saldo invï¿½lido. No puede ser negativo.';
 		RETURN;
 	END;
 
-	-- Teléfonos: solo números
+	-- Telï¿½fonos: solo nï¿½meros
 	IF @tel LIKE '%[^0-9 ()-/]%' OR @tel_emerg LIKE '%[^0-9 ()-/]%' OR @tel_cobertura LIKE '%[^0-9 ()-/]%'
 	BEGIN
-		PRINT 'Error: Los teléfonos solo deben contener números.';
+		PRINT 'Error: Los telï¿½fonos solo deben contener nï¿½meros.';
 		RETURN;
 	END;
 
@@ -657,10 +657,10 @@ CREATE OR ALTER PROCEDURE Persona.borrarSocio
     AS
     BEGIN
         SET NOCOUNT ON;
-		-- Validación de que el código del socio sea del tipo "SN-XXXXX"
+		-- Validaciï¿½n de que el cï¿½digo del socio sea del tipo "SN-XXXXX"
 		IF @cod_socio NOT LIKE 'SN-[0-9][0-9][0-9][0-9][0-9]'
 		BEGIN
-			PRINT 'El código de socio debe tener formato "SN-XXXX".'
+			PRINT 'El cï¿½digo de socio debe tener formato "SN-XXXX".'
 			RETURN;
 		END
         IF EXISTS (SELECT 1 FROM Persona.Socio WHERE cod_socio = @cod_socio)
@@ -670,7 +670,7 @@ CREATE OR ALTER PROCEDURE Persona.borrarSocio
         END
         ELSE
         BEGIN
-            PRINT 'El socio con el código especificado no existe.';
+            PRINT 'El socio con el cï¿½digo especificado no existe.';
         END
     END
 GO
@@ -697,53 +697,53 @@ CREATE OR ALTER PROCEDURE Persona.insertarProfesor
 AS
 BEGIN
 	
-    -- Validación de que ningún campo sea NULL
+    -- Validaciï¿½n de que ningï¿½n campo sea NULL
     IF @dni IS NULL OR @nombre IS NULL OR @apellido IS NULL OR 
        @email IS NULL OR @tel IS NULL
     BEGIN
-        PRINT 'Error: Ningún campo puede ser NULL';
+        PRINT 'Error: Ningï¿½n campo puede ser NULL';
         RETURN;
     END;
 
-    -- Validación de que el DNI tenga 8 dígitos
+    -- Validaciï¿½n de que el DNI tenga 8 dï¿½gitos
     IF LEN(@dni) < 8 or LEN(@dni) > 8
     BEGIN
-        PRINT 'Error: El DNI debe ser de 8 dígitos';
+        PRINT 'Error: El DNI debe ser de 8 dï¿½gitos';
         RETURN;
 	END;
 
-	-- Validación de que el DNI no esté insertado
+	-- Validaciï¿½n de que el DNI no estï¿½ insertado
 	IF EXISTS (SELECT 1 FROM Persona.Profesor WHERE dni = @dni)
     BEGIN
         PRINT 'Error: Ya existe un profesor con ese DNI';
         RETURN;
     END;
 
-		-- Validación de que el nombre sólo contenga letras y espacios
+		-- Validaciï¿½n de que el nombre sï¿½lo contenga letras y espacios
 	IF @nombre LIKE '%[^a-zA-Z ]%'
 	BEGIN
     PRINT 'Error: El nombre solo puede contener letras y espacios.';
     RETURN;
 	END
 
-	-- Validación de que el apellido sólo contenga letras y espacios
+	-- Validaciï¿½n de que el apellido sï¿½lo contenga letras y espacios
 	IF @apellido LIKE '%[^a-zA-Z ]%'
 	BEGIN
     PRINT 'Error: El apellido solo puede contener letras y espacios.';
     RETURN;
 	END
 
-	-- Validación de email
+	-- Validaciï¿½n de email
 	IF @email NOT LIKE '_%@_%._%'
 	BEGIN
-		PRINT 'Error: Email inválido. Debe tener formato ejemplo@dominio.com.';
+		PRINT 'Error: Email invï¿½lido. Debe tener formato ejemplo@dominio.com.';
 		RETURN;
 	END
 
-	-- Validación del telefono
+	-- Validaciï¿½n del telefono
 	IF (LEN(@tel) < 8 OR LEN(@tel) > 14 OR @tel LIKE '%[^0-9]%')
 	BEGIN
-    PRINT 'Error: Teléfono inválido. Debe contener entre 8 y 14 dígitos numéricos.';
+    PRINT 'Error: Telï¿½fono invï¿½lido. Debe contener entre 8 y 14 dï¿½gitos numï¿½ricos.';
     RETURN;
 	END
 
@@ -777,52 +777,52 @@ AS
 BEGIN
     SET NOCOUNT ON;
 
-    -- Validación de que ningún campo sea NULL
+    -- Validaciï¿½n de que ningï¿½n campo sea NULL
     IF @cod_prof IS NULL OR @dni IS NULL OR @nombre IS NULL OR @apellido IS NULL OR @email IS NULL OR @tel IS NULL
     BEGIN
-        PRINT 'Error: Ningún campo puede ser NULL';
+        PRINT 'Error: Ningï¿½n campo puede ser NULL';
         RETURN;
     END;
 
-    -- Validación de existencia del profesor
+    -- Validaciï¿½n de existencia del profesor
     IF NOT EXISTS (SELECT 1 FROM Persona.Profesor WHERE cod_prof = @cod_prof)
     BEGIN
         PRINT 'Error: Profesor no encontrado';
         RETURN;
     END;
 
-    -- Validación de DNI
+    -- Validaciï¿½n de DNI
     IF LEN(@dni) <> 8
     BEGIN
-        PRINT 'Error: El DNI debe tener exactamente 8 dígitos';
+        PRINT 'Error: El DNI debe tener exactamente 8 dï¿½gitos';
         RETURN;
     END;
 
-	-- Validación de que el nombre sólo contenga letras y espacios
+	-- Validaciï¿½n de que el nombre sï¿½lo contenga letras y espacios
 	IF @nombre LIKE '%[^a-zA-Z ]%'
 	BEGIN
     PRINT 'Error: El nombre solo puede contener letras y espacios.';
     RETURN;
 	END
 
-	-- Validación de que el apellido sólo contenga letras y espacios
+	-- Validaciï¿½n de que el apellido sï¿½lo contenga letras y espacios
 	IF @apellido LIKE '%[^a-zA-Z ]%'
 	BEGIN
     PRINT 'Error: El apellido solo puede contener letras y espacios.';
     RETURN;
 	END
 
-    -- Validación de email
+    -- Validaciï¿½n de email
     IF @email NOT LIKE '_%@_%._%'
     BEGIN
-        PRINT 'Error: Email inválido. Debe tener formato ejemplo@dominio.com';
+        PRINT 'Error: Email invï¿½lido. Debe tener formato ejemplo@dominio.com';
         RETURN;
     END;
 
-    -- Validación de teléfono
+    -- Validaciï¿½n de telï¿½fono
     IF (LEN(@tel) < 10 OR LEN(@tel) > 14 OR @tel LIKE '%[^0-9]%')
     BEGIN
-        PRINT 'Error: Teléfono inválido. Debe contener entre 10 y 14 dígitos numéricos';
+        PRINT 'Error: Telï¿½fono invï¿½lido. Debe contener entre 10 y 14 dï¿½gitos numï¿½ricos';
         RETURN;
     END;
 
@@ -861,7 +861,7 @@ CREATE OR ALTER PROCEDURE Persona.borrarProfesor
         END
         ELSE
         BEGIN
-            PRINT 'El profesor con el código especificado no existe.';
+            PRINT 'El profesor con el cï¿½digo especificado no existe.';
         END
     END
 GO
@@ -904,16 +904,16 @@ BEGIN
        @estado IS NULL OR @saldo IS NULL OR @nombre_cobertura IS NULL OR @nro_afiliado IS NULL 
        OR @tel_cobertura IS NULL
     BEGIN
-        PRINT 'Error: Ningún campo puede ser NULL';
+        PRINT 'Error: Ningï¿½n campo puede ser NULL';
         RETURN;
     END;
 
     IF NOT (@cod_invitado LIKE 'NS-[0-9][0-9][0-9][0-9]' OR
         @cod_invitado LIKE 'NS-[0-9][0-9][0-9][0-9][0-9]')
     BEGIN
-        PRINT 'Error: Formato erróneo para @cod_invitado.';
-        RETURN;
-    END
+        PRINT 'Error: Formato errï¿½neo para @cod_invitado.';
+       ï¿½RETURN;
+ï¿½ï¿½ï¿½ï¿½END
 
 	IF @cod_responsable IS NOT NULL AND NOT (
         @cod_responsable NOT LIKE 'SN-[0-9][0-9][0-9][0-9][0-9]' OR 
@@ -921,13 +921,13 @@ BEGIN
 	    @cod_responsable NOT LIKE 'NS-[0-9][0-9][0-9][0-9][0-9]' OR
         @cod_responsable NOT LIKE 'NS-[0-9][0-9][0-9][0-9]')
 	BEGIN
-		PRINT 'El código de responsable debe tener formato "SN-XXXXX" o "NS-XXXXX".';
+		PRINT 'El cï¿½digo de responsable debe tener formato "SN-XXXXX" o "NS-XXXXX".';
 		RETURN;
     END;
 
     IF LEN(@dni) <> 8
     BEGIN
-        PRINT 'Error: El DNI debe ser de 8 dígitos';
+        PRINT 'Error: El DNI debe ser de 8 dï¿½gitos';
         RETURN;
     END;
 
@@ -937,14 +937,14 @@ BEGIN
         RETURN;
     END;
 
-	-- Validación de que el nombre sólo contenga letras y espacios
+	-- Validaciï¿½n de que el nombre sï¿½lo contenga letras y espacios
 	IF @nombre LIKE '%[^a-zA-Z ]%'
 	BEGIN
     PRINT 'Error: El nombre solo puede contener letras y espacios.';
     RETURN;
 	END
 
-	-- Validación de que el apellido sólo contenga letras y espacios
+	-- Validaciï¿½n de que el apellido sï¿½lo contenga letras y espacios
 	IF @apellido LIKE '%[^a-zA-Z ]%'
 	BEGIN
     PRINT 'Error: El apellido solo puede contener letras y espacios.';
@@ -959,31 +959,31 @@ BEGIN
 
     IF @email NOT LIKE '_%@_%._%'
     BEGIN
-        PRINT 'Error: Email inválido. Debe tener formato ejemplo@dominio.com.';
+        PRINT 'Error: Email invï¿½lido. Debe tener formato ejemplo@dominio.com.';
         RETURN;
     END;
 
     IF @saldo < 0
     BEGIN
-        PRINT 'Saldo inválido. No puede ser negativo.';
+        PRINT 'Saldo invï¿½lido. No puede ser negativo.';
         RETURN;
     END;
 
     IF (LEN(@tel) < 8 OR LEN(@tel) > 14 OR @tel LIKE '%[^0-9]%')
     BEGIN
-        PRINT 'Error: Teléfono inválido.';
+        PRINT 'Error: Telï¿½fono invï¿½lido.';
         RETURN;
     END;
 
     IF (LEN(@tel_emerg) < 8 OR LEN(@tel_emerg) > 14 OR @tel_emerg LIKE '%[^0-9]%')
     BEGIN
-        PRINT 'Error: Teléfono de emergencia inválido.';
+        PRINT 'Error: Telï¿½fono de emergencia invï¿½lido.';
         RETURN;
     END;
 
     IF (LEN(@tel_cobertura) < 8 OR LEN(@tel_cobertura) > 14 OR @tel_cobertura LIKE '%[^0-9]%')
     BEGIN
-        PRINT 'Error: Teléfono de cobertura inválido.';
+        PRINT 'Error: Telï¿½fono de cobertura invï¿½lido.';
         RETURN;
     END;
 
@@ -1037,16 +1037,16 @@ BEGIN
        @estado IS NULL OR @saldo IS NULL OR @nombre_cobertura IS NULL OR @nro_afiliado IS NULL 
        OR @tel_cobertura IS NULL OR @cod_responsable IS NULL
     BEGIN
-        PRINT 'Error: Ningún campo puede ser NULL';
+        PRINT 'Error: Ningï¿½n campo puede ser NULL';
         RETURN;
     END;
 
     IF NOT (@cod_invitado LIKE 'NS-[0-9][0-9][0-9][0-9]' OR
         @cod_invitado LIKE 'NS-[0-9][0-9][0-9][0-9]')
     BEGIN
-        PRINT 'Error: Formato erróneo para @cod_invitado.';
-        RETURN;
-    END
+        PRINT 'Error: Formato errï¿½neo para @cod_invitado.';
+       ï¿½RETURN;
+ï¿½ï¿½ï¿½ï¿½END
 
     IF NOT EXISTS (SELECT 1 FROM Persona.Invitado WHERE cod_invitado = @cod_invitado)
     BEGIN
@@ -1056,18 +1056,18 @@ BEGIN
 
     IF LEN(@dni) <> 8
     BEGIN
-        PRINT 'Error: El DNI debe ser de 8 dígitos';
+        PRINT 'Error: El DNI debe ser de 8 dï¿½gitos';
         RETURN;
     END;
 
-	-- Validación de que el nombre sólo contenga letras y espacios
+	-- Validaciï¿½n de que el nombre sï¿½lo contenga letras y espacios
 	IF @nombre LIKE '%[^a-zA-Z ]%'
 	BEGIN
     PRINT 'Error: El nombre solo puede contener letras y espacios.';
     RETURN;
 	END
 
-	-- Validación de que el apellido sólo contenga letras y espacios
+	-- Validaciï¿½n de que el apellido sï¿½lo contenga letras y espacios
 	IF @apellido LIKE '%[^a-zA-Z ]%'
 	BEGIN
     PRINT 'Error: El apellido solo puede contener letras y espacios.';
@@ -1082,31 +1082,31 @@ BEGIN
 
     IF @email NOT LIKE '_%@_%._%'
     BEGIN
-        PRINT 'Error: Email inválido.';
+        PRINT 'Error: Email invï¿½lido.';
         RETURN;
     END;
 
     IF @saldo < 0
     BEGIN
-        PRINT 'Saldo inválido. No puede ser negativo.';
+        PRINT 'Saldo invï¿½lido. No puede ser negativo.';
         RETURN;
     END;
 
     IF (LEN(@tel) < 8 OR LEN(@tel) > 14 OR @tel LIKE '%[^0-9]%')
     BEGIN
-        PRINT 'Error: Teléfono inválido.';
+        PRINT 'Error: Telï¿½fono invï¿½lido.';
         RETURN;
     END;
 
     IF (LEN(@tel_emerg) < 8 OR LEN(@tel_emerg) > 14 OR @tel_emerg LIKE '%[^0-9]%')
     BEGIN
-        PRINT 'Error: Teléfono de emergencia inválido.';
+        PRINT 'Error: Telï¿½fono de emergencia invï¿½lido.';
         RETURN;
     END;
 
     IF (LEN(@tel_cobertura) < 8 OR LEN(@tel_cobertura) > 14 OR @tel_cobertura LIKE '%[^0-9]%')
     BEGIN
-        PRINT 'Error: Teléfono de cobertura inválido.';
+        PRINT 'Error: Telï¿½fono de cobertura invï¿½lido.';
         RETURN;
     END;
 
@@ -1149,9 +1149,9 @@ BEGIN
     IF NOT (@cod_invitado LIKE 'NS-[0-9][0-9][0-9][0-9]' OR
         @cod_invitado LIKE 'NS-[0-9][0-9][0-9][0-9]')
     BEGIN
-        PRINT 'Error: Formato erróneo para @cod_invitado.';
-        RETURN;
-    END
+        PRINT 'Error: Formato errï¿½neo para @cod_invitado.';
+       ï¿½RETURN;
+ï¿½ï¿½ï¿½ï¿½END
 
     IF EXISTS (SELECT 1 FROM Persona.Invitado WHERE cod_invitado = @cod_invitado)
     BEGIN
@@ -1160,7 +1160,7 @@ BEGIN
     END
     ELSE
     BEGIN
-        PRINT 'El invitado con el código especificado no existe.';
+        PRINT 'El invitado con el cï¿½digo especificado no existe.';
     END
 END;
 GO
@@ -1187,7 +1187,7 @@ AS
 BEGIN
 	SET NOCOUNT ON;
 
-	--	Validación de campos obligatorios
+	--	Validaciï¿½n de campos obligatorios
 	IF	@cod_pago		IS NULL OR	@monto		IS NULL OR		@fecha_pago	IS NULL OR	
 		@responsable	IS NULL	OR	@estado		IS NULL 
 	BEGIN
@@ -1245,7 +1245,7 @@ BEGIN
 		NOT EXISTS (SELECT 1 FROM Persona.Responsable WHERE cod_responsable = @responsable)
 	)
 	BEGIN
-		PRINT CONCAT('ERROR: El código de responsable especificado no existe (', @responsable, ')');
+		PRINT CONCAT('ERROR: El cï¿½digo de responsable especificado no existe (', @responsable, ')');
 		RETURN;
 	END
 
@@ -1281,7 +1281,7 @@ BEGIN
 
 	IF NOT EXISTS (SELECT 1 FROM Finanzas.Pago WHERE cod_pago = @cod_pago)
 	BEGIN
-		PRINT 'ERROR: No existe un pago con el código especificado.';
+		PRINT 'ERROR: No existe un pago con el cï¿½digo especificado.';
 		RETURN;
 	END
 
@@ -1322,7 +1322,7 @@ BEGIN
 		NOT EXISTS (SELECT 1 FROM Persona.Responsable WHERE cod_responsable = @responsable)
 	)
 	BEGIN
-		PRINT CONCAT('ERROR: El código de responsable especificado no existe (', @responsable, ')');
+		PRINT CONCAT('ERROR: El cï¿½digo de responsable especificado no existe (', @responsable, ')');
 		RETURN;
 	END
 
@@ -1353,14 +1353,14 @@ AS
 BEGIN
 	SET NOCOUNT ON;
 
-	-- Validación: existencia del pago
+	-- Validaciï¿½n: existencia del pago
 	IF NOT EXISTS (SELECT 1 FROM Finanzas.Pago WHERE cod_pago = @cod_pago)
 	BEGIN
-		PRINT 'ERROR: No existe un pago con ese código.';
+		PRINT 'ERROR: No existe un pago con ese cï¿½digo.';
 		RETURN;
 	END
 
-	-- Eliminación
+	-- Eliminaciï¿½n
 	DELETE FROM Finanzas.Pago
 	WHERE cod_pago = @cod_pago;
 
@@ -1375,7 +1375,7 @@ GO
 -- STORED PROCEDURES PARA TABLA PAGO
 ----------------------------------------------------------------------------------------------------------------
 
---	SP PARA INSERTAR SUSCRIPCIÓN
+--	SP PARA INSERTAR SUSCRIPCIï¿½N
 IF EXISTS (SELECT * FROM sys.procedures WHERE name = 'insertarSuscripcion')
 BEGIN
     DROP PROCEDURE Club.insertarSuscripcion;
@@ -1431,7 +1431,7 @@ GO
 
 ----------------------------------------------------------------------------------------------------------------
 
---	SP PARA MODIFICAR SUSCRIPCIÓN
+--	SP PARA MODIFICAR SUSCRIPCIï¿½N
 IF EXISTS (SELECT * FROM sys.procedures WHERE name = 'modificarSuscripcion')
 BEGIN
     DROP PROCEDURE Club.modificarSuscripcion;
@@ -1477,7 +1477,7 @@ BEGIN
 		  AND tiempoSuscr = @tiempo
 	)
 	BEGIN
-		PRINT 'La suscripción ya fue modificada anteriormente.'
+		PRINT 'La suscripciï¿½n ya fue modificada anteriormente.'
 		RETURN
 	END
 
@@ -1487,7 +1487,7 @@ BEGIN
 		tiempoSuscr = ISNULL(tiempoSuscr, @tiempo)
 	WHERE cod_socio = @cod_socio
 
-	PRINT 'Modificación exitosa.'
+	PRINT 'Modificaciï¿½n exitosa.'
 END
 
 IF EXISTS (SELECT * FROM sys.procedures WHERE name = 'borrarSuscripcion')
@@ -1498,7 +1498,7 @@ GO
 
 ----------------------------------------------------------------------------------------------------------------
 
---	SP PARA BORRAR SUSCRIPCIÓN
+--	SP PARA BORRAR SUSCRIPCIï¿½N
 IF EXISTS (SELECT * FROM sys.procedures WHERE name = 'borrarSuscripcion')
 BEGIN
     DROP PROCEDURE Club.borrarSuscripcion;
@@ -1510,14 +1510,14 @@ CREATE OR ALTER PROCEDURE Club.borrarSuscripcion
 AS
 BEGIN
     SET NOCOUNT ON;
-    -- Validación: verificar que exista el código
+    -- Validaciï¿½n: verificar que exista el cï¿½digo
     IF NOT EXISTS (SELECT 1 FROM Club.Suscripcion WHERE cod_socio = @cod_socio)
     BEGIN
         PRINT 'Error: No existe suscripcion.';
         RETURN;
     END
 
-    -- Eliminación del registro
+    -- Eliminaciï¿½n del registro
     DELETE FROM Club.Suscripcion
     WHERE cod_socio = @cod_socio
 
@@ -1596,10 +1596,10 @@ BEGIN
         RETURN;
     END
 
-    -- Validar que el estado ingresado sea uno de los válidos
+    -- Validar que el estado ingresado sea uno de los vï¿½lidos
     IF @nuevo_estado NOT IN ('VENCIDA', 'ANULADA', 'PAGADA')
     BEGIN
-        PRINT 'Estado inválido. Debe ser VENCIDA, ANULADA o PAGADA.';
+        PRINT 'Estado invï¿½lido. Debe ser VENCIDA, ANULADA o PAGADA.';
         RETURN;
     END
 
@@ -1614,7 +1614,7 @@ BEGIN
     FROM Finanzas.Factura
     WHERE cod_Factura = @cod_Factura;
 
-    -- Lógica según estado
+    -- Lï¿½gica segï¿½n estado
     IF @nuevo_estado = 'VENCIDA'
     BEGIN
         IF GETDATE() > @fecha_seg_vto
@@ -1626,7 +1626,7 @@ BEGIN
     END
     -- Si el nuevo estado es ABONADA: se mantiene el monto
 
-    -- Actualización
+    -- Actualizaciï¿½n
     UPDATE Finanzas.Factura
     SET 
         estado = @nuevo_estado,
@@ -1651,14 +1651,14 @@ CREATE OR ALTER PROCEDURE Finanzas.borrarFactura
 AS
 BEGIN
     SET NOCOUNT ON;
-    -- Validación: verificar que exista el código
+    -- Validaciï¿½n: verificar que exista el cï¿½digo
     IF NOT EXISTS (SELECT 1 FROM Finanzas.Factura WHERE cod_Factura = @cod_Factura)
     BEGIN
         PRINT 'Error: No existe factura.';
         RETURN;
     END
 
-    -- Eliminación del registro
+    -- Eliminaciï¿½n del registro
     DELETE FROM Finanzas.Factura
     WHERE cod_Factura = @cod_Factura;
 
@@ -1681,42 +1681,70 @@ CREATE OR ALTER PROCEDURE Finanzas.insertarReembolso
     @monto       DECIMAL(10,2),
     @medio_Pago  VARCHAR(50),
     @fecha       DATE,
-    @motivo      VARCHAR(50)
+    @motivo      VARCHAR(50),
+    @cod_factura INT
 AS
 BEGIN
     SET NOCOUNT ON;
 
-    -- Validación: monto debe ser mayor a 0
+    -- Validaciï¿½n: monto debe ser mayor a 0
     IF @monto <= 0
     BEGIN
         PRINT 'Error: El monto debe ser mayor a cero.';
         RETURN;
     END
 
-    -- Validación: medio_Pago no debe ser NULL ni vacío
-    IF @medio_Pago IS NULL OR LTRIM(RTRIM(@medio_Pago)) = ''
+    IF @cod_factura <= 0
     BEGIN
-        PRINT 'Error: El medio de pago no puede estar vacío.';
+        PRINT 'Error: El cÃ³digo de factura debe ser mayor a cero.';
         RETURN;
     END
 
-    -- Validación: fecha no puede ser futura
+    IF @cod_factura IS NULL OR NOT EXISTS (SELECT 1 FROM psn.Factura WHERE cod_Factura = @cod_factura AND estado = 'Pagada')
+    BEGIN
+        PRINT 'Error: No existe una factura con estado <Pagada> con el cÃ³digo especificado.';
+        RETURN;
+    END
+
+    -- Validaciï¿½n: medio_Pago no debe ser NULL ni vacï¿½o
+    IF @medio_Pago IS NULL OR LTRIM(RTRIM(@medio_Pago)) = ''
+    BEGIN
+        PRINT 'Error: El medio de pago no puede estar vacï¿½o.';
+        RETURN;
+    END
+
+    -- Validaciï¿½n: fecha no puede ser futura
     IF @fecha > GETDATE()
     BEGIN
         PRINT 'Error: La fecha no puede ser futura.';
         RETURN;
     END
 
-    -- Validación: motivo no debe ser NULL ni vacío
+    -- Validaciï¿½n: motivo no debe ser NULL ni vacï¿½o
     IF @motivo IS NULL OR LTRIM(RTRIM(@motivo)) = ''
     BEGIN
-        PRINT 'Error: El motivo no puede estar vacío.';
+        PRINT 'Error: El motivo no puede estar vacï¿½o.';
         RETURN;
     END
 
-    -- Inserción de datos
-    INSERT INTO Finanzas.Reembolso (monto, medio_Pago, fecha, motivo)
-    VALUES (@monto, @medio_Pago, @fecha, @motivo);
+    -- Transaccion para insertar el reembolso y cambiar el estado de la factura a 'Anulada'
+    BEGIN TRANSACTION;
+    BEGIN TRY
+        UPDATE psn.Factura
+        SET estado = 'Anulada'
+        WHERE cod_Factura = @cod_factura;
+
+        INSERT INTO psn.Reembolso (monto, medio_Pago, fecha, motivo, cod_factura)
+        VALUES (@monto, @medio_Pago, @fecha, @motivo, @cod_factura);
+
+        COMMIT TRANSACTION;
+    END TRY
+    BEGIN CATCH
+        -- Si ocurre un error, revertir la transacciÃ³n
+        ROLLBACK TRANSACTION;
+        PRINT 'Error al insertar el reembolso: ' + ERROR_MESSAGE();
+        RETURN;
+    END CATCH;
 
     PRINT 'Reembolso insertado correctamente.';
 END;
@@ -1741,42 +1769,42 @@ AS
 BEGIN
     SET NOCOUNT ON;
 
-    -- Validación: código debe existir
+    -- Validaciï¿½n: cï¿½digo debe existir
     IF NOT EXISTS (SELECT 1 FROM Finanzas.Reembolso WHERE codReembolso = @codReembolso)
     BEGIN
-        PRINT 'Error: No existe un reembolso con el código especificado.';
+        PRINT 'Error: No existe un reembolso con el cï¿½digo especificado.';
         RETURN;
     END
 
-    -- Validación: monto debe ser mayor a 0
+    -- Validaciï¿½n: monto debe ser mayor a 0
     IF @monto <= 0
     BEGIN
         PRINT 'Error: El monto debe ser mayor a cero.';
         RETURN;
     END
 
-    -- Validación: medio_Pago no debe ser NULL ni vacío
+    -- Validaciï¿½n: medio_Pago no debe ser NULL ni vacï¿½o
     IF @medio_Pago IS NULL OR LTRIM(RTRIM(@medio_Pago)) = ''
     BEGIN
-        PRINT 'Error: El medio de pago no puede estar vacío.';
+        PRINT 'Error: El medio de pago no puede estar vacï¿½o.';
         RETURN;
     END
 
-    -- Validación: fecha no puede ser futura
+    -- Validaciï¿½n: fecha no puede ser futura
     IF @fecha > GETDATE()
     BEGIN
         PRINT 'Error: La fecha no puede ser futura.';
         RETURN;
     END
 
-    -- Validación: motivo no debe ser NULL ni vacío
+    -- Validaciï¿½n: motivo no debe ser NULL ni vacï¿½o
     IF @motivo IS NULL OR LTRIM(RTRIM(@motivo)) = ''
     BEGIN
-        PRINT 'Error: El motivo no puede estar vacío.';
+        PRINT 'Error: El motivo no puede estar vacï¿½o.';
         RETURN;
     END
 
-    -- Actualización de datos
+    -- Actualizaciï¿½n de datos
     UPDATE Finanzas.Reembolso
     SET
         monto = @monto,
@@ -1804,16 +1832,33 @@ AS
 BEGIN
     SET NOCOUNT ON;
 
-    -- Validación: verificar que exista el código
+    -- Validaciï¿½n: verificar que exista el cï¿½digo
     IF NOT EXISTS (SELECT 1 FROM Finanzas.Reembolso WHERE codReembolso = @codReembolso)
     BEGIN
-        PRINT 'Error: No existe un reembolso con el código especificado.';
+        PRINT 'Error: No existe un reembolso con el cï¿½digo especificado.';
         RETURN;
     END
 
-    -- Eliminación del registro
-    DELETE FROM Finanzas.Reembolso
-    WHERE codReembolso = @codReembolso;
+    -- transacciÃ³n para eliminar el reembolso y revertir el estado de la factura a 'Pagada'
+    BEGIN TRANSACTION;
+    BEGIN TRY
+        -- Revertir el estado de la factura a 'Pagada'
+        DECLARE @cod_factura INT;
+        SELECT @cod_factura = cod_factura FROM psn.Reembolso WHERE codReembolso = @codReembolso;
+        UPDATE psn.Factura
+        SET estado = 'Pagada'
+        WHERE cod_Factura = @cod_factura;
+        -- Eliminar el reembolso
+        DELETE FROM psn.Reembolso
+        WHERE codReembolso = @codReembolso;
+        COMMIT TRANSACTION;
+    END TRY
+    BEGIN CATCH
+        -- Si ocurre un error, revertir la transacciÃ³n
+        ROLLBACK TRANSACTION;
+        PRINT 'Error al eliminar el reembolso: ' + ERROR_MESSAGE();
+        RETURN;
+    END CATCH;
 
     PRINT 'Reembolso eliminado correctamente.';
 END;
@@ -1868,7 +1913,7 @@ BEGIN
 	END
 
 
-	--	Validación de campos obligatorios
+	--	Validaciï¿½n de campos obligatorios
 	IF(	@nombre		IS NULL OR	@apellido		IS NULL OR	@dni	IS NULL OR
 		@fecha_nac	IS NULL OR	@email			IS NULL OR	@tel	IS NULL)
 	BEGIN
@@ -1879,7 +1924,7 @@ BEGIN
     -- Validaciones
     IF @dni IS NULL OR LEN(@dni) != 8 OR @dni NOT LIKE '%[0-9]%'
     BEGIN
-        PRINT 'Error: El DNI debe contener exactamente 8 dígitos numéricos.';
+        PRINT 'Error: El DNI debe contener exactamente 8 dï¿½gitos numï¿½ricos.';
         RETURN;
     END
 
@@ -1898,30 +1943,30 @@ BEGIN
         RETURN;
     END
 
-  -- Validación de que el nombre sólo contenga letras y espacios
+  -- Validaciï¿½n de que el nombre sï¿½lo contenga letras y espacios
 	IF @nombre LIKE '%[^a-zA-Z ]%'
 	BEGIN
     PRINT 'Error: El nombre solo puede contener letras y espacios.';
     RETURN;
 	END
 
-	-- Validación de que el apellido sólo contenga letras y espacios
+	-- Validaciï¿½n de que el apellido sï¿½lo contenga letras y espacios
 	IF @apellido LIKE '%[^a-zA-Z ]%'
 	BEGIN
     PRINT 'Error: El apellido solo puede contener letras y espacios.';
     RETURN;
 	END
 
-	-- Validación de email
+	-- Validaciï¿½n de email
 	IF @email NOT LIKE '_%@_%._%'
 	BEGIN
-		PRINT 'Error: Email inválido. Debe tener formato ejemplo@dominio.com.';
+		PRINT 'Error: Email invï¿½lido. Debe tener formato ejemplo@dominio.com.';
 		RETURN;
 	END
 
     IF @parentezco IS NULL OR LTRIM(RTRIM(@parentezco)) = ''
     BEGIN
-        PRINT 'Error: El parentezco no puede estar vacío.';
+        PRINT 'Error: El parentezco no puede estar vacï¿½o.';
         RETURN;
     END
 
@@ -1933,11 +1978,11 @@ BEGIN
 
     IF @tel IS NULL OR @tel LIKE '%[^0-9]%' OR LEN(@tel) < 10 OR LEN(@tel) > 14
     BEGIN
-        PRINT 'Error: El teléfono debe contener solo números y tener entre 10 y 14 dígitos.';
+        PRINT 'Error: El telï¿½fono debe contener solo nï¿½meros y tener entre 10 y 14 dï¿½gitos.';
         RETURN;
     END
 
-    -- Inserción
+    -- Inserciï¿½n
     INSERT INTO Persona.Responsable (cod_responsable, nombre, apellido, dni, email, fecha_nac, tel, parentezco)
     VALUES (@cod_responsable, @nombre, @apellido, @dni, @email, @fecha_nac, @tel, @parentezco);
 
@@ -1972,21 +2017,21 @@ BEGIN
         @cod_responsable LIKE 'NS-[0-9][0-9][0-9][0-9]' OR
         @cod_responsable LIKE 'NS-[0-9][0-9][0-9][0-9][0-9]')
     BEGIN
-        PRINT 'Error: Formato erróneo para cod_responsable.';
-        RETURN;
-    END
+        PRINT 'Error: Formato errï¿½neo para cod_responsable.';
+       ï¿½RETURN;
+ï¿½ï¿½ï¿½ï¿½END
 
     -- Validar existencia
     IF NOT EXISTS (SELECT 1 FROM Persona.Responsable WHERE cod_responsable = @cod_responsable)
     BEGIN
-        PRINT 'Error: No existe un responsable con ese código.';
+        PRINT 'Error: No existe un responsable con ese cï¿½digo.';
         RETURN;
     END
 
     -- Validaciones (igual que en el insert)
     IF @dni IS NULL OR LEN(@dni) != 8 OR @dni NOT LIKE '%[0-9]%'
     BEGIN
-        PRINT 'Error: El DNI debe contener exactamente 8 dígitos numéricos.';
+        PRINT 'Error: El DNI debe contener exactamente 8 dï¿½gitos numï¿½ricos.';
         RETURN;
     END
 
@@ -2011,16 +2056,16 @@ BEGIN
     RETURN;
 	END
 
-	-- Validación de email
+	-- Validaciï¿½n de email
 	IF @email NOT LIKE '_%@_%._%'
 	BEGIN
-		PRINT 'Error: Email inválido. Debe tener formato ejemplo@dominio.com.';
+		PRINT 'Error: Email invï¿½lido. Debe tener formato ejemplo@dominio.com.';
 		RETURN;
 	END
 
     IF @parentezco IS NULL OR LTRIM(RTRIM(@parentezco)) = ''
     BEGIN
-        PRINT 'Error: El parentezco no puede estar vacío.';
+        PRINT 'Error: El parentezco no puede estar vacï¿½o.';
         RETURN;
     END
 
@@ -2032,17 +2077,17 @@ BEGIN
 
     IF @nro_socio IS NULL OR @nro_socio <= 0
     BEGIN
-        PRINT 'Error: El número de socio debe ser un número positivo.';
+        PRINT 'Error: El nï¿½mero de socio debe ser un nï¿½mero positivo.';
         RETURN;
     END
 
     IF @tel IS NULL OR @tel LIKE '%[^0-9]%' OR LEN(@tel) < 10 OR LEN(@tel) > 14
     BEGIN
-        PRINT 'Error: El teléfono debe contener solo números y tener entre 10 y 14 dígitos.';
+        PRINT 'Error: El telï¿½fono debe contener solo nï¿½meros y tener entre 10 y 14 dï¿½gitos.';
         RETURN;
     END
 
-    -- Actualización
+    -- Actualizaciï¿½n
     UPDATE Persona.Responsable
     SET dni = @dni,
         cod_responsable = @cod_responsable,
@@ -2076,18 +2121,18 @@ BEGIN
         @cod_responsable LIKE 'NS-[0-9][0-9][0-9][0-9]' OR
         @cod_responsable LIKE 'NS-[0-9][0-9][0-9][0-9][0-9]')
     BEGIN
-        PRINT 'Error: Formato erróneo para cod_responsable.';
-        RETURN;
-    END
+        PRINT 'Error: Formato errï¿½neo para cod_responsable.';
+       ï¿½RETURN;
+ï¿½ï¿½ï¿½ï¿½END
 
     -- Validar existencia
     IF NOT EXISTS (SELECT 1 FROM Persona.Responsable WHERE cod_responsable = @cod_responsable)
     BEGIN
-        PRINT 'Error: No existe un responsable con ese código.';
+        PRINT 'Error: No existe un responsable con ese cï¿½digo.';
         RETURN;
     END
 
-    -- Eliminación
+    -- Eliminaciï¿½n
     DELETE FROM Persona.Responsable
     WHERE cod_responsable = @cod_responsable;
 
@@ -2134,17 +2179,17 @@ BEGIN
         @cod_socio LIKE 'SN-[0-9][0-9][0-9][0-9]' OR
         @cod_socio LIKE 'SN-[0-9][0-9][0-9][0-9][0-9]')
     BEGIN
-        PRINT 'Error: Formato erróneo para @cod_socio.';
-        RETURN;
-    END
+        PRINT 'Error: Formato errï¿½neo para @cod_socio.';
+       ï¿½RETURN;
+ï¿½ï¿½ï¿½ï¿½END
 
     IF @cod_invitado IS NOT NULL AND NOT (
         @cod_invitado LIKE 'NS-[0-9][0-9][0-9][0-9]' OR
         @cod_invitado LIKE 'NS-[0-9][0-9][0-9][0-9]')
     BEGIN
-        PRINT 'Error: Formato erróneo para cod_invitado.';
-        RETURN;
-    END
+        PRINT 'Error: Formato errï¿½neo para cod_invitado.';
+       ï¿½RETURN;
+ï¿½ï¿½ï¿½ï¿½END
 
     IF @cod_socio IS NOT NULL AND NOT EXISTS (SELECT 1 FROM Persona.Socio WHERE cod_socio = @cod_socio)
     BEGIN
@@ -2263,17 +2308,17 @@ BEGIN
         @cod_socio LIKE 'SN-[0-9][0-9][0-9][0-9]' OR
         @cod_socio LIKE 'SN-[0-9][0-9][0-9][0-9][0-9]')
     BEGIN
-        PRINT 'Error: Formato erróneo para @cod_socio.';
-        RETURN;
-    END
+        PRINT 'Error: Formato errï¿½neo para @cod_socio.';
+       ï¿½RETURN;
+ï¿½ï¿½ï¿½ï¿½END
 
     IF @cod_invitado IS NOT NULL AND NOT (
         @cod_invitado LIKE 'NS-[0-9][0-9][0-9][0-9]' OR
         @cod_invitado LIKE 'NS-[0-9][0-9][0-9][0-9]')
     BEGIN
-        PRINT 'Error: Formato erróneo para cod_invitado.';
-        RETURN;
-    END
+        PRINT 'Error: Formato errï¿½neo para cod_invitado.';
+       ï¿½RETURN;
+ï¿½ï¿½ï¿½ï¿½END
 
     IF @cod_socio IS NOT NULL AND NOT EXISTS (SELECT 1 FROM Persona.Socio WHERE cod_socio = @cod_socio)
     BEGIN
@@ -2393,19 +2438,19 @@ BEGIN
 
     IF @categoria IS NULL OR @cod_actividad IS NULL OR @dia IS NULL OR @horario IS NULL OR @cod_prof IS NULL
     BEGIN
-        PRINT 'Error: Ningún parámetro puede ser NULL.';
+        PRINT 'Error: Ningï¿½n parï¿½metro puede ser NULL.';
         RETURN;
     END;
 
     IF @dia NOT IN ('Lunes', 'Martes', 'Miercoles', 'Jueves', 'Viernes', 'Sabado', 'Domingo')
     BEGIN
-        PRINT 'Error: Día inválido.';
+        PRINT 'Error: Dï¿½a invï¿½lido.';
         RETURN;
     END;
 
     IF NOT EXISTS (SELECT 1 FROM Club.Categoria WHERE cod_categoria = @categoria)
     BEGIN
-        PRINT 'Error: La categoría especificada no existe.';
+        PRINT 'Error: La categorï¿½a especificada no existe.';
         RETURN;
     END;
 
@@ -2417,7 +2462,7 @@ BEGIN
 
     IF NOT EXISTS (SELECT 1 FROM Persona.Profesor WHERE @cod_prof = @cod_prof)
     BEGIN
-        PRINT 'Error: No se encontró profesor.';
+        PRINT 'Error: No se encontrï¿½ profesor.';
         RETURN;
     END;
 
@@ -2427,7 +2472,7 @@ BEGIN
               AND dia = @dia AND horario = @horario
     )
     BEGIN
-        PRINT 'Error: Ya existe una clase con esa combinación.';
+        PRINT 'Error: Ya existe una clase con esa combinaciï¿½n.';
         RETURN;
     END;
 
@@ -2459,13 +2504,13 @@ BEGIN
 
     IF @cod_clase IS NULL OR @categoria IS NULL OR @cod_actividad IS NULL OR @dia IS NULL OR @horario IS NULL
     BEGIN
-        PRINT 'Error: Ningún parámetro puede ser NULL.';
+        PRINT 'Error: Ningï¿½n parï¿½metro puede ser NULL.';
         RETURN;
     END;
 
     IF @dia NOT IN ('Lunes', 'Martes', 'Miercoles', 'Jueves', 'Viernes', 'Sabado', 'Domingo')
     BEGIN
-        PRINT 'Error: Día inválido.';
+        PRINT 'Error: Dï¿½a invï¿½lido.';
         RETURN;
     END;
 
@@ -2477,7 +2522,7 @@ BEGIN
 
     IF NOT EXISTS (SELECT 1 FROM Club.Categoria WHERE cod_categoria = @categoria)
     BEGIN
-        PRINT 'Error: La nueva categoría especificada no existe.';
+        PRINT 'Error: La nueva categorï¿½a especificada no existe.';
         RETURN;
     END;
 
@@ -2494,7 +2539,7 @@ BEGIN
               AND cod_clase <> @cod_clase
     )
     BEGIN
-        PRINT 'Error: Ya existe otra clase con esa combinación.';
+        PRINT 'Error: Ya existe otra clase con esa combinaciï¿½n.';
         RETURN;
     END;
 
@@ -2527,13 +2572,13 @@ BEGIN
 
     IF @cod_clase IS NULL
     BEGIN
-        PRINT 'Error: El código de clase no puede ser NULL.';
+        PRINT 'Error: El cï¿½digo de clase no puede ser NULL.';
         RETURN;
     END;
 
     IF NOT EXISTS (SELECT 1 FROM Actividad.Clase WHERE cod_clase = @cod_clase)
     BEGIN
-        PRINT 'Error: La clase con el código especificado no existe.';
+        PRINT 'Error: La clase con el cï¿½digo especificado no existe.';
         RETURN;
     END;
 
@@ -2573,7 +2618,7 @@ BEGIN
         SELECT 1 FROM Finanzas.Factura WHERE cod_Factura = @cod_Factura
     )
     BEGIN
-        PRINT 'Error: La factura con el código ' + CAST(@cod_Factura AS VARCHAR) + ' no existe.';
+        PRINT 'Error: La factura con el cï¿½digo ' + CAST(@cod_Factura AS VARCHAR) + ' no existe.';
         RETURN;
     END
 
@@ -2593,14 +2638,14 @@ BEGIN
         RETURN;
     END
 
-    -- Validar que la descripción no sea NULL ni vacía o solo espacios
+    -- Validar que la descripciï¿½n no sea NULL ni vacï¿½a o solo espacios
     IF @descripcion IS NULL OR LTRIM(RTRIM(@descripcion)) = ''
     BEGIN
-        PRINT 'Error: La descripción no puede ser vacía ni nula.';
+        PRINT 'Error: La descripciï¿½n no puede ser vacï¿½a ni nula.';
         RETURN;
     END
 
-    -- Inserción
+    -- Inserciï¿½n
     BEGIN TRANSACTION;
     BEGIN TRY
         INSERT INTO Finanzas.Item_Factura (cod_item, cod_Factura, monto, descripcion)
@@ -2644,7 +2689,7 @@ BEGIN
         SELECT 1 FROM Finanzas.Factura WHERE cod_Factura = @cod_Factura
     )
     BEGIN
-        PRINT 'Error: La factura con el código ' + CAST(@cod_Factura AS VARCHAR) + ' no existe.';
+        PRINT 'Error: La factura con el cï¿½digo ' + CAST(@cod_Factura AS VARCHAR) + ' no existe.';
         RETURN;
     END
 
@@ -2667,10 +2712,10 @@ BEGIN
         RETURN;
     END
 
-    -- Validar que la descripción no sea NULL ni vacía o solo espacios
+    -- Validar que la descripciï¿½n no sea NULL ni vacï¿½a o solo espacios
     IF @descripcion IS NULL OR LTRIM(RTRIM(@descripcion)) = ''
     BEGIN
-        PRINT 'Error: La descripción no puede ser vacía ni nula.';
+        PRINT 'Error: La descripciï¿½n no puede ser vacï¿½a ni nula.';
         RETURN;
     END
 
@@ -2718,7 +2763,7 @@ BEGIN
 
     IF NOT EXISTS (SELECT 1 FROM Finanzas.Factura WHERE cod_Factura = @cod_Factura)
     BEGIN
-        PRINT 'Error: La factura con el código ' + CAST(@cod_Factura AS VARCHAR) + ' no existe.';
+        PRINT 'Error: La factura con el cï¿½digo ' + CAST(@cod_Factura AS VARCHAR) + ' no existe.';
         RETURN;
     END
 
@@ -2730,7 +2775,7 @@ BEGIN
 
     IF @monto_item_a_borrar IS NULL
     BEGIN
-        PRINT 'Error: El ítem con el código ' + CAST(@cod_item AS VARCHAR) + ' no existe en la factura ' + CAST(@cod_Factura AS VARCHAR) + '.';
+        PRINT 'Error: El ï¿½tem con el cï¿½digo ' + CAST(@cod_item AS VARCHAR) + ' no existe en la factura ' + CAST(@cod_Factura AS VARCHAR) + '.';
         RETURN;
     END
 
@@ -2783,14 +2828,14 @@ BEGIN
 
     IF @estado IS NULL OR @estado NOT IN ('P','A','J')
     BEGIN
-        PRINT 'Error: Estado inválido.';
+        PRINT 'Error: Estado invï¿½lido.';
         RETURN;
     END
 
     IF @cod_socio IS NULL OR (@cod_socio  NOT LIKE 'SN-[0-9][0-9][0-9][0-9][0-9]' 
                           AND @cod_socio  NOT LIKE 'SN-[0-9][0-9][0-9][0-9]')
     BEGIN
-        PRINT 'Error: Formato erróneo de código de socio.';
+        PRINT 'Error: Formato errï¿½neo de cï¿½digo de socio.';
         RETURN;
     END
 
@@ -2799,13 +2844,13 @@ BEGIN
         WHERE cod_socio = @cod_socio
     )
     BEGIN
-        PRINT 'Error: No se encontró al socio.';
+        PRINT 'Error: No se encontrï¿½ al socio.';
         RETURN;
     END
 
     IF @cod_clase IS NULL OR @cod_clase <= 0
     BEGIN
-        PRINT 'Error: El código de clase debe ser un número positivo.';
+        PRINT 'Error: El cï¿½digo de clase debe ser un nï¿½mero positivo.';
         RETURN;
     END
 
@@ -2833,11 +2878,11 @@ BEGIN
         WHERE fecha = @fecha AND cod_socio = @cod_socio AND cod_clase = @cod_clase
     )
     BEGIN
-        PRINT 'Error: Ya existe un registro con esa combinación de fecha, socio y clase.';
+        PRINT 'Error: Ya existe un registro con esa combinaciï¿½n de fecha, socio y clase.';
         RETURN;
     END
 
-    -- Inserción
+    -- Inserciï¿½n
     INSERT INTO Actividad.Asiste (fecha, cod_socio, cod_clase, estado)
     VALUES (@fecha, @cod_socio, @cod_clase, @estado);
 
@@ -2874,7 +2919,7 @@ BEGIN
 
     IF @nuevo_cod_socio IS NULL OR @nuevo_cod_socio NOT LIKE 'SN-[0-9][0-9][0-9][0-9][0-9]'
     BEGIN
-        PRINT 'Error: El nuevo código de socio debe ser un número positivo.';
+        PRINT 'Error: El nuevo cï¿½digo de socio debe ser un nï¿½mero positivo.';
         RETURN;
     END
 
@@ -2883,13 +2928,13 @@ BEGIN
         WHERE cod_socio = @nuevo_cod_socio
     )
     BEGIN
-        PRINT 'Error: No se encontró al socio.';
+        PRINT 'Error: No se encontrï¿½ al socio.';
         RETURN;
     END
 
     IF @nuevo_cod_clase IS NULL OR @nuevo_cod_clase <= 0
     BEGIN
-        PRINT 'Error: El nuevo código de clase debe ser un número positivo.';
+        PRINT 'Error: El nuevo cï¿½digo de clase debe ser un nï¿½mero positivo.';
         RETURN;
     END
 
@@ -2913,7 +2958,7 @@ BEGIN
 
     IF @nuevo_estado IS NULL OR @nuevo_estado NOT IN ('P','A','J')
     BEGIN
-        PRINT 'Error: Estado inválido.';
+        PRINT 'Error: Estado invï¿½lido.';
         RETURN;
     END
 
@@ -2923,7 +2968,7 @@ BEGIN
         WHERE fecha = @fecha_original AND cod_socio = @cod_socio_original AND cod_clase = @cod_clase_original
     )
     BEGIN
-        PRINT 'Error: No se encontró el registro original de asistencia.';
+        PRINT 'Error: No se encontrï¿½ el registro original de asistencia.';
         RETURN;
     END
 
@@ -2942,7 +2987,7 @@ BEGIN
         RETURN;
     END
 
-    -- Actualización
+    -- Actualizaciï¿½n
     UPDATE Actividad.Asiste
     SET fecha = @nueva_fecha,
         cod_socio = @nuevo_cod_socio,
@@ -2976,11 +3021,11 @@ BEGIN
         WHERE fecha = @fecha AND cod_socio = @cod_socio AND cod_clase = @cod_clase
     )
     BEGIN
-        PRINT 'Error: No se encontró un registro con esos datos.';
+        PRINT 'Error: No se encontrï¿½ un registro con esos datos.';
         RETURN;
     END
 
-    -- Eliminación
+    -- Eliminaciï¿½n
     DELETE FROM Actividad.Asiste
     WHERE fecha = @fecha AND cod_socio = @cod_socio AND cod_clase = @cod_clase;
 
@@ -3009,25 +3054,25 @@ BEGIN
     -- Validaciones
     IF @fecha_inscripcion IS NULL OR @fecha_inscripcion > GETDATE()
     BEGIN
-        PRINT 'Error: La fecha de inscripción no puede ser nula ni futura.';
+        PRINT 'Error: La fecha de inscripciï¿½n no puede ser nula ni futura.';
         RETURN;
     END
 
     IF @estado IS NULL OR LTRIM(RTRIM(@estado)) = ''
     BEGIN
-        PRINT 'Error: El estado no puede estar vacío.';
+        PRINT 'Error: El estado no puede estar vacï¿½o.';
         RETURN;
     END
 
     IF @cod_socio IS NULL OR (@cod_socio NOT LIKE 'SN-[0-9][0-9][0-9][0-9][0-9]' AND @cod_socio NOT LIKE 'SN-[0-9][0-9][0-9][0-9]')
     BEGIN
-        PRINT 'Error: Formato erróneo para código de socio.';
+        PRINT 'Error: Formato errï¿½neo para cï¿½digo de socio.';
         RETURN;
     END
 
     IF @cod_clase IS NULL OR @cod_clase <= 0
     BEGIN
-        PRINT 'Error: El código de clase debe ser un número positivo.';
+        PRINT 'Error: El cï¿½digo de clase debe ser un nï¿½mero positivo.';
         RETURN;
     END
 
@@ -3037,15 +3082,15 @@ BEGIN
         WHERE fecha_inscripcion = @fecha_inscripcion AND cod_socio = @cod_socio AND cod_clase = @cod_clase
     )
     BEGIN
-        PRINT 'Error: Ya existe una inscripción con esos datos.';
+        PRINT 'Error: Ya existe una inscripciï¿½n con esos datos.';
         RETURN;
     END
 
-    -- Inserción
+    -- Inserciï¿½n
     INSERT INTO Actividad.Inscripto (fecha_inscripcion, estado, cod_socio, cod_clase)
     VALUES (@fecha_inscripcion, @estado, @cod_socio, @cod_clase);
 
-    PRINT 'Inscripción registrada correctamente.';
+    PRINT 'Inscripciï¿½n registrada correctamente.';
 END;
 GO
 
@@ -3073,7 +3118,7 @@ BEGIN
         WHERE fecha_inscripcion = @fecha_original AND cod_socio = @cod_socio_original AND cod_clase = @cod_clase_original
     )
     BEGIN
-        PRINT 'Error: No se encontró la inscripción original.';
+        PRINT 'Error: No se encontrï¿½ la inscripciï¿½n original.';
         RETURN;
     END
 
@@ -3086,19 +3131,19 @@ BEGIN
 
     IF @nuevo_estado IS NULL OR LTRIM(RTRIM(@nuevo_estado)) = ''
     BEGIN
-        PRINT 'Error: El nuevo estado no puede estar vacío.';
+        PRINT 'Error: El nuevo estado no puede estar vacï¿½o.';
         RETURN;
     END
 
     IF @nuevo_cod_socio IS NULL OR (@nuevo_cod_socio NOT LIKE 'SN-[0-9][0-9][0-9][0-9][0-9]' AND @nuevo_cod_socio NOT LIKE 'SN-[0-9][0-9][0-9][0-9]')
     BEGIN
-        PRINT 'Error: Formato erróneo para código de socio.';
+        PRINT 'Error: Formato errï¿½neo para cï¿½digo de socio.';
         RETURN;
     END
 
     IF @nuevo_cod_clase IS NULL OR @nuevo_cod_clase <= 0
     BEGIN
-        PRINT 'Error: El nuevo código de clase debe ser un número positivo.';
+        PRINT 'Error: El nuevo cï¿½digo de clase debe ser un nï¿½mero positivo.';
         RETURN;
     END
 
@@ -3113,11 +3158,11 @@ BEGIN
           )
     )
     BEGIN
-        PRINT 'Error: Ya existe otra inscripción con los nuevos datos.';
+        PRINT 'Error: Ya existe otra inscripciï¿½n con los nuevos datos.';
         RETURN;
     END
 
-    -- Actualización
+    -- Actualizaciï¿½n
     UPDATE Actividad.Inscripto
     SET fecha_inscripcion = @nueva_fecha,
         estado = @nuevo_estado,
@@ -3127,7 +3172,7 @@ BEGIN
       AND cod_socio = @cod_socio_original
       AND cod_clase = @cod_clase_original;
 
-    PRINT 'Inscripción modificada correctamente.';
+    PRINT 'Inscripciï¿½n modificada correctamente.';
 END;
 GO
 
@@ -3152,16 +3197,16 @@ BEGIN
         WHERE fecha_inscripcion = @fecha_inscripcion AND cod_socio = @cod_socio AND cod_clase = @cod_clase
     )
     BEGIN
-        PRINT 'Error: No se encontró una inscripción con esos datos.';
+        PRINT 'Error: No se encontrï¿½ una inscripciï¿½n con esos datos.';
         RETURN;
     END
 
-    -- Eliminación
+    -- Eliminaciï¿½n
     DELETE FROM Actividad.Inscripto
     WHERE fecha_inscripcion = @fecha_inscripcion
       AND cod_socio = @cod_socio
       AND cod_clase = @cod_clase;
 
-    PRINT 'Inscripción eliminada correctamente.';
+    PRINT 'Inscripciï¿½n eliminada correctamente.';
 END;
 GO

@@ -932,6 +932,10 @@ BEGIN
 
 		DECLARE @RowCount INT = (SELECT COUNT(*) FROM #AsistenciasParaInsertar);
 		DECLARE @CurrentRow INT = 1;
+        DECLARE @Fecha DATE;
+        DECLARE @CodSocio VARCHAR(15);
+        DECLARE @CodClase INT;
+        DECLARE @Estado CHAR(1);
 
 		WHILE @CurrentRow <= @RowCount
 		BEGIN

@@ -1,3 +1,14 @@
+/*
+====================================================================================
+ Archivo		: 04.2_ImportacionClima.sql
+ Proyecto		: Institucion Deportiva Sol Norte.
+ Descripci?n	: Scripts para importar datos a las tablas desde xls y csv.
+ Autor			: COM5600_G11
+ Fecha entrega	: 2025-06-20
+ Versi?n		: 1.0
+====================================================================================
+*/
+
 use Com5600G11;
 GO
 

@@ -1,7 +1,7 @@
 /*
 ====================================================================================
  Archivo		: 04.1_Importacion.sql
- Proyecto		: Instituci?n Deportiva Sol Norte.
+ Proyecto		: Institucion Deportiva Sol Norte.
  Descripci?n	: Scripts para importar datos a las tablas desde xls y csv.
  Autor			: COM5600_G11
  Fecha entrega	: 2025-06-20

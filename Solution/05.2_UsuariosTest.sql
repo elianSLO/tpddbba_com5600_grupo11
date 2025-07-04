@@ -1,3 +1,14 @@
+/*
+====================================================================================
+ Archivo		: 05.2_UsuariosTest.sql
+ Proyecto		: Institución Deportiva Sol Norte.
+ Descripción	: Test de permisos y roles.
+ Autor			: COM5600_G11
+ Fecha entrega	: 2025-06-20
+ Versión		: 1.0
+====================================================================================
+*/
+
 USE Com5600G11;
 GO
 

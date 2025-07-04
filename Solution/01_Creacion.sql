@@ -1,11 +1,11 @@
 /*
 ====================================================================================
  Archivo		: 01_Creacion.sql
- Proyecto		: Instituci�n Deportiva Sol Norte.
- Descripci�n	: Scripts para creaci�n/eliminaci�n de la base de datos.
+ Proyecto		: Institucion Deportiva Sol Norte.
+ Descripcion	: Scripts para creacion/eliminacion de la base de datos.
  Autor			: COM5600_G11
  Fecha entrega	: 2025-06-20
- Versi�n		: 1.0
+ Version		: 1.0
 ====================================================================================
 */
 

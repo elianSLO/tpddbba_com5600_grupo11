@@ -1,11 +1,11 @@
 /*
 ====================================================================================
  Archivo		: 02_Procedimientos_Tablas.sql
- Proyecto		: Instituci�n Deportiva Sol Norte.
- Descripci�n	: Scripts para inserci�n, modificaci�n y eliminaci�n en tablas.
+ Proyecto		: Institucion Deportiva Sol Norte.
+ Descripcion	: Scripts para insercion, modificacion y eliminacion en tablas.
  Autor			: COM5600_G11
  Fecha entrega	: 2025-06-20
- Versi�n		: 1.0
+ Version		: 1.0
 ====================================================================================
 */
 

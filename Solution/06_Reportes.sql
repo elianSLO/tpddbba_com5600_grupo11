@@ -1,6 +1,6 @@
 /*
 ====================================================================================
- Archivo		: 05_Reportes.sql
+ Archivo		: 06_Reportes.sql
  Proyecto		: Institución Deportiva Sol Norte.
  Descripción	: Scripts para generar reportes.
  Autor			: COM5600_G11

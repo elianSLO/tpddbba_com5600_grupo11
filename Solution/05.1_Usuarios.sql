@@ -1,6 +1,6 @@
 /*
 ====================================================================================
- Archivo		: 06_Usuarios.sql
+ Archivo		: 05.1_Usuarios.sql
  Proyecto		: Institución Deportiva Sol Norte.
  Descripción	: Creación de logins, usuarios y asignación de roles.
  Autor			: COM5600_G11
